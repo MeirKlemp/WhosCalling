@@ -3,6 +3,7 @@ CREATE TABLE CallLogEntity (
     phoneNumber TEXT NOT NULL,
     contactName TEXT,
     type TEXT NOT NULL,
+    missed INTEGER NOT NULL DEFAULT 0,
     timestamp INTEGER NOT NULL,
     duration INTEGER NOT NULL
 );
@@ -11,8 +12,8 @@ getAllCallLogs:
 SELECT * FROM CallLogEntity ORDER BY timestamp DESC;
 
 insertCallLog:
-INSERT OR REPLACE INTO CallLogEntity (id, phoneNumber, contactName, type, timestamp, duration)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO CallLogEntity (id, phoneNumber, contactName, type, missed, timestamp, duration)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteAllCallLogs:
 DELETE FROM CallLogEntity;

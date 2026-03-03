@@ -25,7 +25,7 @@ val dataSourceModule = module {
 }
 
 val repositoryModule = module {
-    single<CallLogRepository> { CallLogRepositoryImpl(get(), get(), get()) }
+    single<CallLogRepository> { CallLogRepositoryImpl(get(), get()) }
     single<ContactRepository> { ContactRepositoryImpl(get()) }
 }
 

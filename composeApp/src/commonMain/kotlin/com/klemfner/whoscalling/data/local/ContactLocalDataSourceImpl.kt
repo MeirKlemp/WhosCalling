@@ -13,8 +13,8 @@ class ContactLocalDataSourceImpl(
     private val database: WhosCallingDatabase
 ) : ContactLocalDataSource {
 
-    override fun getContacts(): Flow<List<Contact>> {
-        return database.contactEntityQueries
+    override val contacts: Flow<List<Contact>> =
+        database.contactEntityQueries
             .getAllContacts()
             .asFlow()
             .mapToList(Dispatchers.Default)
@@ -28,7 +28,6 @@ class ContactLocalDataSourceImpl(
                     )
                 }
             }
-    }
 
     override suspend fun saveContact(contact: Contact) {
         withContext(Dispatchers.Default) {

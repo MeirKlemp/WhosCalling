@@ -4,5 +4,6 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import kotlinx.coroutines.flow.Flow
 
 interface CallLogRemoteDataSource {
-    fun getCallLogs(): Flow<List<CallLog>>
+    val callLogs: Flow<List<CallLog>>
+    suspend fun refresh()
 }

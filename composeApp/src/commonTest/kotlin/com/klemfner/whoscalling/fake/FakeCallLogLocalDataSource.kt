@@ -7,15 +7,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
 class FakeCallLogLocalDataSource : CallLogLocalDataSource {
-    private val callLogs = MutableStateFlow<List<CallLog>>(emptyList())
-
-    override fun getCallLogs(): Flow<List<CallLog>> = callLogs
+    private val _callLogs = MutableStateFlow<List<CallLog>>(emptyList())
+    override val callLogs: Flow<List<CallLog>> = _callLogs
 
     override suspend fun saveCallLogs(callLogs: List<CallLog>) {
-        this.callLogs.update { current -> current + callLogs }
+        _callLogs.update { current -> current + callLogs }
     }
 
     override suspend fun deleteAllCallLogs() {
-        callLogs.value = emptyList()
+        _callLogs.value = emptyList()
     }
 }

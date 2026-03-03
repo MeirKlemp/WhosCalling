@@ -5,6 +5,7 @@ data class CallLog(
     val phoneNumber: String,
     val contactName: String?,
     val type: CallType,
+    val missed: Boolean,
     val timestamp: Long,
     val duration: Long
 )

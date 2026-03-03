@@ -14,8 +14,8 @@ class CallLogLocalDataSourceImpl(
     private val database: WhosCallingDatabase
 ) : CallLogLocalDataSource {
 
-    override fun getCallLogs(): Flow<List<CallLog>> {
-        return database.callLogEntityQueries
+    override val callLogs: Flow<List<CallLog>> =
+        database.callLogEntityQueries
             .getAllCallLogs()
             .asFlow()
             .mapToList(Dispatchers.Default)
@@ -26,12 +26,12 @@ class CallLogLocalDataSourceImpl(
                         phoneNumber = entity.phoneNumber,
                         contactName = entity.contactName,
                         type = CallType.valueOf(entity.type),
+                        missed = entity.missed != 0L,
                         timestamp = entity.timestamp,
                         duration = entity.duration
                     )
                 }
             }
-    }
 
     override suspend fun saveCallLogs(callLogs: List<CallLog>) {
         withContext(Dispatchers.Default) {
@@ -42,6 +42,7 @@ class CallLogLocalDataSourceImpl(
                         phoneNumber = callLog.phoneNumber,
                         contactName = callLog.contactName,
                         type = callLog.type.name,
+                        missed = if (callLog.missed) 1L else 0L,
                         timestamp = callLog.timestamp,
                         duration = callLog.duration
                     )

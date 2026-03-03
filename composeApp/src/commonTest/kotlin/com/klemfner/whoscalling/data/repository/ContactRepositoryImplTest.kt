@@ -21,8 +21,8 @@ class ContactRepositoryImplTest {
     }
 
     @Test
-    fun getContacts_emptyInitially() = runTest {
-        repository.getContacts().test {
+    fun contacts_emptyInitially() = runTest {
+        repository.contacts.test {
             assertEquals(emptyList(), awaitItem())
             cancelAndConsumeRemainingEvents()
         }
@@ -34,7 +34,7 @@ class ContactRepositoryImplTest {
 
         repository.addContact(contact)
 
-        repository.getContacts().test {
+        repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(1, contacts.size)
             assertEquals(contact, contacts[0])
@@ -50,7 +50,7 @@ class ContactRepositoryImplTest {
         repository.addContact(alice)
         repository.addContact(bob)
 
-        repository.getContacts().test {
+        repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(2, contacts.size)
             assertTrue(contacts.contains(alice))
@@ -66,7 +66,7 @@ class ContactRepositoryImplTest {
 
         repository.deleteContact("1")
 
-        repository.getContacts().test {
+        repository.contacts.test {
             assertEquals(emptyList(), awaitItem())
             cancelAndConsumeRemainingEvents()
         }
@@ -82,7 +82,7 @@ class ContactRepositoryImplTest {
 
         repository.deleteContact("1")
 
-        repository.getContacts().test {
+        repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(1, contacts.size)
             assertEquals(bob, contacts[0])
@@ -98,7 +98,7 @@ class ContactRepositoryImplTest {
         repository.addContact(original)
         repository.addContact(updated)
 
-        repository.getContacts().test {
+        repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(1, contacts.size)
             assertEquals(updated, contacts[0])

@@ -9,9 +9,7 @@ class ContactRepositoryImpl(
     private val localDataSource: ContactLocalDataSource
 ) : ContactRepository {
 
-    override fun getContacts(): Flow<List<Contact>> {
-        return localDataSource.getContacts()
-    }
+    override val contacts: Flow<List<Contact>> = localDataSource.contacts
 
     override suspend fun addContact(contact: Contact) {
         localDataSource.saveContact(contact)
