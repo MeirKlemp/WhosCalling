@@ -1,10 +1,10 @@
 package com.klemfner.whoscalling.ui.navigation
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -14,7 +14,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,34 +64,30 @@ private fun CompactLayout(
     onTabSelected: (NavigationTab) -> Unit,
     contactsViewModel: ContactsViewModel,
 ) {
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == NavigationTab.CALL_LOGS,
-                    onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                    icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.call_logs)) },
-                )
-                NavigationBarItem(
-                    selected = selectedTab == NavigationTab.CONTACTS,
-                    onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.contacts)) },
-                )
-                NavigationBarItem(
-                    selected = selectedTab == NavigationTab.SETTINGS,
-                    onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.settings)) },
-                )
-            }
-        },
-    ) { paddingValues ->
-        Box(Modifier.padding(paddingValues).fillMaxSize()) {
-            NavigationContent(
-                selectedTab = selectedTab,
-                contactsViewModel = contactsViewModel,
+    Column(Modifier.fillMaxSize()) {
+        NavigationContent(
+            selectedTab = selectedTab,
+            contactsViewModel = contactsViewModel,
+            modifier = Modifier.weight(1f),
+        )
+        NavigationBar {
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.CALL_LOGS,
+                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                label = { Text(stringResource(Res.string.call_logs)) },
+            )
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.CONTACTS,
+                onClick = { onTabSelected(NavigationTab.CONTACTS) },
+                icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                label = { Text(stringResource(Res.string.contacts)) },
+            )
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.SETTINGS,
+                onClick = { onTabSelected(NavigationTab.SETTINGS) },
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                label = { Text(stringResource(Res.string.settings)) },
             )
         }
     }
@@ -104,7 +99,7 @@ private fun ExpandedLayout(
     onTabSelected: (NavigationTab) -> Unit,
     contactsViewModel: ContactsViewModel,
 ) {
-    Row(Modifier.fillMaxSize()) {
+    Row(Modifier.fillMaxSize().safeContentPadding()) {
         NavigationRail {
             NavigationRailItem(
                 selected = selectedTab == NavigationTab.CALL_LOGS,

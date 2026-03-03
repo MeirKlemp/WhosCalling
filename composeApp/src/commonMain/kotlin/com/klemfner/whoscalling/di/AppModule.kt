@@ -7,9 +7,9 @@ import com.klemfner.whoscalling.data.local.ContactLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.DatabaseDriverFactory
 import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
+import com.klemfner.whoscalling.data.remote.DummyCallLogRemoteDataSource
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
-import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
@@ -26,11 +26,7 @@ val databaseModule = module {
 val dataSourceModule = module {
     single<CallLogLocalDataSource> { CallLogLocalDataSourceImpl(get()) }
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
-    single<CallLogRemoteDataSource> {
-        object : CallLogRemoteDataSource {
-            override suspend fun getCallLogs(): List<CallLog> = emptyList()
-        }
-    }
+    single<CallLogRemoteDataSource> { DummyCallLogRemoteDataSource() }
 }
 
 val repositoryModule = module {
