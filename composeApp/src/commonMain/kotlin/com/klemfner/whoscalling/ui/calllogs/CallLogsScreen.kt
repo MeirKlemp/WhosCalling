@@ -7,9 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.call_logs
 
@@ -23,21 +21,5 @@ fun CallLogsScreen(modifier: Modifier = Modifier) {
             stringResource(Res.string.call_logs),
             style = MaterialTheme.typography.headlineMedium,
         )
-    }
-}
-
-@Preview
-@Composable
-private fun CallLogsScreenLightPreview() {
-    AppTheme(darkTheme = false) {
-        CallLogsScreen()
-    }
-}
-
-@Preview
-@Composable
-private fun CallLogsScreenDarkPreview() {
-    AppTheme(darkTheme = true) {
-        CallLogsScreen()
     }
 }

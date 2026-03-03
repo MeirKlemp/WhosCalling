@@ -28,16 +28,12 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
-import com.klemfner.whoscalling.ui.common.utils.PreviewKoinApplication
 import com.klemfner.whoscalling.ui.contacts.components.ContactDetails
 import com.klemfner.whoscalling.ui.contacts.components.ContactForm
 import com.klemfner.whoscalling.ui.contacts.components.ContactList
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.select_contact
 
@@ -216,26 +212,6 @@ private fun ExpandedContactsLayout(
                     modifier = Modifier.fillMaxSize(),
                 )
             }
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun ContactsScreenLightPreview() {
-    PreviewKoinApplication {
-        AppTheme(darkTheme = false) {
-            ContactsScreen(viewModel = koinViewModel())
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun ContactsScreenDarkPreview() {
-    PreviewKoinApplication {
-        AppTheme(darkTheme = true) {
-            ContactsScreen(viewModel = koinViewModel())
         }
     }
 }

@@ -22,14 +22,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
-import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
-import com.klemfner.whoscalling.ui.common.utils.PreviewKoinApplication
 import com.klemfner.whoscalling.ui.contacts.ContactsScreen
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.settings.SettingsScreen
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.call_logs
@@ -143,25 +140,5 @@ private fun NavigationContent(
             modifier = modifier,
         )
         NavigationTab.SETTINGS -> SettingsScreen(modifier)
-    }
-}
-
-@Preview
-@Composable
-private fun AppNavigationLightPreview() {
-    PreviewKoinApplication {
-        AppTheme(darkTheme = false) {
-            AppNavigation()
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun AppNavigationDarkPreview() {
-    PreviewKoinApplication {
-        AppTheme(darkTheme = true) {
-            AppNavigation()
-        }
     }
 }

@@ -29,11 +29,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.contacts.ContactFormState
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 import whoscalling.composeapp.generated.resources.cancel
@@ -143,41 +141,5 @@ fun ContactForm(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-private fun ContactFormAddLightPreview() {
-    AppTheme(darkTheme = false) {
-        ContactForm(
-            formState = ContactFormState(isNew = true),
-            onNameChange = {},
-            onPhoneChange = {},
-            onEmailChange = {},
-            onSave = {},
-            onCancel = {},
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun ContactFormEditDarkPreview() {
-    AppTheme(darkTheme = true) {
-        ContactForm(
-            formState = ContactFormState(
-                id = "1",
-                name = "Alice Smith",
-                phoneNumber = "+1234567890",
-                email = "alice@example.com",
-                isNew = false,
-            ),
-            onNameChange = {},
-            onPhoneChange = {},
-            onEmailChange = {},
-            onSave = {},
-            onCancel = {},
-        )
     }
 }

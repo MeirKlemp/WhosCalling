@@ -12,12 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
-import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
-import com.klemfner.whoscalling.ui.common.utils.previewCallLogs
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.incoming
 import whoscalling.composeapp.generated.resources.missed
@@ -62,20 +59,4 @@ fun CallLogItem(
         },
         modifier = modifier,
     )
-}
-
-@Preview
-@Composable
-private fun CallLogItemLightPreview() {
-    AppTheme(darkTheme = false) {
-        CallLogItem(callLog = previewCallLogs[0])
-    }
-}
-
-@Preview
-@Composable
-private fun CallLogItemDarkPreview() {
-    AppTheme(darkTheme = true) {
-        CallLogItem(callLog = previewCallLogs[0])
-    }
 }

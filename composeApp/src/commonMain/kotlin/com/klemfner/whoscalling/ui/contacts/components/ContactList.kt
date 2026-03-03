@@ -24,12 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.Contact
-import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
-import com.klemfner.whoscalling.ui.common.utils.previewCallCounts
-import com.klemfner.whoscalling.ui.common.utils.previewContacts
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 
@@ -99,33 +95,5 @@ fun ContactList(
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-private fun ContactListLightPreview() {
-    AppTheme(darkTheme = false) {
-        ContactList(
-            contacts = previewContacts,
-            callCounts = previewCallCounts,
-            selectedContactId = null,
-            onContactClick = {},
-            onAddClick = {},
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun ContactListDarkPreview() {
-    AppTheme(darkTheme = true) {
-        ContactList(
-            contacts = previewContacts,
-            callCounts = previewCallCounts,
-            selectedContactId = "1",
-            onContactClick = {},
-            onAddClick = {},
-        )
     }
 }
