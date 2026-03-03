@@ -100,7 +100,7 @@ compose.desktop {
 
 sqldelight {
     databases {
-        create("WhoCallingDatabase") {
+        create("WhosCallingDatabase") {
             packageName.set("com.klemfner.whoscalling.data.local.db")
         }
     }

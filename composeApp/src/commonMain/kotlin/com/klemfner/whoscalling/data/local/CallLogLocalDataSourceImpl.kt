@@ -2,7 +2,7 @@ package com.klemfner.whoscalling.data.local
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import com.klemfner.whoscalling.data.local.db.WhoCallingDatabase
+import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class CallLogLocalDataSourceImpl(
-    private val database: WhoCallingDatabase
+    private val database: WhosCallingDatabase
 ) : CallLogLocalDataSource {
 
     override fun getCallLogs(): Flow<List<CallLog>> {
