@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.di.appModules
 import com.klemfner.whoscalling.di.platformModule
+import org.koin.core.module.Module
 import com.klemfner.whoscalling.ui.NavigationTab
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
 import com.klemfner.whoscalling.ui.common.theme.AppTheme
@@ -44,9 +45,9 @@ import whoscalling.composeapp.generated.resources.contacts
 import whoscalling.composeapp.generated.resources.settings
 
 @Composable
-fun App() {
+fun App(additionalModules: List<Module> = emptyList()) {
     KoinApplication(application = {
-        modules(appModules + platformModule)
+        modules(additionalModules + appModules + platformModule)
     }) {
         AppTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
