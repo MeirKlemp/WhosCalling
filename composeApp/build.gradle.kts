@@ -24,6 +24,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.sqldelight.driver.android)
+            implementation(libs.libphonenumber)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -51,6 +52,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.sqldelight.driver.jvm)
+            implementation(libs.libphonenumber)
         }
     }
 }

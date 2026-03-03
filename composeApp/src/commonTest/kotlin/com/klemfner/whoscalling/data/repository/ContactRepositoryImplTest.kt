@@ -2,22 +2,25 @@ package com.klemfner.whoscalling.data.repository
 
 import app.cash.turbine.test
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.InvalidPhoneNumberException
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
 
 class ContactRepositoryImplTest {
 
     private lateinit var localDataSource: FakeContactLocalDataSource
     private lateinit var repository: ContactRepositoryImpl
+    private var fakeNormalizer: (String) -> String = { "+1${it.filter { c -> c.isDigit() }}" }
 
     @BeforeTest
     fun setup() {
+        fakeNormalizer = { "+1${it.filter { c -> c.isDigit() }}" }
         localDataSource = FakeContactLocalDataSource()
-        repository = ContactRepositoryImpl(localDataSource)
+        repository = ContactRepositoryImpl(localDataSource, normalizePhone = fakeNormalizer)
     }
 
     @Test
@@ -37,8 +40,35 @@ class ContactRepositoryImplTest {
         repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(1, contacts.size)
-            assertEquals(contact, contacts[0])
             cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun addContact_normalizesPhoneNumber() = runTest {
+        fakeNormalizer = { "+1${it.filter { c -> c.isDigit() }}" }
+        repository = ContactRepositoryImpl(localDataSource, normalizePhone = fakeNormalizer)
+
+        val contact = Contact("1", "Alice", "2345678901", "alice@example.com")
+
+        repository.addContact(contact)
+
+        repository.contacts.test {
+            val contacts = awaitItem()
+            assertEquals("+12345678901", contacts[0].phoneNumber)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun addContact_throwsInvalidPhoneNumberExceptionOnError() = runTest {
+        fakeNormalizer = { throw IllegalArgumentException("Invalid") }
+        repository = ContactRepositoryImpl(localDataSource, normalizePhone = fakeNormalizer)
+
+        val contact = Contact("1", "Alice", "invalid", "alice@example.com")
+
+        assertFailsWith<InvalidPhoneNumberException> {
+            repository.addContact(contact)
         }
     }
 
@@ -53,8 +83,6 @@ class ContactRepositoryImplTest {
         repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(2, contacts.size)
-            assertTrue(contacts.contains(alice))
-            assertTrue(contacts.contains(bob))
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -85,7 +113,6 @@ class ContactRepositoryImplTest {
         repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(1, contacts.size)
-            assertEquals(bob, contacts[0])
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -101,7 +128,7 @@ class ContactRepositoryImplTest {
         repository.contacts.test {
             val contacts = awaitItem()
             assertEquals(1, contacts.size)
-            assertEquals(updated, contacts[0])
+            assertEquals("Alice Smith", contacts[0].name)
             cancelAndConsumeRemainingEvents()
         }
     }

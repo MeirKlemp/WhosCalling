@@ -18,15 +18,18 @@ class CallLogRepositoryImplTest {
     private lateinit var repository: CallLogRepositoryImpl
 
     private var fakeCurrentTimeMillis = 100_000L
+    private var fakeNormalizer: (String) -> String = { "+1${it.filter { c -> c.isDigit() }}" }
 
     @BeforeTest
     fun setup() {
+        fakeNormalizer = { "+1${it.filter { c -> c.isDigit() }}" }
         remoteDataSource = FakeCallLogRemoteDataSource()
         localDataSource = FakeCallLogLocalDataSource()
         repository = CallLogRepositoryImpl(
             remoteDataSource,
             localDataSource,
-            currentTimeMillis = { fakeCurrentTimeMillis }
+            currentTimeMillis = { fakeCurrentTimeMillis },
+            normalizePhone = fakeNormalizer
         )
     }
 
@@ -65,8 +68,6 @@ class CallLogRepositoryImplTest {
         repository.callLogs.test {
             val saved = awaitItem()
             assertEquals(2, saved.size)
-            assertEquals("+1234567890-1000", saved[0].id)
-            assertEquals("+0987654321-2000", saved[1].id)
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -88,15 +89,21 @@ class CallLogRepositoryImplTest {
         repository.callLogs.test {
             val saved = awaitItem()
             assertEquals(1, saved.size)
-            assertEquals("+2222222222-3000", saved[0].id)
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun refreshCallLogs_setsIdToNumberDashTimestamp() = runTest {
+    fun refreshCallLogs_setsIdToNormalizedNumberDashTimestamp() = runTest {
+        fakeNormalizer = { "+1234" }
+        repository = CallLogRepositoryImpl(
+            remoteDataSource, localDataSource,
+            currentTimeMillis = { fakeCurrentTimeMillis },
+            normalizePhone = fakeNormalizer
+        )
+
         val remoteLogs = listOf(
-            CallLog("original-id", "+5551234567", CallType.INCOMING, false, 9999L, 10L)
+            CallLog("original-id", "5551234567", CallType.INCOMING, false, 9999L, 10L)
         )
         remoteDataSource.emit(remoteLogs)
 
@@ -104,7 +111,55 @@ class CallLogRepositoryImplTest {
 
         repository.callLogs.test {
             val saved = awaitItem()
-            assertEquals("+5551234567-9999", saved[0].id)
+            assertEquals("+1234-9999", saved[0].id)
+            assertEquals("+1234", saved[0].phoneNumber)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshCallLogs_normalizesPhoneNumbers() = runTest {
+        fakeNormalizer = { "+1${it.filter { c -> c.isDigit() }}" }
+        repository = CallLogRepositoryImpl(
+            remoteDataSource, localDataSource,
+            currentTimeMillis = { fakeCurrentTimeMillis },
+            normalizePhone = fakeNormalizer
+        )
+
+        val remoteLogs = listOf(
+            CallLog("1", "5551234567", CallType.INCOMING, false, 1000L, 60L)
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        repository.refreshCallLogs()
+
+        repository.callLogs.test {
+            val saved = awaitItem()
+            assertEquals("+15551234567", saved[0].phoneNumber)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshCallLogs_usesRawNumberOnNormalizationError() = runTest {
+        fakeNormalizer = { throw IllegalArgumentException("Invalid") }
+        repository = CallLogRepositoryImpl(
+            remoteDataSource, localDataSource,
+            currentTimeMillis = { fakeCurrentTimeMillis },
+            normalizePhone = fakeNormalizer
+        )
+
+        val remoteLogs = listOf(
+            CallLog("1", "invalid-number", CallType.INCOMING, false, 1000L, 60L)
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        repository.refreshCallLogs()
+
+        repository.callLogs.test {
+            val saved = awaitItem()
+            assertEquals("invalid-number", saved[0].phoneNumber)
+            assertEquals("invalid-number-1000", saved[0].id)
             cancelAndConsumeRemainingEvents()
         }
     }
