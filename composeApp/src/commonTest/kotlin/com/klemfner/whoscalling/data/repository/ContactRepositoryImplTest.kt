@@ -14,14 +14,16 @@ class ContactRepositoryImplTest {
 
     private lateinit var localDataSource: FakeContactLocalDataSource
     private lateinit var repository: ContactRepositoryImpl
-    private var fakeNormalizer: (String) -> String = { "+1${it.filter { c -> c.isDigit() }}" }
 
     @BeforeTest
     fun setup() {
-        fakeNormalizer = { "+1${it.filter { c -> c.isDigit() }}" }
         localDataSource = FakeContactLocalDataSource()
-        repository = ContactRepositoryImpl(localDataSource, normalizePhone = fakeNormalizer)
+        repository = createRepository()
     }
+
+    private fun createRepository(
+        normalizePhone: (String) -> String = { it }
+    ) = ContactRepositoryImpl(localDataSource, normalizePhone = normalizePhone)
 
     @Test
     fun contacts_emptyInitially() = runTest {
@@ -46,8 +48,7 @@ class ContactRepositoryImplTest {
 
     @Test
     fun addContact_normalizesPhoneNumber() = runTest {
-        fakeNormalizer = { "+1${it.filter { c -> c.isDigit() }}" }
-        repository = ContactRepositoryImpl(localDataSource, normalizePhone = fakeNormalizer)
+        repository = createRepository(normalizePhone = { "+1${it.filter { c -> c.isDigit() }}" })
 
         val contact = Contact("1", "Alice", "2345678901", "alice@example.com")
 
@@ -62,8 +63,7 @@ class ContactRepositoryImplTest {
 
     @Test
     fun addContact_throwsInvalidPhoneNumberExceptionOnError() = runTest {
-        fakeNormalizer = { throw IllegalArgumentException("Invalid") }
-        repository = ContactRepositoryImpl(localDataSource, normalizePhone = fakeNormalizer)
+        repository = createRepository(normalizePhone = { throw IllegalArgumentException("Invalid") })
 
         val contact = Contact("1", "Alice", "invalid", "alice@example.com")
 
