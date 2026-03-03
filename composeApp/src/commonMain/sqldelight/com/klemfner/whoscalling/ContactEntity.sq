@@ -1,0 +1,16 @@
+CREATE TABLE ContactEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    phoneNumber TEXT NOT NULL,
+    email TEXT
+);
+
+getAllContacts:
+SELECT * FROM ContactEntity ORDER BY name ASC;
+
+insertContact:
+INSERT OR REPLACE INTO ContactEntity (id, name, phoneNumber, email)
+VALUES (?, ?, ?, ?);
+
+deleteContact:
+DELETE FROM ContactEntity WHERE id = ?;
