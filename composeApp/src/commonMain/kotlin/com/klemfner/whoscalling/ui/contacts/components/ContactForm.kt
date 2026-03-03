@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.contacts.ContactFormState
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
@@ -43,7 +45,6 @@ import whoscalling.composeapp.generated.resources.save
 @Composable
 fun ContactForm(
     formState: ContactFormState,
-    isTouchMode: Boolean,
     onNameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
@@ -53,6 +54,7 @@ fun ContactForm(
     onErrorDismiss: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val isTouchMode = LocalIsTouchMode.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(errorMessage) {
@@ -63,6 +65,7 @@ fun ContactForm(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
@@ -33,13 +35,14 @@ import whoscalling.composeapp.generated.resources.add_contact
 fun ContactList(
     contacts: List<Contact>,
     callCounts: Map<String, Int>,
-    isTouchMode: Boolean,
     selectedContactId: String?,
     onContactClick: (Contact) -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isTouchMode = LocalIsTouchMode.current
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         floatingActionButton = {
             if (isTouchMode) {
                 FloatingActionButton(onClick = onAddClick) {

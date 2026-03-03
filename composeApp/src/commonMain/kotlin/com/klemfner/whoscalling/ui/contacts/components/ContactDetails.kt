@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import org.jetbrains.compose.resources.stringResource
@@ -53,12 +55,13 @@ import whoscalling.composeapp.generated.resources.yesterday
 fun ContactDetails(
     contact: Contact,
     callLogs: List<CallLog>,
-    isTouchMode: Boolean,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isTouchMode = LocalIsTouchMode.current
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text(contact.name) },

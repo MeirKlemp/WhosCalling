@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.klemfner.whoscalling.ui.App
 import org.koin.dsl.module
 
 class MainActivity : ComponentActivity() {

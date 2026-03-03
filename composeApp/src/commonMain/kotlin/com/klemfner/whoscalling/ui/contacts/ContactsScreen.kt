@@ -27,6 +27,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.contacts.components.ContactDetails
 import com.klemfner.whoscalling.ui.contacts.components.ContactForm
 import com.klemfner.whoscalling.ui.contacts.components.ContactList
@@ -37,11 +38,10 @@ import whoscalling.composeapp.generated.resources.select_contact
 @Composable
 fun ContactsScreen(
     viewModel: ContactsViewModel,
-    isExpanded: Boolean,
-    isTouchMode: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isExpanded = LocalIsExpanded.current
 
     Box(
         modifier = modifier
@@ -68,9 +68,9 @@ fun ContactsScreen(
             },
     ) {
         if (isExpanded) {
-            ExpandedContactsLayout(uiState, isTouchMode, viewModel)
+            ExpandedContactsLayout(uiState, viewModel)
         } else {
-            CompactContactsLayout(uiState, isTouchMode, viewModel)
+            CompactContactsLayout(uiState, viewModel)
         }
     }
 }
@@ -78,7 +78,6 @@ fun ContactsScreen(
 @Composable
 private fun CompactContactsLayout(
     uiState: ContactsUiState,
-    isTouchMode: Boolean,
     viewModel: ContactsViewModel,
 ) {
     AnimatedContent(
@@ -98,7 +97,6 @@ private fun CompactContactsLayout(
             ContactsPane.LIST -> ContactList(
                 contacts = uiState.contacts,
                 callCounts = uiState.callCounts,
-                isTouchMode = isTouchMode,
                 selectedContactId = null,
                 onContactClick = viewModel::selectContact,
                 onAddClick = viewModel::openAddContact,
@@ -110,7 +108,6 @@ private fun CompactContactsLayout(
                     ContactDetails(
                         contact = contact,
                         callLogs = uiState.contactCallLogs,
-                        isTouchMode = isTouchMode,
                         onBackClick = viewModel::goBack,
                         onEditClick = viewModel::openEditContact,
                         modifier = Modifier.fillMaxSize(),
@@ -119,7 +116,6 @@ private fun CompactContactsLayout(
             }
             ContactsPane.FORM -> ContactForm(
                 formState = uiState.formState,
-                isTouchMode = isTouchMode,
                 onNameChange = viewModel::updateFormName,
                 onPhoneChange = viewModel::updateFormPhone,
                 onEmailChange = viewModel::updateFormEmail,
@@ -136,14 +132,12 @@ private fun CompactContactsLayout(
 @Composable
 private fun ExpandedContactsLayout(
     uiState: ContactsUiState,
-    isTouchMode: Boolean,
     viewModel: ContactsViewModel,
 ) {
     Row(Modifier.fillMaxSize()) {
         ContactList(
             contacts = uiState.contacts,
             callCounts = uiState.callCounts,
-            isTouchMode = isTouchMode,
             selectedContactId = uiState.selectedContact?.id,
             onContactClick = viewModel::selectContact,
             onAddClick = viewModel::openAddContact,
@@ -189,7 +183,6 @@ private fun ExpandedContactsLayout(
                         ContactDetails(
                             contact = contact,
                             callLogs = uiState.contactCallLogs,
-                            isTouchMode = isTouchMode,
                             onBackClick = viewModel::goBack,
                             onEditClick = viewModel::openEditContact,
                             modifier = Modifier.fillMaxSize(),
@@ -198,7 +191,6 @@ private fun ExpandedContactsLayout(
                 }
                 ContactsPane.FORM -> ContactForm(
                     formState = uiState.formState,
-                    isTouchMode = isTouchMode,
                     onNameChange = viewModel::updateFormName,
                     onPhoneChange = viewModel::updateFormPhone,
                     onEmailChange = viewModel::updateFormEmail,
