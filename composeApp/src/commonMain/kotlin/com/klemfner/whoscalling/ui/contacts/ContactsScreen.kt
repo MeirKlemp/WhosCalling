@@ -125,6 +125,8 @@ private fun CompactContactsLayout(
                 onEmailChange = viewModel::updateFormEmail,
                 onSave = viewModel::saveContact,
                 onCancel = viewModel::goBack,
+                errorMessage = uiState.errorMessage,
+                onErrorDismiss = viewModel::clearError,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -202,6 +204,8 @@ private fun ExpandedContactsLayout(
                     onEmailChange = viewModel::updateFormEmail,
                     onSave = viewModel::saveContact,
                     onCancel = viewModel::goBack,
+                    errorMessage = uiState.errorMessage,
+                    onErrorDismiss = viewModel::clearError,
                     modifier = Modifier.fillMaxSize(),
                 )
             }

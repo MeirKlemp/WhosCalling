@@ -119,6 +119,10 @@ class ContactsViewModel(
         _uiState.update { it.copy(formState = it.formState.copy(email = email)) }
     }
 
+    fun clearError() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
+
     @OptIn(ExperimentalUuidApi::class)
     fun saveContact() {
         val form = _uiState.value.formState
@@ -142,8 +146,8 @@ class ContactsViewModel(
                         )
                     }
                 }
-            } catch (_: Exception) {
-                // Handle error - for now, stay on the form
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
             }
         }
     }

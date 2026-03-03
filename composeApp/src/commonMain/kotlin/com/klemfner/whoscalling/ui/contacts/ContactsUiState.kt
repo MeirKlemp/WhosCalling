@@ -10,6 +10,7 @@ data class ContactsUiState(
     val contactCallLogs: List<CallLog> = emptyList(),
     val currentPane: ContactsPane = ContactsPane.LIST,
     val formState: ContactFormState = ContactFormState(),
+    val errorMessage: String? = null,
 )
 
 enum class ContactsPane {
