@@ -7,7 +7,6 @@ import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.util.currentTimeMillis
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class CallLogRepositoryImpl(
@@ -25,8 +24,9 @@ class CallLogRepositoryImpl(
     }
 
     override suspend fun refreshCallLogs() {
-        remoteDataSource.refresh()
-        val remoteLogs = remoteDataSource.callLogs.first()
+        val remoteLogs = remoteDataSource.getCallLogs().map { log ->
+            log.copy(id = "${log.phoneNumber}-${log.timestamp}")
+        }
         localDataSource.deleteAllCallLogs()
         localDataSource.saveCallLogs(remoteLogs)
     }

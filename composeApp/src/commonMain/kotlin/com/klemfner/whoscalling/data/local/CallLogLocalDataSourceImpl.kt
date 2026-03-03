@@ -24,7 +24,6 @@ class CallLogLocalDataSourceImpl(
                     CallLog(
                         id = entity.id,
                         phoneNumber = entity.phoneNumber,
-                        contactName = entity.contactName,
                         type = CallType.valueOf(entity.type),
                         missed = entity.missed != 0L,
                         timestamp = entity.timestamp,
@@ -40,7 +39,6 @@ class CallLogLocalDataSourceImpl(
                     database.callLogEntityQueries.insertCallLog(
                         id = callLog.id,
                         phoneNumber = callLog.phoneNumber,
-                        contactName = callLog.contactName,
                         type = callLog.type.name,
                         missed = if (callLog.missed) 1L else 0L,
                         timestamp = callLog.timestamp,

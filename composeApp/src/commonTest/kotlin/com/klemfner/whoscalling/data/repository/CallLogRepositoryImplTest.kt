@@ -33,8 +33,8 @@ class CallLogRepositoryImplTest {
     @Test
     fun callLogs_emitsLocalData() = runTest {
         val logs = listOf(
-            CallLog("1", "+1234567890", "Alice", CallType.INCOMING, false, 1000L, 60L),
-            CallLog("2", "+0987654321", "Bob", CallType.OUTGOING, false, 2000L, 120L)
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+            CallLog("2", "+0987654321", CallType.OUTGOING, false, 2000L, 120L)
         )
         localDataSource.saveCallLogs(logs)
 
@@ -55,15 +55,18 @@ class CallLogRepositoryImplTest {
     @Test
     fun refreshCallLogs_fetchesRemoteAndSavesToLocal() = runTest {
         val remoteLogs = listOf(
-            CallLog("1", "+1234567890", "Alice", CallType.INCOMING, false, 1000L, 60L),
-            CallLog("2", "+0987654321", "Bob", CallType.INCOMING, true, 2000L, 0L)
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+            CallLog("2", "+0987654321", CallType.INCOMING, true, 2000L, 0L)
         )
         remoteDataSource.emit(remoteLogs)
 
         repository.refreshCallLogs()
 
         repository.callLogs.test {
-            assertEquals(remoteLogs, awaitItem())
+            val saved = awaitItem()
+            assertEquals(2, saved.size)
+            assertEquals("+1234567890-1000", saved[0].id)
+            assertEquals("+0987654321-2000", saved[1].id)
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -71,19 +74,37 @@ class CallLogRepositoryImplTest {
     @Test
     fun refreshCallLogs_replacesExistingLocalData() = runTest {
         val oldLogs = listOf(
-            CallLog("old1", "+1111111111", "Old", CallType.INCOMING, false, 500L, 30L)
+            CallLog("old1", "+1111111111", CallType.INCOMING, false, 500L, 30L)
         )
         localDataSource.saveCallLogs(oldLogs)
 
         val newLogs = listOf(
-            CallLog("new1", "+2222222222", "New", CallType.OUTGOING, false, 3000L, 90L)
+            CallLog("new1", "+2222222222", CallType.OUTGOING, false, 3000L, 90L)
         )
         remoteDataSource.emit(newLogs)
 
         repository.refreshCallLogs()
 
         repository.callLogs.test {
-            assertEquals(newLogs, awaitItem())
+            val saved = awaitItem()
+            assertEquals(1, saved.size)
+            assertEquals("+2222222222-3000", saved[0].id)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshCallLogs_setsIdToNumberDashTimestamp() = runTest {
+        val remoteLogs = listOf(
+            CallLog("original-id", "+5551234567", CallType.INCOMING, false, 9999L, 10L)
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        repository.refreshCallLogs()
+
+        repository.callLogs.test {
+            val saved = awaitItem()
+            assertEquals("+5551234567-9999", saved[0].id)
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -100,7 +121,7 @@ class CallLogRepositoryImplTest {
     fun incomingCallLog_emitsNullWhenIncomingCallIsOlderThanOneMinute() = runTest {
         fakeCurrentTimeMillis = 200_000L
         val logs = listOf(
-            CallLog("1", "+1234567890", "Alice", CallType.INCOMING, false, 100_000L, 0L)
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 100_000L, 0L)
         )
         localDataSource.saveCallLogs(logs)
 
@@ -113,8 +134,8 @@ class CallLogRepositoryImplTest {
     @Test
     fun incomingCallLog_emitsEarliestIncomingCallWithinLastMinute() = runTest {
         fakeCurrentTimeMillis = 100_000L
-        val earlier = CallLog("1", "+1234567890", "Alice", CallType.INCOMING, false, 50_000L, 0L)
-        val later = CallLog("2", "+0987654321", "Bob", CallType.INCOMING, false, 80_000L, 0L)
+        val earlier = CallLog("1", "+1234567890", CallType.INCOMING, false, 50_000L, 0L)
+        val later = CallLog("2", "+0987654321", CallType.INCOMING, false, 80_000L, 0L)
         localDataSource.saveCallLogs(listOf(later, earlier))
 
         repository.incomingCallLog.test {
@@ -127,7 +148,7 @@ class CallLogRepositoryImplTest {
     fun incomingCallLog_ignoresOutgoingCalls() = runTest {
         fakeCurrentTimeMillis = 100_000L
         val logs = listOf(
-            CallLog("1", "+1234567890", "Alice", CallType.OUTGOING, false, 80_000L, 60L)
+            CallLog("1", "+1234567890", CallType.OUTGOING, false, 80_000L, 60L)
         )
         localDataSource.saveCallLogs(logs)
 
@@ -144,7 +165,7 @@ class CallLogRepositoryImplTest {
         repository.incomingCallLog.test {
             assertNull(awaitItem())
 
-            val log = CallLog("1", "+1234567890", "Alice", CallType.INCOMING, false, 80_000L, 0L)
+            val log = CallLog("1", "+1234567890", CallType.INCOMING, false, 80_000L, 0L)
             localDataSource.saveCallLogs(listOf(log))
             assertEquals(log, awaitItem())
 

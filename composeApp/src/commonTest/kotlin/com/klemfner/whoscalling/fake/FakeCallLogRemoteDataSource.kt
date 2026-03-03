@@ -2,18 +2,13 @@ package com.klemfner.whoscalling.fake
 
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
 import com.klemfner.whoscalling.domain.model.CallLog
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeCallLogRemoteDataSource : CallLogRemoteDataSource {
-    private val _callLogs = MutableStateFlow<List<CallLog>>(emptyList())
-    override val callLogs: Flow<List<CallLog>> = _callLogs
+    private var callLogs: List<CallLog> = emptyList()
 
     fun emit(logs: List<CallLog>) {
-        _callLogs.value = logs
+        callLogs = logs
     }
 
-    override suspend fun refresh() {
-        // In the fake, data is pre-set via emit()
-    }
+    override suspend fun getCallLogs(): List<CallLog> = callLogs
 }
