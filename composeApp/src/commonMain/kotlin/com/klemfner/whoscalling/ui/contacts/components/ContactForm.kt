@@ -4,12 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -27,10 +27,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.contacts.ContactFormState
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 import whoscalling.composeapp.generated.resources.cancel
@@ -65,7 +68,6 @@ fun ContactForm(
     }
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = {
@@ -114,6 +116,7 @@ fun ContactForm(
                 label = { Text(stringResource(Res.string.phone_number)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             )
             Spacer(Modifier.height(16.dp))
             OutlinedTextField(
@@ -140,5 +143,41 @@ fun ContactForm(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ContactFormAddLightPreview() {
+    AppTheme(darkTheme = false) {
+        ContactForm(
+            formState = ContactFormState(isNew = true),
+            onNameChange = {},
+            onPhoneChange = {},
+            onEmailChange = {},
+            onSave = {},
+            onCancel = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ContactFormEditDarkPreview() {
+    AppTheme(darkTheme = true) {
+        ContactForm(
+            formState = ContactFormState(
+                id = "1",
+                name = "Alice Smith",
+                phoneNumber = "+1234567890",
+                email = "alice@example.com",
+                isNew = false,
+            ),
+            onNameChange = {},
+            onPhoneChange = {},
+            onEmailChange = {},
+            onSave = {},
+            onCancel = {},
+        )
     }
 }

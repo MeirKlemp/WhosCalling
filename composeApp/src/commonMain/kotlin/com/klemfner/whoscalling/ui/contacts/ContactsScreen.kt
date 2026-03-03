@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
@@ -27,11 +28,16 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
+import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
+import com.klemfner.whoscalling.ui.common.utils.PreviewKoinApplication
 import com.klemfner.whoscalling.ui.contacts.components.ContactDetails
 import com.klemfner.whoscalling.ui.contacts.components.ContactForm
 import com.klemfner.whoscalling.ui.contacts.components.ContactList
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.select_contact
 
@@ -43,28 +49,16 @@ fun ContactsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isExpanded = LocalIsExpanded.current
 
+    PlatformBackHandler(enabled = uiState.currentPane != ContactsPane.LIST) {
+        viewModel.goBack()
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .focusable()
             .onPreviewKeyEvent { event ->
-                if (event.type == KeyEventType.KeyDown) {
-                    when {
-                        event.key == Key.Escape -> {
-                            viewModel.goBack(); true
-                        }
-                        event.isCtrlPressed && event.key == Key.N -> {
-                            viewModel.openAddContact(); true
-                        }
-                        event.isCtrlPressed && event.key == Key.R &&
-                            uiState.currentPane == ContactsPane.DETAILS -> {
-                            viewModel.openEditContact(); true
-                        }
-                        else -> false
-                    }
-                } else {
-                    false
-                }
+                handleKeyEvent(event, uiState, viewModel)
             },
     ) {
         if (isExpanded) {
@@ -72,6 +66,27 @@ fun ContactsScreen(
         } else {
             CompactContactsLayout(uiState, viewModel)
         }
+    }
+}
+
+private fun handleKeyEvent(
+    event: KeyEvent,
+    uiState: ContactsUiState,
+    viewModel: ContactsViewModel,
+): Boolean {
+    if (event.type != KeyEventType.KeyDown) return false
+    return when {
+        event.key == Key.Escape -> {
+            viewModel.goBack(); true
+        }
+        event.isCtrlPressed && event.key == Key.N -> {
+            viewModel.openAddContact(); true
+        }
+        event.isCtrlPressed && event.key == Key.R &&
+            uiState.currentPane == ContactsPane.DETAILS -> {
+            viewModel.openEditContact(); true
+        }
+        else -> false
     }
 }
 
@@ -201,6 +216,26 @@ private fun ExpandedContactsLayout(
                     modifier = Modifier.fillMaxSize(),
                 )
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ContactsScreenLightPreview() {
+    PreviewKoinApplication {
+        AppTheme(darkTheme = false) {
+            ContactsScreen(viewModel = koinViewModel())
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ContactsScreenDarkPreview() {
+    PreviewKoinApplication {
+        AppTheme(darkTheme = true) {
+            ContactsScreen(viewModel = koinViewModel())
         }
     }
 }

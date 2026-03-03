@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,12 +35,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
+import com.klemfner.whoscalling.ui.common.utils.previewCallLogs
+import com.klemfner.whoscalling.ui.common.utils.previewContacts
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.back
+import whoscalling.composeapp.generated.resources.details
 import whoscalling.composeapp.generated.resources.edit_contact
 import whoscalling.composeapp.generated.resources.long_time_ago
 import whoscalling.composeapp.generated.resources.no_call_logs
@@ -61,10 +65,9 @@ fun ContactDetails(
 ) {
     val isTouchMode = LocalIsTouchMode.current
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
-                title = { Text(contact.name) },
+                title = { Text(stringResource(Res.string.details)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -166,5 +169,31 @@ fun ContactDetails(
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ContactDetailsLightPreview() {
+    AppTheme(darkTheme = false) {
+        ContactDetails(
+            contact = previewContacts[0],
+            callLogs = previewCallLogs,
+            onBackClick = {},
+            onEditClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ContactDetailsDarkPreview() {
+    AppTheme(darkTheme = true) {
+        ContactDetails(
+            contact = previewContacts[0],
+            callLogs = previewCallLogs,
+            onBackClick = {},
+            onEditClick = {},
+        )
     }
 }

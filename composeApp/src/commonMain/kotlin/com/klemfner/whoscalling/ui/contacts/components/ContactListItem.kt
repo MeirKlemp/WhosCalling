@@ -8,6 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.common.theme.AppTheme
+import com.klemfner.whoscalling.ui.common.utils.previewContacts
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun ContactListItem(
@@ -38,4 +41,30 @@ fun ContactListItem(
         },
         modifier = modifier.clickable(onClick = onClick),
     )
+}
+
+@Preview
+@Composable
+private fun ContactListItemLightPreview() {
+    AppTheme(darkTheme = false) {
+        ContactListItem(
+            contact = previewContacts[0],
+            callCount = 3,
+            isSelected = false,
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ContactListItemDarkPreview() {
+    AppTheme(darkTheme = true) {
+        ContactListItem(
+            contact = previewContacts[0],
+            callCount = 3,
+            isSelected = true,
+            onClick = {},
+        )
+    }
 }

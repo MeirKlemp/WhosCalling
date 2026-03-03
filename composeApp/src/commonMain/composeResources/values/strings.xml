@@ -23,4 +23,5 @@
     <string name="outgoing">Outgoing</string>
     <string name="missed">Missed</string>
     <string name="no_call_logs">No call logs</string>
+    <string name="details">Details</string>
 </resources>
