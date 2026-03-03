@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
@@ -28,10 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.klemfner.whoscalling.di.appModules
 import com.klemfner.whoscalling.di.platformModule
 import com.klemfner.whoscalling.ui.NavigationTab
@@ -51,60 +45,34 @@ import whoscalling.composeapp.generated.resources.settings
 
 @Composable
 fun App() {
-    var error by remember { mutableStateOf<Throwable?>(null) }
-
-    try {
-        if (error != null) throw error!!
-
-        KoinApplication(application = {
-            modules(appModules + platformModule)
-        }) {
-            AppTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    val contactsViewModel: ContactsViewModel = koinViewModel()
-
-                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                        val isExpanded = maxWidth >= 600.dp
-                        val isTouchMode = !isPointerInputMode()
-
-                        var selectedTab by remember { mutableStateOf(NavigationTab.CONTACTS) }
-
-                        if (isExpanded) {
-                            ExpandedLayout(
-                                selectedTab = selectedTab,
-                                onTabSelected = { selectedTab = it },
-                                isTouchMode = isTouchMode,
-                                contactsViewModel = contactsViewModel,
-                            )
-                        } else {
-                            CompactLayout(
-                                selectedTab = selectedTab,
-                                onTabSelected = { selectedTab = it },
-                                isTouchMode = isTouchMode,
-                                contactsViewModel = contactsViewModel,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    } catch (e: Throwable) {
-        error = e
-        MaterialTheme {
+    KoinApplication(application = {
+        modules(appModules + platformModule)
+    }) {
+        AppTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState()),
-                ) {
-                    Text(
-                        text = e.stackTraceToString(),
-                        color = Color.Red,
-                        fontSize = 12.sp,
-                        softWrap = true,
-                        overflow = TextOverflow.Visible,
-                    )
+                val contactsViewModel: ContactsViewModel = koinViewModel()
+
+                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    val isExpanded = maxWidth >= 600.dp
+                    val isTouchMode = !isPointerInputMode()
+
+                    var selectedTab by remember { mutableStateOf(NavigationTab.CONTACTS) }
+
+                    if (isExpanded) {
+                        ExpandedLayout(
+                            selectedTab = selectedTab,
+                            onTabSelected = { selectedTab = it },
+                            isTouchMode = isTouchMode,
+                            contactsViewModel = contactsViewModel,
+                        )
+                    } else {
+                        CompactLayout(
+                            selectedTab = selectedTab,
+                            onTabSelected = { selectedTab = it },
+                            isTouchMode = isTouchMode,
+                            contactsViewModel = contactsViewModel,
+                        )
+                    }
                 }
             }
         }
