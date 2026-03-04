@@ -26,4 +26,12 @@
     <string name="details">Details</string>
     <string name="debug">Debug</string>
     <string name="touch_mode">Touch Mode</string>
+    <string name="select_call_log">Select a call log</string>
+    <string name="refresh">Refresh</string>
+    <string name="incoming_call">Incoming</string>
+    <string name="outgoing_call">Outgoing</string>
+    <string name="missed_incoming_call">Missed Incoming</string>
+    <string name="missed_outgoing_call">Missed Outgoing</string>
+    <string name="duration_label">Duration</string>
+    <string name="call_logs_by_number">Call logs with this number</string>
 </resources>

@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
+import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.contacts.ContactsScreen
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
@@ -36,21 +37,31 @@ import whoscalling.composeapp.generated.resources.settings
 @Composable
 fun AppNavigation() {
     val contactsViewModel: ContactsViewModel = koinViewModel()
+    val callLogsViewModel: CallLogsViewModel = koinViewModel()
     val isExpanded = LocalIsExpanded.current
 
     var selectedTab by remember { mutableStateOf(NavigationTab.CONTACTS) }
+
+    val onAddContact: (String) -> Unit = { phoneNumber ->
+        selectedTab = NavigationTab.CONTACTS
+        contactsViewModel.openAddContact(phoneNumber)
+    }
 
     if (isExpanded) {
         ExpandedLayout(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
             contactsViewModel = contactsViewModel,
+            callLogsViewModel = callLogsViewModel,
+            onAddContact = onAddContact,
         )
     } else {
         CompactLayout(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
             contactsViewModel = contactsViewModel,
+            callLogsViewModel = callLogsViewModel,
+            onAddContact = onAddContact,
         )
     }
 }
@@ -60,11 +71,15 @@ private fun CompactLayout(
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
     contactsViewModel: ContactsViewModel,
+    callLogsViewModel: CallLogsViewModel,
+    onAddContact: (String) -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
         NavigationContent(
             selectedTab = selectedTab,
             contactsViewModel = contactsViewModel,
+            callLogsViewModel = callLogsViewModel,
+            onAddContact = onAddContact,
             modifier = Modifier.weight(1f),
         )
         NavigationBar {
@@ -95,6 +110,8 @@ private fun ExpandedLayout(
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
     contactsViewModel: ContactsViewModel,
+    callLogsViewModel: CallLogsViewModel,
+    onAddContact: (String) -> Unit,
 ) {
     Row(Modifier.fillMaxSize().safeContentPadding()) {
         NavigationRail {
@@ -122,6 +139,8 @@ private fun ExpandedLayout(
         NavigationContent(
             selectedTab = selectedTab,
             contactsViewModel = contactsViewModel,
+            callLogsViewModel = callLogsViewModel,
+            onAddContact = onAddContact,
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -131,10 +150,16 @@ private fun ExpandedLayout(
 private fun NavigationContent(
     selectedTab: NavigationTab,
     contactsViewModel: ContactsViewModel,
+    callLogsViewModel: CallLogsViewModel,
+    onAddContact: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (selectedTab) {
-        NavigationTab.CALL_LOGS -> CallLogsScreen(modifier)
+        NavigationTab.CALL_LOGS -> CallLogsScreen(
+            viewModel = callLogsViewModel,
+            onAddContact = onAddContact,
+            modifier = modifier,
+        )
         NavigationTab.CONTACTS -> ContactsScreen(
             viewModel = contactsViewModel,
             modifier = modifier,
