@@ -23,7 +23,6 @@ private class PreviewContactRepository : ContactRepository {
 private class PreviewCallLogRepository : CallLogRepository {
     override val callLogs: Flow<List<CallLog>> = MutableStateFlow(previewCallLogs)
     override val incomingCallLog: Flow<CallLog?> = flowOf(null)
-    override val autoRefreshCallLogs: Flow<Unit> = flowOf(Unit)
     override suspend fun refreshCallLogs() {}
 }
 

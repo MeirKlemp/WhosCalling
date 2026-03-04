@@ -18,7 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
@@ -36,134 +36,111 @@ import whoscalling.composeapp.generated.resources.settings
 
 @Composable
 fun AppNavigation() {
-    val contactsViewModel: ContactsViewModel = koinViewModel()
-    val callLogsViewModel: CallLogsViewModel = koinViewModel()
     val isExpanded = LocalIsExpanded.current
 
-    var selectedTab by remember { mutableStateOf(NavigationTab.CONTACTS) }
+    var selectedTab by rememberSaveable { mutableStateOf(NavigationTab.CONTACTS) }
 
-    val onAddContact: (String) -> Unit = { phoneNumber ->
-        selectedTab = NavigationTab.CONTACTS
-        contactsViewModel.openAddContact(phoneNumber)
+    AppLayout(
+        isExpanded = isExpanded,
+        selectedTab = selectedTab,
+        onTabSelected = { selectedTab = it },
+    ) { modifier ->
+        NavigationContent(
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it },
+            modifier = modifier,
+        )
     }
+}
 
+@Composable
+private fun AppLayout(
+    isExpanded: Boolean,
+    selectedTab: NavigationTab,
+    onTabSelected: (NavigationTab) -> Unit,
+    content: @Composable (Modifier) -> Unit,
+) {
     if (isExpanded) {
-        ExpandedLayout(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
-            contactsViewModel = contactsViewModel,
-            callLogsViewModel = callLogsViewModel,
-            onAddContact = onAddContact,
-        )
+        Row(Modifier.fillMaxSize().safeContentPadding()) {
+            NavigationRail {
+                NavigationRailItem(
+                    selected = selectedTab == NavigationTab.CALL_LOGS,
+                    onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+                    icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                    label = { Text(stringResource(Res.string.call_logs)) },
+                )
+                NavigationRailItem(
+                    selected = selectedTab == NavigationTab.CONTACTS,
+                    onClick = { onTabSelected(NavigationTab.CONTACTS) },
+                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    label = { Text(stringResource(Res.string.contacts)) },
+                )
+                Spacer(Modifier.weight(1f))
+                NavigationRailItem(
+                    selected = selectedTab == NavigationTab.SETTINGS,
+                    onClick = { onTabSelected(NavigationTab.SETTINGS) },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text(stringResource(Res.string.settings)) },
+                )
+            }
+
+            content(Modifier.fillMaxSize())
+        }
     } else {
-        CompactLayout(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
-            contactsViewModel = contactsViewModel,
-            callLogsViewModel = callLogsViewModel,
-            onAddContact = onAddContact,
-        )
-    }
-}
+        Column(Modifier.fillMaxSize()) {
+            content(Modifier.weight(1f))
 
-@Composable
-private fun CompactLayout(
-    selectedTab: NavigationTab,
-    onTabSelected: (NavigationTab) -> Unit,
-    contactsViewModel: ContactsViewModel,
-    callLogsViewModel: CallLogsViewModel,
-    onAddContact: (String) -> Unit,
-) {
-    Column(Modifier.fillMaxSize()) {
-        NavigationContent(
-            selectedTab = selectedTab,
-            contactsViewModel = contactsViewModel,
-            callLogsViewModel = callLogsViewModel,
-            onAddContact = onAddContact,
-            modifier = Modifier.weight(1f),
-        )
-        NavigationBar {
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.CALL_LOGS,
-                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                label = { Text(stringResource(Res.string.call_logs)) },
-            )
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.CONTACTS,
-                onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                label = { Text(stringResource(Res.string.contacts)) },
-            )
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.SETTINGS,
-                onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                label = { Text(stringResource(Res.string.settings)) },
-            )
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == NavigationTab.CALL_LOGS,
+                    onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+                    icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                    label = { Text(stringResource(Res.string.call_logs)) },
+                )
+                NavigationBarItem(
+                    selected = selectedTab == NavigationTab.CONTACTS,
+                    onClick = { onTabSelected(NavigationTab.CONTACTS) },
+                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    label = { Text(stringResource(Res.string.contacts)) },
+                )
+                NavigationBarItem(
+                    selected = selectedTab == NavigationTab.SETTINGS,
+                    onClick = { onTabSelected(NavigationTab.SETTINGS) },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text(stringResource(Res.string.settings)) },
+                )
+            }
         }
-    }
-}
-
-@Composable
-private fun ExpandedLayout(
-    selectedTab: NavigationTab,
-    onTabSelected: (NavigationTab) -> Unit,
-    contactsViewModel: ContactsViewModel,
-    callLogsViewModel: CallLogsViewModel,
-    onAddContact: (String) -> Unit,
-) {
-    Row(Modifier.fillMaxSize().safeContentPadding()) {
-        NavigationRail {
-            NavigationRailItem(
-                selected = selectedTab == NavigationTab.CALL_LOGS,
-                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                label = { Text(stringResource(Res.string.call_logs)) },
-            )
-            NavigationRailItem(
-                selected = selectedTab == NavigationTab.CONTACTS,
-                onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                label = { Text(stringResource(Res.string.contacts)) },
-            )
-            Spacer(Modifier.weight(1f))
-            NavigationRailItem(
-                selected = selectedTab == NavigationTab.SETTINGS,
-                onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                label = { Text(stringResource(Res.string.settings)) },
-            )
-        }
-
-        NavigationContent(
-            selectedTab = selectedTab,
-            contactsViewModel = contactsViewModel,
-            callLogsViewModel = callLogsViewModel,
-            onAddContact = onAddContact,
-            modifier = Modifier.fillMaxSize(),
-        )
     }
 }
 
 @Composable
 private fun NavigationContent(
     selectedTab: NavigationTab,
-    contactsViewModel: ContactsViewModel,
-    callLogsViewModel: CallLogsViewModel,
-    onAddContact: (String) -> Unit,
+    onTabSelected: (NavigationTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (selectedTab) {
-        NavigationTab.CALL_LOGS -> CallLogsScreen(
-            viewModel = callLogsViewModel,
-            onAddContact = onAddContact,
-            modifier = modifier,
-        )
-        NavigationTab.CONTACTS -> ContactsScreen(
-            viewModel = contactsViewModel,
-            modifier = modifier,
-        )
+        NavigationTab.CALL_LOGS -> {
+            val callLogsViewModel: CallLogsViewModel = koinViewModel()
+            val contactsViewModel: ContactsViewModel = koinViewModel()
+            val onAddContact: (String) -> Unit = { phoneNumber ->
+                onTabSelected(NavigationTab.CONTACTS)
+                contactsViewModel.openAddContact(phoneNumber)
+            }
+            CallLogsScreen(
+                viewModel = callLogsViewModel,
+                onAddContact = onAddContact,
+                modifier = modifier,
+            )
+        }
+        NavigationTab.CONTACTS -> {
+            val contactsViewModel: ContactsViewModel = koinViewModel()
+            ContactsScreen(
+                viewModel = contactsViewModel,
+                modifier = modifier,
+            )
+        }
         NavigationTab.SETTINGS -> SettingsScreen(modifier)
     }
 }

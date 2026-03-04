@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,10 +22,7 @@ class CallLogsViewModel(
 
     private val selectedNumber = MutableStateFlow<String?>(null)
 
-    private var autoRefreshJob: Job? = null
-
     init {
-        startAutoRefresh()
         viewModelScope.launch {
             combine(
                 callLogRepository.callLogs,
@@ -53,18 +49,12 @@ class CallLogsViewModel(
         }
     }
 
-    private fun startAutoRefresh() {
-        autoRefreshJob?.cancel()
-        autoRefreshJob = viewModelScope.launch {
-            callLogRepository.autoRefreshCallLogs.collect {
-                _uiState.update { it.copy(isRefreshing = false) }
-            }
-        }
-    }
-
     fun refresh() {
         _uiState.update { it.copy(isRefreshing = true) }
-        startAutoRefresh()
+        viewModelScope.launch {
+            callLogRepository.refreshCallLogs()
+            _uiState.update { it.copy(isRefreshing = false) }
+        }
     }
 
     fun selectCallLog(callLog: CallLog) {

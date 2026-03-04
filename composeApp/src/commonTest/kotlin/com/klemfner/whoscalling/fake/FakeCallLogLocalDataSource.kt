@@ -14,6 +14,10 @@ class FakeCallLogLocalDataSource : CallLogLocalDataSource {
         _callLogs.update { current -> current + callLogs }
     }
 
+    override suspend fun replaceAllCallLogs(callLogs: List<CallLog>) {
+        _callLogs.value = callLogs
+    }
+
     override suspend fun deleteAllCallLogs() {
         _callLogs.value = emptyList()
     }

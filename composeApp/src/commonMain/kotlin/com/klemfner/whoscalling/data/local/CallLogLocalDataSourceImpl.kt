@@ -49,6 +49,24 @@ class CallLogLocalDataSourceImpl(
         }
     }
 
+    override suspend fun replaceAllCallLogs(callLogs: List<CallLog>) {
+        withContext(Dispatchers.Default) {
+            database.callLogEntityQueries.transaction {
+                database.callLogEntityQueries.deleteAllCallLogs()
+                callLogs.forEach { callLog ->
+                    database.callLogEntityQueries.insertCallLog(
+                        id = callLog.id,
+                        phoneNumber = callLog.phoneNumber,
+                        type = callLog.type.name,
+                        missed = if (callLog.missed) 1L else 0L,
+                        timestamp = callLog.timestamp,
+                        duration = callLog.duration
+                    )
+                }
+            }
+        }
+    }
+
     override suspend fun deleteAllCallLogs() {
         withContext(Dispatchers.Default) {
             database.callLogEntityQueries.deleteAllCallLogs()

@@ -5,6 +5,7 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -31,8 +32,10 @@ class CallLogRepositoryImplTest {
     ) = CallLogRepositoryImpl(
         remoteDataSource,
         localDataSource,
+        scope = TestScope(),
         currentTimeMillis = { fakeCurrentTimeMillis },
-        normalizePhone = normalizePhone
+        normalizePhone = normalizePhone,
+        refreshIntervalMs = Long.MAX_VALUE,
     )
 
     @Test
