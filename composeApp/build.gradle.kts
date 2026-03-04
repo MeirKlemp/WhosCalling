@@ -28,6 +28,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
+            implementation(libs.compose.runtime.saveable)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(compose.materialIconsExtended)
