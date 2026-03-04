@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,25 +24,30 @@ class CallLogsViewModel(
     private val selectedNumber = MutableStateFlow<String?>(null)
 
     init {
+        val sortedCallLogs = callLogRepository.callLogs.map { logs ->
+            logs.sortedByDescending { it.timestamp }
+        }
+        val contactMap = contactRepository.contacts.map { contacts ->
+            contacts.associateBy { it.phoneNumber }
+        }
+
         viewModelScope.launch {
             combine(
-                callLogRepository.callLogs,
-                contactRepository.contacts,
+                sortedCallLogs,
+                contactMap,
                 selectedNumber,
-            ) { allLogs, contacts, phone ->
-                val contactMap = contacts.associateBy { it.phoneNumber }
-                val sorted = allLogs.sortedByDescending { it.timestamp }
+            ) { sorted, contacts, phone ->
                 val filtered = if (phone != null) {
                     sorted.filter { it.phoneNumber == phone }
                 } else {
                     emptyList()
                 }
-                Triple(sorted, contactMap, filtered)
-            }.collect { (sorted, contactMap, filtered) ->
+                Triple(sorted, contacts, filtered)
+            }.collect { (sorted, contacts, filtered) ->
                 _uiState.update {
                     it.copy(
                         callLogs = sorted,
-                        contacts = contactMap,
+                        contacts = contacts,
                         selectedNumberCallLogs = filtered,
                     )
                 }

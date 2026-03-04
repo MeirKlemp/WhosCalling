@@ -52,55 +52,73 @@ private fun AppLayout(
     content: @Composable (Modifier) -> Unit,
 ) {
     if (isExpanded) {
-        Row(Modifier.fillMaxSize().safeContentPadding()) {
-            NavigationRail {
-                NavigationRailItem(
-                    selected = selectedTab == NavigationTab.CALL_LOGS,
-                    onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                    icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.call_logs)) },
-                )
-                NavigationRailItem(
-                    selected = selectedTab == NavigationTab.CONTACTS,
-                    onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.contacts)) },
-                )
-                Spacer(Modifier.weight(1f))
-                NavigationRailItem(
-                    selected = selectedTab == NavigationTab.SETTINGS,
-                    onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.settings)) },
-                )
-            }
-
-            content(Modifier.fillMaxSize())
-        }
+        ExpandedLayout(selectedTab, onTabSelected, content)
     } else {
-        Column(Modifier.fillMaxSize()) {
-            content(Modifier.weight(1f))
+        CompactLayout(selectedTab, onTabSelected, content)
+    }
+}
 
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == NavigationTab.CALL_LOGS,
-                    onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                    icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.call_logs)) },
-                )
-                NavigationBarItem(
-                    selected = selectedTab == NavigationTab.CONTACTS,
-                    onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.contacts)) },
-                )
-                NavigationBarItem(
-                    selected = selectedTab == NavigationTab.SETTINGS,
-                    onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text(stringResource(Res.string.settings)) },
-                )
-            }
+@Composable
+private fun ExpandedLayout(
+    selectedTab: NavigationTab,
+    onTabSelected: (NavigationTab) -> Unit,
+    content: @Composable (Modifier) -> Unit,
+) {
+    Row(Modifier.fillMaxSize().safeContentPadding()) {
+        NavigationRail {
+            NavigationRailItem(
+                selected = selectedTab == NavigationTab.CALL_LOGS,
+                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                label = { Text(stringResource(Res.string.call_logs)) },
+            )
+            NavigationRailItem(
+                selected = selectedTab == NavigationTab.CONTACTS,
+                onClick = { onTabSelected(NavigationTab.CONTACTS) },
+                icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                label = { Text(stringResource(Res.string.contacts)) },
+            )
+            Spacer(Modifier.weight(1f))
+            NavigationRailItem(
+                selected = selectedTab == NavigationTab.SETTINGS,
+                onClick = { onTabSelected(NavigationTab.SETTINGS) },
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                label = { Text(stringResource(Res.string.settings)) },
+            )
+        }
+
+        content(Modifier.fillMaxSize())
+    }
+}
+
+@Composable
+private fun CompactLayout(
+    selectedTab: NavigationTab,
+    onTabSelected: (NavigationTab) -> Unit,
+    content: @Composable (Modifier) -> Unit,
+) {
+    Column(Modifier.fillMaxSize()) {
+        content(Modifier.weight(1f))
+
+        NavigationBar {
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.CALL_LOGS,
+                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                label = { Text(stringResource(Res.string.call_logs)) },
+            )
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.CONTACTS,
+                onClick = { onTabSelected(NavigationTab.CONTACTS) },
+                icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                label = { Text(stringResource(Res.string.contacts)) },
+            )
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.SETTINGS,
+                onClick = { onTabSelected(NavigationTab.SETTINGS) },
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                label = { Text(stringResource(Res.string.settings)) },
+            )
         }
     }
 }
