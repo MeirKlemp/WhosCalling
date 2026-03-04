@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.debug
@@ -25,11 +26,8 @@ import whoscalling.composeapp.generated.resources.touch_mode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
-    isTouchMode: Boolean,
-    onTouchModeChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun SettingsScreen(modifier: Modifier = Modifier) {
+    val touchModeState = LocalTouchModeState.current
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(Res.string.settings)) })
@@ -46,13 +44,13 @@ fun SettingsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onTouchModeChange(!isTouchMode) }
+                    .clickable { touchModeState.onTouchModeChange(!touchModeState.isTouchMode) }
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
-                    checked = isTouchMode,
-                    onCheckedChange = onTouchModeChange,
+                    checked = touchModeState.isTouchMode,
+                    onCheckedChange = touchModeState.onTouchModeChange,
                 )
                 Text(
                     text = stringResource(Res.string.touch_mode),
@@ -62,3 +60,4 @@ fun SettingsScreen(
         }
     }
 }
+

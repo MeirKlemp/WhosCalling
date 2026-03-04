@@ -16,6 +16,8 @@ import com.klemfner.whoscalling.di.platformModule
 import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
+import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
+import com.klemfner.whoscalling.ui.common.utils.TouchModeState
 import com.klemfner.whoscalling.ui.common.utils.isPointerInputMode
 import com.klemfner.whoscalling.ui.navigation.AppNavigation
 import org.koin.compose.KoinApplication
@@ -35,11 +37,12 @@ fun App(additionalModules: List<Module> = emptyList()) {
                     CompositionLocalProvider(
                         LocalIsExpanded provides isExpanded,
                         LocalIsTouchMode provides isTouchMode,
-                    ) {
-                        AppNavigation(
+                        LocalTouchModeState provides TouchModeState(
                             isTouchMode = isTouchMode,
                             onTouchModeChange = { isTouchMode = it },
-                        )
+                        ),
+                    ) {
+                        AppNavigation()
                     }
                 }
             }

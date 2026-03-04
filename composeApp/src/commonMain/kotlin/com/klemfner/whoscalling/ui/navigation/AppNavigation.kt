@@ -34,10 +34,7 @@ import whoscalling.composeapp.generated.resources.contacts
 import whoscalling.composeapp.generated.resources.settings
 
 @Composable
-fun AppNavigation(
-    isTouchMode: Boolean,
-    onTouchModeChange: (Boolean) -> Unit,
-) {
+fun AppNavigation() {
     val contactsViewModel: ContactsViewModel = koinViewModel()
     val isExpanded = LocalIsExpanded.current
 
@@ -48,16 +45,12 @@ fun AppNavigation(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
             contactsViewModel = contactsViewModel,
-            isTouchMode = isTouchMode,
-            onTouchModeChange = onTouchModeChange,
         )
     } else {
         CompactLayout(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
             contactsViewModel = contactsViewModel,
-            isTouchMode = isTouchMode,
-            onTouchModeChange = onTouchModeChange,
         )
     }
 }
@@ -67,15 +60,11 @@ private fun CompactLayout(
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
     contactsViewModel: ContactsViewModel,
-    isTouchMode: Boolean,
-    onTouchModeChange: (Boolean) -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
         NavigationContent(
             selectedTab = selectedTab,
             contactsViewModel = contactsViewModel,
-            isTouchMode = isTouchMode,
-            onTouchModeChange = onTouchModeChange,
             modifier = Modifier.weight(1f),
         )
         NavigationBar {
@@ -106,8 +95,6 @@ private fun ExpandedLayout(
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
     contactsViewModel: ContactsViewModel,
-    isTouchMode: Boolean,
-    onTouchModeChange: (Boolean) -> Unit,
 ) {
     Row(Modifier.fillMaxSize().safeContentPadding()) {
         NavigationRail {
@@ -135,8 +122,6 @@ private fun ExpandedLayout(
         NavigationContent(
             selectedTab = selectedTab,
             contactsViewModel = contactsViewModel,
-            isTouchMode = isTouchMode,
-            onTouchModeChange = onTouchModeChange,
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -146,8 +131,6 @@ private fun ExpandedLayout(
 private fun NavigationContent(
     selectedTab: NavigationTab,
     contactsViewModel: ContactsViewModel,
-    isTouchMode: Boolean,
-    onTouchModeChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (selectedTab) {
@@ -156,10 +139,6 @@ private fun NavigationContent(
             viewModel = contactsViewModel,
             modifier = modifier,
         )
-        NavigationTab.SETTINGS -> SettingsScreen(
-            isTouchMode = isTouchMode,
-            onTouchModeChange = onTouchModeChange,
-            modifier = modifier,
-        )
+        NavigationTab.SETTINGS -> SettingsScreen(modifier)
     }
 }
