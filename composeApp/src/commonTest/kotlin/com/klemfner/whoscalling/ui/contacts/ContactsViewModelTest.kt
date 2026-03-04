@@ -251,6 +251,9 @@ class ContactsViewModelTest {
             awaitItem()
 
             viewModel.selectContact(contact1)
+            // selectContact directly updates state (pane/selectedContact),
+            // then combine flow re-fires asynchronously with filtered call logs
+            awaitItem()
             val state = awaitItem()
             assertEquals(2, state.contactCallLogs.size)
             assertEquals(callLog2, state.contactCallLogs[0])
