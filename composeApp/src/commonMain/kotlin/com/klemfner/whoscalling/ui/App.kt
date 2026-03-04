@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.di.appModules
@@ -26,13 +30,16 @@ fun App(additionalModules: List<Module> = emptyList()) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val isExpanded = maxWidth >= 600.dp
-                    val isTouchMode = !isPointerInputMode()
+                    var isTouchMode by remember { mutableStateOf(!isPointerInputMode()) }
 
                     CompositionLocalProvider(
                         LocalIsExpanded provides isExpanded,
                         LocalIsTouchMode provides isTouchMode,
                     ) {
-                        AppNavigation()
+                        AppNavigation(
+                            isTouchMode = isTouchMode,
+                            onTouchModeChange = { isTouchMode = it },
+                        )
                     }
                 }
             }
