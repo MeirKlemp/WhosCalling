@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -32,14 +32,14 @@ fun App(additionalModules: List<Module> = emptyList()) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val isExpanded = maxWidth >= 600.dp
-                    var isTouchMode by remember { mutableStateOf(!isPointerInputMode()) }
+                    var isTouchMode by rememberSaveable { mutableStateOf(!isPointerInputMode()) }
 
                     CompositionLocalProvider(
                         LocalIsExpanded provides isExpanded,
                         LocalIsTouchMode provides isTouchMode,
                         LocalTouchModeState provides TouchModeState(
                             isTouchMode = isTouchMode,
-                            onTouchModeChange = { isTouchMode = it },
+                            setTouchMode = { isTouchMode = it },
                         ),
                     ) {
                         AppNavigation()

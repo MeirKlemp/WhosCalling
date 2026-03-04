@@ -44,13 +44,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { touchModeState.onTouchModeChange(!touchModeState.isTouchMode) }
+                    .clickable { touchModeState.setTouchMode(!touchModeState.isTouchMode) }
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
                     checked = touchModeState.isTouchMode,
-                    onCheckedChange = touchModeState.onTouchModeChange,
+                    onCheckedChange = touchModeState.setTouchMode,
                 )
                 Text(
                     text = stringResource(Res.string.touch_mode),
