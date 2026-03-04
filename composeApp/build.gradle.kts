@@ -48,6 +48,7 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.turbine)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.test)
@@ -55,7 +56,6 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            implementation(libs.kotlinx.datetime)
             implementation(libs.sqldelight.driver.jvm)
             implementation(libs.libphonenumber)
         }
