@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.calllogs.components
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -124,7 +125,7 @@ fun CallLogsList(
                 content()
             }
         } else {
-            androidx.compose.foundation.layout.Box(
+            Box(
                 modifier = Modifier.padding(paddingValues).fillMaxSize(),
             ) {
                 content()

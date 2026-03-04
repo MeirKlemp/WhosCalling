@@ -110,7 +110,7 @@ private fun CompactContactsLayout(
                 callCounts = uiState.callCounts,
                 selectedContactId = null,
                 onContactClick = viewModel::selectContact,
-                onAddClick = viewModel::openAddContact,
+                onAddClick = { viewModel.openAddContact() },
                 modifier = Modifier.fillMaxSize(),
             )
             ContactsPane.DETAILS -> {
@@ -151,7 +151,7 @@ private fun ExpandedContactsLayout(
             callCounts = uiState.callCounts,
             selectedContactId = uiState.selectedContact?.id,
             onContactClick = viewModel::selectContact,
-            onAddClick = viewModel::openAddContact,
+            onAddClick = { viewModel.openAddContact() },
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 

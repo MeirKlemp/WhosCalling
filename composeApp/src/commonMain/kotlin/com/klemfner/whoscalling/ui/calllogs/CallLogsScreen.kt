@@ -71,7 +71,8 @@ private fun handleKeyEvent(
     if (event.type != KeyEventType.KeyDown) return false
     return when {
         event.key == Key.Escape -> {
-            viewModel.goBack(); true
+            viewModel.goBack()
+            true
         }
         else -> false
     }
