@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -26,26 +25,10 @@ class CallLogRepositoryImpl(
 
     private var autoRefreshJob: Job? = null
 
-    private val sharedCallLogs = MutableSharedFlow<List<CallLog>>(replay = 1)
-
-    override val callLogs: Flow<List<CallLog>> = sharedCallLogs
+    override val callLogs: Flow<List<CallLog>> = localDataSource.callLogs
 
     init {
-        scope.launch {
-            localDataSource.callLogs.collect { sharedCallLogs.emit(it) }
-        }
-        scope.launch {
-            sharedCallLogs.subscriptionCount.collect { count ->
-                if (count > 0) {
-                    if (autoRefreshJob == null) {
-                        startAutoRefresh()
-                    }
-                } else {
-                    autoRefreshJob?.cancel()
-                    autoRefreshJob = null
-                }
-            }
-        }
+        startAutoRefresh()
     }
 
     override val incomingCallLog: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
@@ -56,9 +39,7 @@ class CallLogRepositoryImpl(
 
     override suspend fun refreshCallLogs() {
         localDataSource.replaceAllCallLogs(fetchAndNormalize())
-        if (sharedCallLogs.subscriptionCount.value > 0) {
-            startAutoRefresh()
-        }
+        startAutoRefresh()
     }
 
     private fun startAutoRefresh() {
