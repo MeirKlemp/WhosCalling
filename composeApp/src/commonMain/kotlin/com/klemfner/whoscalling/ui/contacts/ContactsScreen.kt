@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,17 +34,29 @@ import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
 import com.klemfner.whoscalling.ui.contacts.components.ContactDetails
 import com.klemfner.whoscalling.ui.contacts.components.ContactForm
 import com.klemfner.whoscalling.ui.contacts.components.ContactList
+import com.klemfner.whoscalling.ui.navigation.LocalNavigator
+import com.klemfner.whoscalling.ui.navigation.NavAction
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.select_contact
 
 @Composable
 fun ContactsScreen(
-    viewModel: ContactsViewModel,
     modifier: Modifier = Modifier,
+    viewModel: ContactsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isExpanded = LocalIsExpanded.current
+    val navigator = LocalNavigator.current
+
+    LaunchedEffect(navigator.navState.action) {
+        val action = navigator.navState.action
+        if (action is NavAction.AddContact) {
+            viewModel.openAddContact(action.phoneNumber)
+            navigator.consumeAction()
+        }
+    }
 
     PlatformBackHandler(enabled = uiState.currentPane != ContactsPane.LIST) {
         viewModel.goBack()

@@ -31,21 +31,29 @@ import com.klemfner.whoscalling.ui.calllogs.components.CallLogDetails
 import com.klemfner.whoscalling.ui.calllogs.components.CallLogsList
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
+import com.klemfner.whoscalling.ui.navigation.LocalNavigator
+import com.klemfner.whoscalling.ui.navigation.NavAction
+import com.klemfner.whoscalling.ui.navigation.NavigationTab
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.select_call_log
 
 @Composable
 fun CallLogsScreen(
-    viewModel: CallLogsViewModel,
-    onAddContact: (String) -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: CallLogsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isExpanded = LocalIsExpanded.current
+    val navigator = LocalNavigator.current
 
     PlatformBackHandler(enabled = uiState.currentPane != CallLogsPane.LIST) {
         viewModel.goBack()
+    }
+
+    val onAddContact: (String) -> Unit = { phoneNumber ->
+        navigator.navigateTo(NavigationTab.CONTACTS, NavAction.AddContact(phoneNumber))
     }
 
     Box(

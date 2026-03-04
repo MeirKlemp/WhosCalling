@@ -13,7 +13,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
@@ -28,9 +27,25 @@ class CallLogRepositoryImpl(
 
     private var autoRefreshJob: Job? = null
 
-    override val callLogs: Flow<List<CallLog>> = localDataSource.callLogs
-        .onStart { startAutoRefresh() }
+    private val sharedCallLogs = localDataSource.callLogs
         .shareIn(scope, SharingStarted.WhileSubscribed(), replay = 1)
+
+    override val callLogs: Flow<List<CallLog>> = sharedCallLogs
+
+    init {
+        scope.launch {
+            sharedCallLogs.subscriptionCount.collect { count ->
+                if (count > 0) {
+                    if (autoRefreshJob == null) {
+                        startAutoRefresh()
+                    }
+                } else {
+                    autoRefreshJob?.cancel()
+                    autoRefreshJob = null
+                }
+            }
+        }
+    }
 
     override val incomingCallLog: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
         val oneMinuteAgo = currentTimeMillis() - 60_000L
@@ -40,7 +55,9 @@ class CallLogRepositoryImpl(
 
     override suspend fun refreshCallLogs() {
         localDataSource.replaceAllCallLogs(fetchAndNormalize())
-        startAutoRefresh()
+        if (autoRefreshJob != null) {
+            startAutoRefresh()
+        }
     }
 
     private fun startAutoRefresh() {

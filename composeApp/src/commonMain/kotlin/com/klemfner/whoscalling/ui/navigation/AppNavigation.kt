@@ -16,19 +16,13 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
-import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.contacts.ContactsScreen
-import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.settings.SettingsScreen
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.call_logs
 import whoscalling.composeapp.generated.resources.contacts
@@ -37,19 +31,16 @@ import whoscalling.composeapp.generated.resources.settings
 @Composable
 fun AppNavigation() {
     val isExpanded = LocalIsExpanded.current
+    val navigator = rememberNavigator()
 
-    var selectedTab by rememberSaveable { mutableStateOf(NavigationTab.CONTACTS) }
-
-    AppLayout(
-        isExpanded = isExpanded,
-        selectedTab = selectedTab,
-        onTabSelected = { selectedTab = it },
-    ) { modifier ->
-        NavigationContent(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
-            modifier = modifier,
-        )
+    CompositionLocalProvider(LocalNavigator provides navigator) {
+        AppLayout(
+            isExpanded = isExpanded,
+            selectedTab = navigator.navState.tab,
+            onTabSelected = { navigator.navigateTo(it) },
+        ) { modifier ->
+            NavigationContent(modifier = modifier)
+        }
     }
 }
 
@@ -115,32 +106,11 @@ private fun AppLayout(
 }
 
 @Composable
-private fun NavigationContent(
-    selectedTab: NavigationTab,
-    onTabSelected: (NavigationTab) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    when (selectedTab) {
-        NavigationTab.CALL_LOGS -> {
-            val callLogsViewModel: CallLogsViewModel = koinViewModel()
-            val contactsViewModel: ContactsViewModel = koinViewModel()
-            val onAddContact: (String) -> Unit = { phoneNumber ->
-                onTabSelected(NavigationTab.CONTACTS)
-                contactsViewModel.openAddContact(phoneNumber)
-            }
-            CallLogsScreen(
-                viewModel = callLogsViewModel,
-                onAddContact = onAddContact,
-                modifier = modifier,
-            )
-        }
-        NavigationTab.CONTACTS -> {
-            val contactsViewModel: ContactsViewModel = koinViewModel()
-            ContactsScreen(
-                viewModel = contactsViewModel,
-                modifier = modifier,
-            )
-        }
+private fun NavigationContent(modifier: Modifier = Modifier) {
+    val navigator = LocalNavigator.current
+    when (navigator.navState.tab) {
+        NavigationTab.CALL_LOGS -> CallLogsScreen(modifier = modifier)
+        NavigationTab.CONTACTS -> ContactsScreen(modifier = modifier)
         NavigationTab.SETTINGS -> SettingsScreen(modifier)
     }
 }
