@@ -11,9 +11,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
 class CallLogRepositoryImpl(
@@ -27,12 +26,14 @@ class CallLogRepositoryImpl(
 
     private var autoRefreshJob: Job? = null
 
-    private val sharedCallLogs = localDataSource.callLogs
-        .shareIn(scope, SharingStarted.WhileSubscribed(), replay = 1)
+    private val sharedCallLogs = MutableSharedFlow<List<CallLog>>(replay = 1)
 
     override val callLogs: Flow<List<CallLog>> = sharedCallLogs
 
     init {
+        scope.launch {
+            localDataSource.callLogs.collect { sharedCallLogs.emit(it) }
+        }
         scope.launch {
             sharedCallLogs.subscriptionCount.collect { count ->
                 if (count > 0) {
