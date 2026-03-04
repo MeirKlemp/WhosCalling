@@ -39,7 +39,22 @@ class CallLogRepositoryImpl(
     }
 
     override suspend fun refreshCallLogs() {
-        val remoteLogs = remoteDataSource.getCallLogs().map { log ->
+        localDataSource.replaceAllCallLogs(fetchAndNormalize())
+        startAutoRefresh()
+    }
+
+    private fun startAutoRefresh() {
+        autoRefreshJob?.cancel()
+        autoRefreshJob = scope.launch {
+            while (true) {
+                delay(refreshIntervalMs)
+                localDataSource.replaceAllCallLogs(fetchAndNormalize())
+            }
+        }
+    }
+
+    private suspend fun fetchAndNormalize(): List<CallLog> {
+        return remoteDataSource.getCallLogs().map { log ->
             val normalized = try {
                 normalizePhone(log.phoneNumber)
             } catch (_: Exception) {
@@ -49,29 +64,6 @@ class CallLogRepositoryImpl(
                 phoneNumber = normalized,
                 id = "$normalized-${log.timestamp}"
             )
-        }
-        localDataSource.replaceAllCallLogs(remoteLogs)
-        startAutoRefresh()
-    }
-
-    private fun startAutoRefresh() {
-        autoRefreshJob?.cancel()
-        autoRefreshJob = scope.launch {
-            while (true) {
-                delay(refreshIntervalMs)
-                val remoteLogs = remoteDataSource.getCallLogs().map { log ->
-                    val normalized = try {
-                        normalizePhone(log.phoneNumber)
-                    } catch (_: Exception) {
-                        log.phoneNumber
-                    }
-                    log.copy(
-                        phoneNumber = normalized,
-                        id = "$normalized-${log.timestamp}"
-                    )
-                }
-                localDataSource.replaceAllCallLogs(remoteLogs)
-            }
         }
     }
 
