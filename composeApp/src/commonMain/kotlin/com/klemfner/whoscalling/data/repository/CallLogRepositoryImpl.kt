@@ -55,7 +55,7 @@ class CallLogRepositoryImpl(
 
     override suspend fun refreshCallLogs() {
         localDataSource.replaceAllCallLogs(fetchAndNormalize())
-        if (autoRefreshJob != null) {
+        if (sharedCallLogs.subscriptionCount.value > 0) {
             startAutoRefresh()
         }
     }
