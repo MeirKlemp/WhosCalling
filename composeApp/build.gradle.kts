@@ -55,6 +55,7 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.sqldelight.driver.jvm)
             implementation(libs.libphonenumber)
         }
