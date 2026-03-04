@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.di.appModules
@@ -12,6 +16,8 @@ import com.klemfner.whoscalling.di.platformModule
 import com.klemfner.whoscalling.ui.common.theme.AppTheme
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
+import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
+import com.klemfner.whoscalling.ui.common.utils.TouchModeState
 import com.klemfner.whoscalling.ui.common.utils.isPointerInputMode
 import com.klemfner.whoscalling.ui.navigation.AppNavigation
 import org.koin.compose.KoinApplication
@@ -26,11 +32,15 @@ fun App(additionalModules: List<Module> = emptyList()) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val isExpanded = maxWidth >= 600.dp
-                    val isTouchMode = !isPointerInputMode()
+                    var isTouchMode by rememberSaveable { mutableStateOf(!isPointerInputMode()) }
 
                     CompositionLocalProvider(
                         LocalIsExpanded provides isExpanded,
                         LocalIsTouchMode provides isTouchMode,
+                        LocalTouchModeState provides TouchModeState(
+                            isTouchMode = isTouchMode,
+                            setTouchMode = { isTouchMode = it },
+                        ),
                     ) {
                         AppNavigation()
                     }

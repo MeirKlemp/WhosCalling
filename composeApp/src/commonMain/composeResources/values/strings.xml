@@ -24,4 +24,6 @@
     <string name="missed">Missed</string>
     <string name="no_call_logs">No call logs</string>
     <string name="details">Details</string>
+    <string name="debug">Debug</string>
+    <string name="touch_mode">Touch Mode</string>
 </resources>
