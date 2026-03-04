@@ -182,10 +182,14 @@ class CallLogsViewModelTest {
             awaitItem()
 
             viewModel.refresh()
-            awaitItem() // isRefreshing = true
 
-            // After refresh completes, the call logs should be loaded
-            val state = awaitItem()
+            // isRefreshing and callLogs update via separate coroutines,
+            // so they may arrive in separate emissions
+            var state: CallLogsUiState
+            do {
+                state = awaitItem()
+            } while (state.isRefreshing || state.callLogs.isEmpty())
+
             assertFalse(state.isRefreshing)
             assertEquals(2, state.callLogs.size)
         }
