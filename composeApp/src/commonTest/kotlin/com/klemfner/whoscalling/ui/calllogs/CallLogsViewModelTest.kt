@@ -182,14 +182,9 @@ class CallLogsViewModelTest {
             awaitItem()
 
             viewModel.refresh()
+            awaitItem() // isRefreshing = true
 
-            // isRefreshing and callLogs update via separate coroutines,
-            // so they may arrive in separate emissions
-            var state: CallLogsUiState
-            do {
-                state = awaitItem()
-            } while (state.isRefreshing || state.callLogs.isEmpty())
-
+            val state = awaitItem()
             assertFalse(state.isRefreshing)
             assertEquals(2, state.callLogs.size)
         }
