@@ -4,6 +4,6 @@ import com.klemfner.whoscalling.data.local.DatabaseDriverFactory
 import com.klemfner.whoscalling.data.local.JvmDatabaseDriverFactory
 import org.koin.dsl.module
 
-val platformModule = module {
+actual val platformModule = module {
     single<DatabaseDriverFactory> { JvmDatabaseDriverFactory() }
 }

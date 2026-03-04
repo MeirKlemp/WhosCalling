@@ -6,10 +6,14 @@ import com.klemfner.whoscalling.data.local.ContactLocalDataSource
 import com.klemfner.whoscalling.data.local.ContactLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.DatabaseDriverFactory
 import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
+import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
+import com.klemfner.whoscalling.data.remote.DummyCallLogRemoteDataSource
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -22,6 +26,7 @@ val databaseModule = module {
 val dataSourceModule = module {
     single<CallLogLocalDataSource> { CallLogLocalDataSourceImpl(get()) }
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
+    single<CallLogRemoteDataSource> { DummyCallLogRemoteDataSource() }
 }
 
 val repositoryModule = module {
@@ -29,4 +34,8 @@ val repositoryModule = module {
     single<ContactRepository> { ContactRepositoryImpl(get()) }
 }
 
-val appModules = listOf(databaseModule, dataSourceModule, repositoryModule)
+val viewModelModule = module {
+    viewModelOf(::ContactsViewModel)
+}
+
+val appModules = listOf(databaseModule, dataSourceModule, repositoryModule, viewModelModule)
