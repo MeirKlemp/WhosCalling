@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -80,6 +81,14 @@ private fun handleKeyEvent(
     return when {
         event.key == Key.Escape -> {
             viewModel.goBack()
+            true
+        }
+        event.isCtrlPressed && event.key == Key.R -> {
+            viewModel.refresh()
+            true
+        }
+        event.key == Key.F5 -> {
+            viewModel.refresh()
             true
         }
         else -> false

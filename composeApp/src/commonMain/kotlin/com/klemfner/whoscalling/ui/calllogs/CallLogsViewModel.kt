@@ -49,7 +49,6 @@ class CallLogsViewModel(
                         callLogs = sorted,
                         contacts = contacts,
                         selectedNumberCallLogs = filtered,
-                        isRefreshing = false,
                     )
                 }
             }
@@ -60,6 +59,7 @@ class CallLogsViewModel(
         _uiState.update { it.copy(isRefreshing = true) }
         viewModelScope.launch {
             callLogRepository.refreshCallLogs()
+            _uiState.update { it.copy(isRefreshing = false) }
         }
     }
 

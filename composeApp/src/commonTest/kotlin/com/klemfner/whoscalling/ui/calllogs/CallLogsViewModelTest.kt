@@ -11,6 +11,7 @@ import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
@@ -182,9 +183,16 @@ class CallLogsViewModelTest {
             awaitItem()
 
             viewModel.refresh()
-            awaitItem() // isRefreshing = true
 
-            val state = awaitItem()
+            // isRefreshing and callLogs update via separate coroutines,
+            // so they may arrive in separate emissions
+            var state: CallLogsUiState
+            withTimeout(100) {
+                do {
+                    state = awaitItem()
+                } while (state.isRefreshing || state.callLogs.isEmpty())
+            }
+
             assertFalse(state.isRefreshing)
             assertEquals(2, state.callLogs.size)
         }

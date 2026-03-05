@@ -91,7 +91,7 @@ private fun handleKeyEvent(
         event.isCtrlPressed && event.key == Key.N -> {
             viewModel.openAddContact(); true
         }
-        event.isCtrlPressed && event.key == Key.R &&
+        event.isCtrlPressed && event.key == Key.E &&
             uiState.currentPane == ContactsPane.DETAILS -> {
             viewModel.openEditContact(); true
         }
