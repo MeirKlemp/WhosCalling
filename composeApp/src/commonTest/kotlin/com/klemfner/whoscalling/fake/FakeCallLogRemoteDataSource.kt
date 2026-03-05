@@ -10,5 +10,5 @@ class FakeCallLogRemoteDataSource : CallLogRemoteDataSource {
         callLogs = logs
     }
 
-    override suspend fun getCallLogs(): List<CallLog> = callLogs
+    override suspend fun getCallLogs(token: String?): List<CallLog> = callLogs
 }

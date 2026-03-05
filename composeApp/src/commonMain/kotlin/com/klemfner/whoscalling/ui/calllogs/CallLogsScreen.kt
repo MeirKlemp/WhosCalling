@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -38,6 +42,7 @@ import com.klemfner.whoscalling.ui.navigation.NavigationTab
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
+import whoscalling.composeapp.generated.resources.failed_to_refresh
 import whoscalling.composeapp.generated.resources.select_call_log
 
 @Composable
@@ -57,6 +62,20 @@ fun CallLogsScreen(
         navigator.navigateTo(NavigationTab.CONTACTS, NavAction.AddContact(phoneNumber))
     }
 
+    val onLoginClick: () -> Unit = {
+        navigator.navigateTo(NavigationTab.USER)
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val failedToRefreshMessage = stringResource(Res.string.failed_to_refresh)
+
+    LaunchedEffect(uiState.refreshError) {
+        if (uiState.refreshError) {
+            snackbarHostState.showSnackbar(failedToRefreshMessage)
+            viewModel.clearRefreshError()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -66,10 +85,15 @@ fun CallLogsScreen(
             },
     ) {
         if (isExpanded) {
-            ExpandedCallLogsLayout(uiState, viewModel, onAddContact)
+            ExpandedCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
         } else {
-            CompactCallLogsLayout(uiState, viewModel, onAddContact)
+            CompactCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
@@ -100,6 +124,7 @@ private fun CompactCallLogsLayout(
     uiState: CallLogsUiState,
     viewModel: CallLogsViewModel,
     onAddContact: (String) -> Unit,
+    onLoginClick: () -> Unit,
 ) {
     AnimatedContent(
         targetState = uiState.currentPane,
@@ -120,8 +145,10 @@ private fun CompactCallLogsLayout(
                 contacts = uiState.contacts,
                 selectedCallLogId = null,
                 isRefreshing = uiState.isRefreshing,
+                isLoggedIn = uiState.isLoggedIn,
                 onCallLogClick = viewModel::selectCallLog,
                 onRefresh = viewModel::refresh,
+                onLoginClick = onLoginClick,
                 modifier = Modifier.fillMaxSize(),
             )
             CallLogsPane.DETAILS -> {
@@ -146,6 +173,7 @@ private fun ExpandedCallLogsLayout(
     uiState: CallLogsUiState,
     viewModel: CallLogsViewModel,
     onAddContact: (String) -> Unit,
+    onLoginClick: () -> Unit,
 ) {
     Row(Modifier.fillMaxSize()) {
         CallLogsList(
@@ -153,8 +181,10 @@ private fun ExpandedCallLogsLayout(
             contacts = uiState.contacts,
             selectedCallLogId = uiState.selectedCallLog?.id,
             isRefreshing = uiState.isRefreshing,
+            isLoggedIn = uiState.isLoggedIn,
             onCallLogClick = viewModel::selectCallLog,
             onRefresh = viewModel::refresh,
+            onLoginClick = onLoginClick,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 

@@ -10,6 +10,8 @@ data class CallLogsUiState(
     val selectedNumberCallLogs: List<CallLog> = emptyList(),
     val currentPane: CallLogsPane = CallLogsPane.LIST,
     val isRefreshing: Boolean = false,
+    val isLoggedIn: Boolean = false,
+    val refreshError: Boolean = false,
 )
 
 enum class CallLogsPane {

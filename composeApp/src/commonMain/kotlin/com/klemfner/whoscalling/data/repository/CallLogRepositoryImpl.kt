@@ -4,6 +4,8 @@ import com.klemfner.whoscalling.data.local.CallLogLocalDataSource
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
+import com.klemfner.whoscalling.domain.model.UnauthorizedException
+import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.util.currentTimeMillis
 import com.klemfner.whoscalling.util.normalizePhoneNumber
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 class CallLogRepositoryImpl(
     private val remoteDataSource: CallLogRemoteDataSource,
     private val localDataSource: CallLogLocalDataSource,
+    private val authRepository: AuthRepository,
     private val scope: CoroutineScope,
     private val currentTimeMillis: () -> Long = ::currentTimeMillis,
     private val normalizePhone: (String) -> String = ::normalizePhoneNumber,
@@ -28,7 +31,16 @@ class CallLogRepositoryImpl(
     override val callLogs: Flow<List<CallLog>> = localDataSource.callLogs
 
     init {
-        startAutoRefresh()
+        scope.launch {
+            authRepository.loggedInUser.collect { user ->
+                if (user != null) {
+                    startAutoRefresh()
+                } else {
+                    autoRefreshJob?.cancel()
+                    autoRefreshJob = null
+                }
+            }
+        }
     }
 
     override val incomingCallLog: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
@@ -38,7 +50,7 @@ class CallLogRepositoryImpl(
     }
 
     override suspend fun refreshCallLogs() {
-        localDataSource.replaceAllCallLogs(fetchAndNormalize())
+        localDataSource.replaceAllCallLogs(fetchWithAuth())
         startAutoRefresh()
     }
 
@@ -47,13 +59,27 @@ class CallLogRepositoryImpl(
         autoRefreshJob = scope.launch {
             while (true) {
                 delay(refreshIntervalMs)
-                localDataSource.replaceAllCallLogs(fetchAndNormalize())
+                try {
+                    localDataSource.replaceAllCallLogs(fetchWithAuth())
+                } catch (_: Exception) {
+                    // Don't replace call logs on failure
+                }
             }
         }
     }
 
-    private suspend fun fetchAndNormalize(): List<CallLog> {
-        return remoteDataSource.getCallLogs().map { log ->
+    private suspend fun fetchWithAuth(): List<CallLog> {
+        val token = authRepository.getToken()
+        return try {
+            fetchAndNormalize(token)
+        } catch (e: UnauthorizedException) {
+            authRepository.retryLogin()
+            fetchAndNormalize(authRepository.getToken())
+        }
+    }
+
+    private suspend fun fetchAndNormalize(token: String?): List<CallLog> {
+        return remoteDataSource.getCallLogs(token).map { log ->
             val normalized = try {
                 normalizePhone(log.phoneNumber)
             } catch (_: Exception) {

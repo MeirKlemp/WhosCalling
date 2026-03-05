@@ -25,6 +25,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.sqldelight.driver.android)
             implementation(libs.libphonenumber)
+            implementation(libs.androidx.security.crypto)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -59,6 +60,8 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.sqldelight.driver.jvm)
             implementation(libs.libphonenumber)
+            implementation(libs.jna)
+            implementation(libs.jna.platform)
         }
     }
 }
