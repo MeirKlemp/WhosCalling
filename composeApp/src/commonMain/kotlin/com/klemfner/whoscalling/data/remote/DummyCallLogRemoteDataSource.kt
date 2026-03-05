@@ -4,7 +4,7 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 
 class DummyCallLogRemoteDataSource : CallLogRemoteDataSource {
-    override suspend fun getCallLogs(): List<CallLog> = dummyCallLogs
+    override suspend fun getCallLogs(token: String?): List<CallLog> = dummyCallLogs
 }
 
 private val dummyCallLogs = listOf(

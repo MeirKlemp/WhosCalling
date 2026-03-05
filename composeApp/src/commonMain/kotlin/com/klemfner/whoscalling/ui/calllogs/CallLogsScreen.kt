@@ -9,14 +9,23 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -38,6 +47,9 @@ import com.klemfner.whoscalling.ui.navigation.NavigationTab
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
+import whoscalling.composeapp.generated.resources.failed_to_refresh
+import whoscalling.composeapp.generated.resources.login
+import whoscalling.composeapp.generated.resources.not_logged_in_warning
 import whoscalling.composeapp.generated.resources.select_call_log
 
 @Composable
@@ -57,6 +69,16 @@ fun CallLogsScreen(
         navigator.navigateTo(NavigationTab.CONTACTS, NavAction.AddContact(phoneNumber))
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val failedToRefreshMessage = stringResource(Res.string.failed_to_refresh)
+
+    LaunchedEffect(uiState.refreshError) {
+        if (uiState.refreshError != null) {
+            snackbarHostState.showSnackbar(failedToRefreshMessage)
+            viewModel.clearRefreshError()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -65,11 +87,40 @@ fun CallLogsScreen(
                 handleKeyEvent(event, viewModel)
             },
     ) {
-        if (isExpanded) {
-            ExpandedCallLogsLayout(uiState, viewModel, onAddContact)
-        } else {
-            CompactCallLogsLayout(uiState, viewModel, onAddContact)
+        Column(Modifier.fillMaxSize()) {
+            if (!uiState.isLoggedIn) {
+                NotLoggedInWarning(
+                    onLoginClick = { navigator.navigateTo(NavigationTab.USER) },
+                )
+            }
+
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                if (isExpanded) {
+                    ExpandedCallLogsLayout(uiState, viewModel, onAddContact)
+                } else {
+                    CompactCallLogsLayout(uiState, viewModel, onAddContact)
+                }
+            }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
+    }
+}
+
+@Composable
+private fun NotLoggedInWarning(onLoginClick: () -> Unit) {
+    Snackbar(
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        action = {
+            TextButton(onClick = onLoginClick) {
+                Text(stringResource(Res.string.login))
+            }
+        },
+    ) {
+        Text(stringResource(Res.string.not_logged_in_warning))
     }
 }
 

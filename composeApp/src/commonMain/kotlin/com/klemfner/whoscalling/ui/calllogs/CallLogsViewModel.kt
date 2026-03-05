@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.calllogs
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.CallLog
+import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 class CallLogsViewModel(
     private val callLogRepository: CallLogRepository,
     private val contactRepository: ContactRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CallLogsUiState())
@@ -53,14 +55,28 @@ class CallLogsViewModel(
                 }
             }
         }
+
+        viewModelScope.launch {
+            authRepository.loggedInUser.collect { user ->
+                _uiState.update { it.copy(isLoggedIn = user != null) }
+            }
+        }
     }
 
     fun refresh() {
-        _uiState.update { it.copy(isRefreshing = true) }
+        _uiState.update { it.copy(isRefreshing = true, refreshError = null) }
         viewModelScope.launch {
-            callLogRepository.refreshCallLogs()
+            try {
+                callLogRepository.refreshCallLogs()
+            } catch (_: Exception) {
+                _uiState.update { it.copy(refreshError = "failed to refresh") }
+            }
             _uiState.update { it.copy(isRefreshing = false) }
         }
+    }
+
+    fun clearRefreshError() {
+        _uiState.update { it.copy(refreshError = null) }
     }
 
     fun selectCallLog(callLog: CallLog) {

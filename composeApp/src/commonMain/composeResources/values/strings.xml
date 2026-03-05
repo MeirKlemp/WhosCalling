@@ -34,4 +34,13 @@
     <string name="missed_outgoing_call">Missed Outgoing</string>
     <string name="duration_label">Duration</string>
     <string name="call_logs_by_number">Call logs with this number</string>
+    <string name="user">User</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="remember_me">Remember Me</string>
+    <string name="login_time">Login Time</string>
+    <string name="not_logged_in_warning">You are not logged in</string>
+    <string name="failed_to_refresh">failed to refresh</string>
 </resources>

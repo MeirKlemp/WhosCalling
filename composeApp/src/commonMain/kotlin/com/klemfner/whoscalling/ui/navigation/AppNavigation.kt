@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
@@ -22,11 +23,13 @@ import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.contacts.ContactsScreen
 import com.klemfner.whoscalling.ui.settings.SettingsScreen
+import com.klemfner.whoscalling.ui.user.UserScreen
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.call_logs
 import whoscalling.composeapp.generated.resources.contacts
 import whoscalling.composeapp.generated.resources.settings
+import whoscalling.composeapp.generated.resources.user
 
 @Composable
 fun AppNavigation() {
@@ -67,6 +70,12 @@ private fun ExpandedLayout(
     Row(Modifier.fillMaxSize().safeContentPadding()) {
         NavigationRail {
             NavigationRailItem(
+                selected = selectedTab == NavigationTab.USER,
+                onClick = { onTabSelected(NavigationTab.USER) },
+                icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+                label = { Text(stringResource(Res.string.user)) },
+            )
+            NavigationRailItem(
                 selected = selectedTab == NavigationTab.CALL_LOGS,
                 onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
                 icon = { Icon(Icons.Default.Phone, contentDescription = null) },
@@ -102,6 +111,12 @@ private fun CompactLayout(
 
         NavigationBar {
             NavigationBarItem(
+                selected = selectedTab == NavigationTab.USER,
+                onClick = { onTabSelected(NavigationTab.USER) },
+                icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+                label = { Text(stringResource(Res.string.user)) },
+            )
+            NavigationBarItem(
                 selected = selectedTab == NavigationTab.CALL_LOGS,
                 onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
                 icon = { Icon(Icons.Default.Phone, contentDescription = null) },
@@ -127,6 +142,7 @@ private fun CompactLayout(
 private fun NavigationContent(modifier: Modifier = Modifier) {
     val navigator = LocalNavigator.current
     when (navigator.navState.tab) {
+        NavigationTab.USER -> UserScreen(modifier = modifier)
         NavigationTab.CALL_LOGS -> CallLogsScreen(modifier = modifier)
         NavigationTab.CONTACTS -> ContactsScreen(modifier = modifier)
         NavigationTab.SETTINGS -> SettingsScreen(modifier)
