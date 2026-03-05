@@ -59,11 +59,11 @@ class ContactsViewModel(
         }
     }
 
-    fun openAddContact() {
+    fun openAddContact(phoneNumber: String = "") {
         _uiState.update {
             it.copy(
                 currentPane = ContactsPane.FORM,
-                formState = ContactFormState(isNew = true),
+                formState = ContactFormState(isNew = true, phoneNumber = phoneNumber),
             )
         }
     }

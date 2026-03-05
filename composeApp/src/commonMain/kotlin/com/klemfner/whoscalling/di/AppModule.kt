@@ -12,7 +12,11 @@ import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -30,12 +34,15 @@ val dataSourceModule = module {
 }
 
 val repositoryModule = module {
-    single<CallLogRepository> { CallLogRepositoryImpl(get(), get()) }
+    single<CallLogRepository> {
+        CallLogRepositoryImpl(get(), get(), CoroutineScope(SupervisorJob() + Dispatchers.Default))
+    }
     single<ContactRepository> { ContactRepositoryImpl(get()) }
 }
 
 val viewModelModule = module {
     viewModelOf(::ContactsViewModel)
+    viewModelOf(::CallLogsViewModel)
 }
 
 val appModules = listOf(databaseModule, dataSourceModule, repositoryModule, viewModelModule)

@@ -16,18 +16,13 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.contacts.ContactsScreen
-import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.settings.SettingsScreen
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.call_logs
 import whoscalling.composeapp.generated.resources.contacts
@@ -35,58 +30,31 @@ import whoscalling.composeapp.generated.resources.settings
 
 @Composable
 fun AppNavigation() {
-    val contactsViewModel: ContactsViewModel = koinViewModel()
     val isExpanded = LocalIsExpanded.current
+    val navigator = rememberNavigator()
 
-    var selectedTab by remember { mutableStateOf(NavigationTab.CONTACTS) }
-
-    if (isExpanded) {
-        ExpandedLayout(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
-            contactsViewModel = contactsViewModel,
-        )
-    } else {
-        CompactLayout(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
-            contactsViewModel = contactsViewModel,
-        )
+    CompositionLocalProvider(LocalNavigator provides navigator) {
+        AppLayout(
+            isExpanded = isExpanded,
+            selectedTab = navigator.navState.tab,
+            onTabSelected = { navigator.navigateTo(it) },
+        ) { modifier ->
+            NavigationContent(modifier = modifier)
+        }
     }
 }
 
 @Composable
-private fun CompactLayout(
+private fun AppLayout(
+    isExpanded: Boolean,
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
-    contactsViewModel: ContactsViewModel,
+    content: @Composable (Modifier) -> Unit,
 ) {
-    Column(Modifier.fillMaxSize()) {
-        NavigationContent(
-            selectedTab = selectedTab,
-            contactsViewModel = contactsViewModel,
-            modifier = Modifier.weight(1f),
-        )
-        NavigationBar {
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.CALL_LOGS,
-                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                label = { Text(stringResource(Res.string.call_logs)) },
-            )
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.CONTACTS,
-                onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                label = { Text(stringResource(Res.string.contacts)) },
-            )
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.SETTINGS,
-                onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                label = { Text(stringResource(Res.string.settings)) },
-            )
-        }
+    if (isExpanded) {
+        ExpandedLayout(selectedTab, onTabSelected, content)
+    } else {
+        CompactLayout(selectedTab, onTabSelected, content)
     }
 }
 
@@ -94,7 +62,7 @@ private fun CompactLayout(
 private fun ExpandedLayout(
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
-    contactsViewModel: ContactsViewModel,
+    content: @Composable (Modifier) -> Unit,
 ) {
     Row(Modifier.fillMaxSize().safeContentPadding()) {
         NavigationRail {
@@ -119,26 +87,48 @@ private fun ExpandedLayout(
             )
         }
 
-        NavigationContent(
-            selectedTab = selectedTab,
-            contactsViewModel = contactsViewModel,
-            modifier = Modifier.fillMaxSize(),
-        )
+        content(Modifier.fillMaxSize())
     }
 }
 
 @Composable
-private fun NavigationContent(
+private fun CompactLayout(
     selectedTab: NavigationTab,
-    contactsViewModel: ContactsViewModel,
-    modifier: Modifier = Modifier,
+    onTabSelected: (NavigationTab) -> Unit,
+    content: @Composable (Modifier) -> Unit,
 ) {
-    when (selectedTab) {
-        NavigationTab.CALL_LOGS -> CallLogsScreen(modifier)
-        NavigationTab.CONTACTS -> ContactsScreen(
-            viewModel = contactsViewModel,
-            modifier = modifier,
-        )
+    Column(Modifier.fillMaxSize()) {
+        content(Modifier.weight(1f))
+
+        NavigationBar {
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.CALL_LOGS,
+                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                label = { Text(stringResource(Res.string.call_logs)) },
+            )
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.CONTACTS,
+                onClick = { onTabSelected(NavigationTab.CONTACTS) },
+                icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                label = { Text(stringResource(Res.string.contacts)) },
+            )
+            NavigationBarItem(
+                selected = selectedTab == NavigationTab.SETTINGS,
+                onClick = { onTabSelected(NavigationTab.SETTINGS) },
+                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                label = { Text(stringResource(Res.string.settings)) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun NavigationContent(modifier: Modifier = Modifier) {
+    val navigator = LocalNavigator.current
+    when (navigator.navState.tab) {
+        NavigationTab.CALL_LOGS -> CallLogsScreen(modifier = modifier)
+        NavigationTab.CONTACTS -> ContactsScreen(modifier = modifier)
         NavigationTab.SETTINGS -> SettingsScreen(modifier)
     }
 }

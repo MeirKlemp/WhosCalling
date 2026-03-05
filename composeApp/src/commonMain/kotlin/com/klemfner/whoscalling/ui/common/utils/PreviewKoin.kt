@@ -5,6 +5,7 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,7 @@ fun PreviewKoinApplication(content: @Composable () -> Unit) {
                 single<ContactRepository> { PreviewContactRepository() }
                 single<CallLogRepository> { PreviewCallLogRepository() }
                 viewModelOf(::ContactsViewModel)
+                viewModelOf(::CallLogsViewModel)
             },
         )
     }) {

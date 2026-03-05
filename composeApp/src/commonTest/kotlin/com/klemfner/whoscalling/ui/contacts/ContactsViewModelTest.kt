@@ -12,6 +12,7 @@ import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -25,6 +26,7 @@ import kotlin.test.assertNull
 class ContactsViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
     private lateinit var contactLocalDataSource: FakeContactLocalDataSource
     private lateinit var callLogLocalDataSource: FakeCallLogLocalDataSource
     private lateinit var callLogRemoteDataSource: FakeCallLogRemoteDataSource
@@ -51,7 +53,9 @@ class ContactsViewModelTest {
         val callLogRepository = CallLogRepositoryImpl(
             remoteDataSource = callLogRemoteDataSource,
             localDataSource = callLogLocalDataSource,
+            scope = testScope,
             normalizePhone = { it },
+            refreshIntervalMs = Long.MAX_VALUE,
         )
         viewModel = ContactsViewModel(contactRepository, callLogRepository)
     }
