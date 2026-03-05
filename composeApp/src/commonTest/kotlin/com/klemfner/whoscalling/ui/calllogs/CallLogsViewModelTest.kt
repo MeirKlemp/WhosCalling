@@ -272,7 +272,7 @@ class CallLogsViewModelTest {
                 } while (state.refreshError == null && state.isRefreshing)
             }
 
-            assertEquals("failed to refresh", state.refreshError)
+            assertEquals("Failed to refresh", state.refreshError)
             assertFalse(state.isRefreshing)
         }
     }

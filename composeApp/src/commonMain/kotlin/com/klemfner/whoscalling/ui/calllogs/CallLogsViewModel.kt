@@ -69,7 +69,7 @@ class CallLogsViewModel(
             try {
                 callLogRepository.refreshCallLogs()
             } catch (_: Exception) {
-                _uiState.update { it.copy(refreshError = "failed to refresh") }
+                _uiState.update { it.copy(refreshError = "Failed to refresh") }
             }
             _uiState.update { it.copy(isRefreshing = false) }
         }

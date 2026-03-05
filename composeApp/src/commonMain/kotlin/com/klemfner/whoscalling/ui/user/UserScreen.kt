@@ -44,6 +44,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.login
+import whoscalling.composeapp.generated.resources.login_error_blank_credentials
+import whoscalling.composeapp.generated.resources.login_error_generic
 import whoscalling.composeapp.generated.resources.login_time
 import whoscalling.composeapp.generated.resources.logout
 import whoscalling.composeapp.generated.resources.password
@@ -60,9 +62,16 @@ fun UserScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
+    val blankCredentialsMessage = stringResource(Res.string.login_error_blank_credentials)
+    val genericErrorMessage = stringResource(Res.string.login_error_generic)
+
+    LaunchedEffect(uiState.loginError) {
+        uiState.loginError?.let { error ->
+            val message = when (error) {
+                is LoginError.BlankCredentials -> blankCredentialsMessage
+                is LoginError.Generic -> error.message ?: genericErrorMessage
+            }
+            snackbarHostState.showSnackbar(message)
             viewModel.clearError()
         }
     }

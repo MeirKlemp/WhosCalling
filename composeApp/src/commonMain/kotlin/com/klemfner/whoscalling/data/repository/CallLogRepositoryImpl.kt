@@ -41,18 +41,7 @@ class CallLogRepositoryImpl(
     }
 
     override suspend fun refreshCallLogs() {
-        val token = authRepository.getToken()
-        try {
-            localDataSource.replaceAllCallLogs(fetchAndNormalize(token))
-        } catch (e: UnauthorizedException) {
-            try {
-                authRepository.retryLogin()
-                val newToken = authRepository.getToken()
-                localDataSource.replaceAllCallLogs(fetchAndNormalize(newToken))
-            } catch (_: Exception) {
-                throw e
-            }
-        }
+        localDataSource.replaceAllCallLogs(fetchWithAuth())
         startAutoRefresh()
     }
 
@@ -63,18 +52,21 @@ class CallLogRepositoryImpl(
                 delay(refreshIntervalMs)
                 if (authRepository.getToken() == null) continue
                 try {
-                    val token = authRepository.getToken()
-                    localDataSource.replaceAllCallLogs(fetchAndNormalize(token))
-                } catch (e: UnauthorizedException) {
-                    try {
-                        authRepository.retryLogin()
-                        val newToken = authRepository.getToken()
-                        localDataSource.replaceAllCallLogs(fetchAndNormalize(newToken))
-                    } catch (_: Exception) {
-                        // Don't replace call logs on failure
-                    }
+                    localDataSource.replaceAllCallLogs(fetchWithAuth())
+                } catch (_: Exception) {
+                    // Don't replace call logs on failure
                 }
             }
+        }
+    }
+
+    private suspend fun fetchWithAuth(): List<CallLog> {
+        val token = authRepository.getToken()
+        return try {
+            fetchAndNormalize(token)
+        } catch (e: UnauthorizedException) {
+            authRepository.retryLogin()
+            fetchAndNormalize(authRepository.getToken())
         }
     }
 

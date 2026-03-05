@@ -1,10 +1,10 @@
 package com.klemfner.whoscalling.data.local
 
+import com.klemfner.whoscalling.domain.model.SavedCredentials
+import kotlinx.coroutines.flow.StateFlow
+
 interface AuthLocalDataSource {
-    fun getSavedUsername(): String?
-    fun getSavedPassword(): String?
-    fun getSavedToken(): String?
-    fun getSavedLoginTime(): Long?
-    fun saveCredentials(username: String, password: String, token: String, loginTime: Long)
+    val savedCredentials: StateFlow<SavedCredentials?>
+    fun saveCredentials(credentials: SavedCredentials)
     fun clearCredentials()
 }

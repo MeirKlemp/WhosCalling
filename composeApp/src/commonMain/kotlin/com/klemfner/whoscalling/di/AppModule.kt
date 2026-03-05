@@ -1,12 +1,10 @@
 package com.klemfner.whoscalling.di
 
-import com.klemfner.whoscalling.data.local.AuthLocalDataSource
 import com.klemfner.whoscalling.data.local.CallLogLocalDataSource
 import com.klemfner.whoscalling.data.local.CallLogLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.ContactLocalDataSource
 import com.klemfner.whoscalling.data.local.ContactLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.DatabaseDriverFactory
-import com.klemfner.whoscalling.data.local.InMemoryAuthLocalDataSource
 import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.data.remote.AuthRemoteDataSource
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
@@ -39,7 +37,6 @@ val dataSourceModule = module {
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
     single<CallLogRemoteDataSource> { DummyCallLogRemoteDataSource() }
     single<AuthRemoteDataSource> { DummyAuthRemoteDataSource() }
-    single<AuthLocalDataSource> { InMemoryAuthLocalDataSource() }
 }
 
 val repositoryModule = module {

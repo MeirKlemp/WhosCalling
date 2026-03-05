@@ -1,29 +1,20 @@
 package com.klemfner.whoscalling.fake
 
 import com.klemfner.whoscalling.data.local.AuthLocalDataSource
+import com.klemfner.whoscalling.domain.model.SavedCredentials
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class FakeAuthLocalDataSource : AuthLocalDataSource {
-    private var username: String? = null
-    private var password: String? = null
-    private var token: String? = null
-    private var loginTime: Long? = null
+    private val _savedCredentials = MutableStateFlow<SavedCredentials?>(null)
+    override val savedCredentials: StateFlow<SavedCredentials?> = _savedCredentials.asStateFlow()
 
-    override fun getSavedUsername(): String? = username
-    override fun getSavedPassword(): String? = password
-    override fun getSavedToken(): String? = token
-    override fun getSavedLoginTime(): Long? = loginTime
-
-    override fun saveCredentials(username: String, password: String, token: String, loginTime: Long) {
-        this.username = username
-        this.password = password
-        this.token = token
-        this.loginTime = loginTime
+    override fun saveCredentials(credentials: SavedCredentials) {
+        _savedCredentials.value = credentials
     }
 
     override fun clearCredentials() {
-        username = null
-        password = null
-        token = null
-        loginTime = null
+        _savedCredentials.value = null
     }
 }

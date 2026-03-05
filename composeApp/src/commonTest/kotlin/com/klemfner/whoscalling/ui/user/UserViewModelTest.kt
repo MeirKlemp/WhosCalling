@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.fake.FakeAuthLocalDataSource
 import com.klemfner.whoscalling.fake.FakeAuthRemoteDataSource
+import com.klemfner.whoscalling.ui.user.LoginError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -52,7 +53,7 @@ class UserViewModelTest {
             val state = awaitItem()
             assertNull(state.loggedInUser)
             assertFalse(state.isLoading)
-            assertNull(state.errorMessage)
+            assertNull(state.loginError)
         }
     }
 
@@ -105,7 +106,7 @@ class UserViewModelTest {
     }
 
     @Test
-    fun loginFailureSetsErrorMessage() = runTest {
+    fun loginFailureSetsLoginError() = runTest {
         authRemoteDataSource.setResult(Result.failure(IllegalArgumentException("Bad credentials")))
         viewModel.updateUsername("alice")
         viewModel.updatePassword("wrong")
@@ -117,9 +118,10 @@ class UserViewModelTest {
             var state: UserUiState
             do {
                 state = awaitItem()
-            } while (state.errorMessage == null && state.isLoading)
+            } while (state.loginError == null && state.isLoading)
 
-            assertNotNull(state.errorMessage)
+            assertNotNull(state.loginError)
+            assertTrue(state.loginError is LoginError.BlankCredentials)
             assertFalse(state.isLoading)
             assertNull(state.loggedInUser)
         }
@@ -149,7 +151,7 @@ class UserViewModelTest {
     }
 
     @Test
-    fun clearErrorResetsErrorMessage() = runTest {
+    fun clearErrorResetsLoginError() = runTest {
         authRemoteDataSource.setResult(Result.failure(IllegalArgumentException("Fail")))
         viewModel.updateUsername("alice")
         viewModel.updatePassword("wrong")
@@ -161,12 +163,12 @@ class UserViewModelTest {
             var state: UserUiState
             do {
                 state = awaitItem()
-            } while (state.errorMessage == null && state.isLoading)
-            assertNotNull(state.errorMessage)
+            } while (state.loginError == null && state.isLoading)
+            assertNotNull(state.loginError)
 
             viewModel.clearError()
             state = awaitItem()
-            assertNull(state.errorMessage)
+            assertNull(state.loginError)
         }
     }
 }

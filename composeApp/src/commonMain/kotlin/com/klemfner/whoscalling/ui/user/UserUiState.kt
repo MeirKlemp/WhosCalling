@@ -8,5 +8,5 @@ data class UserUiState(
     val password: String = "",
     val rememberMe: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
+    val loginError: LoginError? = null,
 )

@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.data.repository
 import com.klemfner.whoscalling.data.local.AuthLocalDataSource
 import com.klemfner.whoscalling.data.remote.AuthRemoteDataSource
 import com.klemfner.whoscalling.domain.model.LoggedInUser
+import com.klemfner.whoscalling.domain.model.SavedCredentials
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.util.currentTimeMillis
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,15 +24,11 @@ class AuthRepositoryImpl(
     private var password: String? = null
 
     init {
-        val savedToken = localDataSource.getSavedToken()
-        val savedUsername = localDataSource.getSavedUsername()
-        val savedPassword = localDataSource.getSavedPassword()
-        val savedLoginTime = localDataSource.getSavedLoginTime()
-        if (savedToken != null && savedUsername != null && savedPassword != null && savedLoginTime != null) {
-            token = savedToken
-            username = savedUsername
-            password = savedPassword
-            _loggedInUser.value = LoggedInUser(savedUsername, savedLoginTime)
+        localDataSource.savedCredentials.value?.let { creds ->
+            token = creds.sessionKey
+            username = creds.username
+            password = creds.password
+            _loggedInUser.value = LoggedInUser(creds.username, creds.loginTime)
         }
     }
 
@@ -44,7 +41,9 @@ class AuthRepositoryImpl(
         _loggedInUser.value = LoggedInUser(username, loginTime)
 
         if (rememberMe) {
-            localDataSource.saveCredentials(username, password, newToken, loginTime)
+            localDataSource.saveCredentials(
+                SavedCredentials(username, password, loginTime, newToken)
+            )
         } else {
             localDataSource.clearCredentials()
         }
@@ -56,9 +55,10 @@ class AuthRepositoryImpl(
         val newToken = remoteDataSource.login(u, p)
         this.token = newToken
 
-        if (localDataSource.getSavedToken() != null) {
-            val loginTime = _loggedInUser.value?.loginTime ?: currentTimeMillis()
-            localDataSource.saveCredentials(u, p, newToken, loginTime)
+        localDataSource.savedCredentials.value?.let { saved ->
+            localDataSource.saveCredentials(
+                saved.copy(sessionKey = newToken)
+            )
         }
     }
 

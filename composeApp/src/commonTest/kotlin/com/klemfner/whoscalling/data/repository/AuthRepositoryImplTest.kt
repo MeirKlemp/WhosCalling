@@ -1,6 +1,7 @@
 package com.klemfner.whoscalling.data.repository
 
 import app.cash.turbine.test
+import com.klemfner.whoscalling.domain.model.SavedCredentials
 import com.klemfner.whoscalling.fake.FakeAuthLocalDataSource
 import com.klemfner.whoscalling.fake.FakeAuthRemoteDataSource
 import kotlinx.coroutines.test.runTest
@@ -61,20 +62,23 @@ class AuthRepositoryImplTest {
     fun loginWithRememberMeSavesToLocalDataSource() = runTest {
         repository.login("alice", "pass123", rememberMe = true)
 
-        assertEquals("alice", localDataSource.getSavedUsername())
-        assertEquals("pass123", localDataSource.getSavedPassword())
-        assertNotNull(localDataSource.getSavedToken())
-        assertEquals(1000L, localDataSource.getSavedLoginTime())
+        val saved = localDataSource.savedCredentials.value
+        assertNotNull(saved)
+        assertEquals("alice", saved.username)
+        assertEquals("pass123", saved.password)
+        assertNotNull(saved.sessionKey)
+        assertEquals(1000L, saved.loginTime)
     }
 
     @Test
     fun loginWithoutRememberMeClearsLocalDataSource() = runTest {
-        localDataSource.saveCredentials("old", "old", "old", 0L)
+        localDataSource.saveCredentials(
+            SavedCredentials("old", "old", 0L, "old")
+        )
 
         repository.login("alice", "pass123", rememberMe = false)
 
-        assertNull(localDataSource.getSavedUsername())
-        assertNull(localDataSource.getSavedToken())
+        assertNull(localDataSource.savedCredentials.value)
     }
 
     @Test
@@ -97,13 +101,12 @@ class AuthRepositoryImplTest {
         }
 
         assertNull(repository.getToken())
-        assertNull(localDataSource.getSavedUsername())
+        assertNull(localDataSource.savedCredentials.value)
     }
 
     @Test
     fun retryLoginRefreshesToken() = runTest {
         repository.login("alice", "pass123", rememberMe = false)
-        val oldToken = repository.getToken()
 
         remoteDataSource.setResult(Result.success("new-token"))
         repository.retryLogin()
@@ -122,17 +125,18 @@ class AuthRepositoryImplTest {
     @Test
     fun retryLoginUpdatesLocalWhenSaved() = runTest {
         repository.login("alice", "pass123", rememberMe = true)
-        val oldToken = localDataSource.getSavedToken()
 
         remoteDataSource.setResult(Result.success("refreshed-token"))
         repository.retryLogin()
 
-        assertEquals("refreshed-token", localDataSource.getSavedToken())
+        assertEquals("refreshed-token", localDataSource.savedCredentials.value?.sessionKey)
     }
 
     @Test
     fun initRestoresFromLocalDataSource() = runTest {
-        localDataSource.saveCredentials("bob", "pass456", "saved-token", 2000L)
+        localDataSource.saveCredentials(
+            SavedCredentials("bob", "pass456", 2000L, "saved-token")
+        )
 
         val restored = AuthRepositoryImpl(
             remoteDataSource = remoteDataSource,
@@ -151,8 +155,9 @@ class AuthRepositoryImplTest {
 
     @Test
     fun initDoesNotRestoreWithIncompleteLocalData() = runTest {
-        // Only username saved, missing others
-        localDataSource.saveCredentials("bob", "pass456", "token", 2000L)
+        localDataSource.saveCredentials(
+            SavedCredentials("bob", "pass456", 2000L, "token")
+        )
         localDataSource.clearCredentials()
 
         val restored = AuthRepositoryImpl(

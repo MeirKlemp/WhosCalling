@@ -38,12 +38,14 @@ class UserViewModel(
 
     fun login() {
         val state = _uiState.value
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, loginError = null) }
         viewModelScope.launch {
             try {
                 authRepository.login(state.username, state.password, state.rememberMe)
+            } catch (e: IllegalArgumentException) {
+                _uiState.update { it.copy(loginError = LoginError.BlankCredentials, isLoading = false) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(errorMessage = e.message, isLoading = false) }
+                _uiState.update { it.copy(loginError = LoginError.Generic(e.message), isLoading = false) }
             }
         }
     }
@@ -55,6 +57,6 @@ class UserViewModel(
     }
 
     fun clearError() {
-        _uiState.update { it.copy(errorMessage = null) }
+        _uiState.update { it.copy(loginError = null) }
     }
 }
