@@ -269,7 +269,7 @@ class CallLogsViewModelTest {
             withTimeout(100) {
                 do {
                     state = awaitItem()
-                } while (!state.refreshError && state.isRefreshing)
+                } while (!state.refreshError || state.isRefreshing)
             }
 
             assertTrue(state.refreshError)
