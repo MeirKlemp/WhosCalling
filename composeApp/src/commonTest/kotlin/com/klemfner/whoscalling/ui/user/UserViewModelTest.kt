@@ -106,10 +106,10 @@ class UserViewModelTest {
     }
 
     @Test
-    fun loginFailureSetsLoginError() = runTest {
-        authRemoteDataSource.setResult(Result.failure(IllegalArgumentException("Bad credentials")))
-        viewModel.updateUsername("alice")
-        viewModel.updatePassword("wrong")
+    fun loginFailureWithBlankCredentialsSetsBlankCredentialsError() = runTest {
+        authRemoteDataSource.setResult(Result.failure(IllegalArgumentException("Username and password must not be blank")))
+        viewModel.updateUsername("")
+        viewModel.updatePassword("")
 
         viewModel.uiState.test {
             awaitItem()
@@ -122,6 +122,29 @@ class UserViewModelTest {
 
             assertNotNull(state.loginError)
             assertTrue(state.loginError is LoginError.BlankCredentials)
+            assertFalse(state.isLoading)
+            assertNull(state.loggedInUser)
+        }
+    }
+
+    @Test
+    fun loginFailureWithGenericErrorSetsGenericError() = runTest {
+        authRemoteDataSource.setResult(Result.failure(RuntimeException("Network error")))
+        viewModel.updateUsername("alice")
+        viewModel.updatePassword("pass123")
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.login()
+
+            var state: UserUiState
+            do {
+                state = awaitItem()
+            } while (state.loginError == null && state.isLoading)
+
+            assertNotNull(state.loginError)
+            assertTrue(state.loginError is LoginError.Generic)
+            assertEquals("Network error", (state.loginError as LoginError.Generic).message)
             assertFalse(state.isLoading)
             assertNull(state.loggedInUser)
         }

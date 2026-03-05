@@ -52,26 +52,27 @@ class SecretToolAuthLocalDataSource : AuthLocalDataSource {
         private const val APP_LABEL = "WhosCalling Credentials"
         private const val ATTR_APPLICATION = "application"
         private const val TIMEOUT_SECONDS = 5L
-        private const val FIELD_SEPARATOR = "\u0000"
 
         internal fun serialize(credentials: SavedCredentials): String {
+            val encoder = java.util.Base64.getEncoder()
             return listOf(
-                credentials.username,
-                credentials.password,
+                encoder.encodeToString(credentials.username.toByteArray(Charsets.UTF_8)),
+                encoder.encodeToString(credentials.password.toByteArray(Charsets.UTF_8)),
                 credentials.loginTime.toString(),
-                credentials.sessionKey,
-            ).joinToString(FIELD_SEPARATOR)
+                encoder.encodeToString(credentials.sessionKey.toByteArray(Charsets.UTF_8)),
+            ).joinToString("\n")
         }
 
         internal fun deserialize(data: String): SavedCredentials? {
-            val parts = data.split(FIELD_SEPARATOR)
+            val parts = data.split("\n")
             if (parts.size != 4) return null
             return try {
+                val decoder = java.util.Base64.getDecoder()
                 SavedCredentials(
-                    username = parts[0],
-                    password = parts[1],
+                    username = String(decoder.decode(parts[0]), Charsets.UTF_8),
+                    password = String(decoder.decode(parts[1]), Charsets.UTF_8),
                     loginTime = parts[2].toLong(),
-                    sessionKey = parts[3],
+                    sessionKey = String(decoder.decode(parts[3]), Charsets.UTF_8),
                 )
             } catch (_: Exception) {
                 null
