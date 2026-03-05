@@ -106,6 +106,24 @@ class UserViewModelTest {
     }
 
     @Test
+    fun loginSuccessClearsPassword() = runTest {
+        viewModel.updateUsername("alice")
+        viewModel.updatePassword("pass123")
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.login()
+
+            var state: UserUiState
+            do {
+                state = awaitItem()
+            } while (state.loggedInUser == null)
+
+            assertEquals("", state.password)
+        }
+    }
+
+    @Test
     fun loginFailureWithBlankCredentialsSetsBlankCredentialsError() = runTest {
         authRemoteDataSource.setResult(Result.failure(IllegalArgumentException("Username and password must not be blank")))
         viewModel.updateUsername("")

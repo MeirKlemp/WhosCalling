@@ -19,7 +19,13 @@ class UserViewModel(
     init {
         viewModelScope.launch {
             authRepository.loggedInUser.collect { user ->
-                _uiState.update { it.copy(loggedInUser = user, isLoading = false) }
+                _uiState.update {
+                    it.copy(
+                        loggedInUser = user,
+                        isLoading = false,
+                        password = if (user != null) "" else it.password,
+                    )
+                }
             }
         }
     }
