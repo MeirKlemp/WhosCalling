@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.contacts.components
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.Contact
@@ -28,6 +30,7 @@ import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
+import whoscalling.composeapp.generated.resources.no_contacts
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -68,29 +71,42 @@ fun ContactList(
                 }
             }
 
-            val grouped = contacts.groupBy {
-                it.name.firstOrNull()?.uppercaseChar() ?: '#'
-            }
+            if (contacts.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        stringResource(Res.string.no_contacts),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                val grouped = contacts.groupBy {
+                    it.name.firstOrNull()?.uppercaseChar() ?: '#'
+                }
 
-            LazyColumn(Modifier.fillMaxSize()) {
-                grouped.forEach { (letter, contactsInGroup) ->
-                    stickyHeader(key = "header_$letter") {
-                        Text(
-                            text = letter.toString(),
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                        )
-                    }
-                    items(contactsInGroup, key = { it.id }) { contact ->
-                        ContactListItem(
-                            contact = contact,
-                            callCount = callCounts[contact.phoneNumber] ?: 0,
-                            isSelected = contact.id == selectedContactId,
-                            onClick = { onContactClick(contact) },
-                        )
+                LazyColumn(Modifier.fillMaxSize()) {
+                    grouped.forEach { (letter, contactsInGroup) ->
+                        stickyHeader(key = "header_$letter") {
+                            Text(
+                                text = letter.toString(),
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                        }
+                        items(contactsInGroup, key = { it.id }) { contact ->
+                            ContactListItem(
+                                contact = contact,
+                                callCount = callCounts[contact.phoneNumber] ?: 0,
+                                isSelected = contact.id == selectedContactId,
+                                onClick = { onContactClick(contact) },
+                            )
+                        }
                     }
                 }
             }
