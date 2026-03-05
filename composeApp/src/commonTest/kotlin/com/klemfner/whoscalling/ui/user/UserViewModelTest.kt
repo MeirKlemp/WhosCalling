@@ -100,7 +100,7 @@ class UserViewModelTest {
             } while (state.loggedInUser == null)
 
             assertNotNull(state.loggedInUser)
-            assertEquals("alice", state.loggedInUser?.username)
+            assertEquals("alice", state.loggedInUser.username)
             assertFalse(state.isLoading)
         }
     }
