@@ -9,23 +9,14 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,8 +43,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.failed_to_refresh
-import whoscalling.composeapp.generated.resources.login
-import whoscalling.composeapp.generated.resources.not_logged_in_warning
 import whoscalling.composeapp.generated.resources.select_call_log
 
 @Composable
@@ -95,48 +84,16 @@ fun CallLogsScreen(
                 handleKeyEvent(event, viewModel)
             },
     ) {
-        Box(Modifier.fillMaxSize()) {
-            if (isExpanded) {
-                ExpandedCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
-            } else {
-                CompactCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
-            }
+        if (isExpanded) {
+            ExpandedCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
+        } else {
+            CompactCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
         }
 
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
-    }
-}
-
-@Composable
-private fun NotLoggedInBanner(onLoginClick: () -> Unit) {
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            )
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = stringResource(Res.string.not_logged_in_warning),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.weight(1f),
-            )
-            TextButton(onClick = onLoginClick) {
-                Text(stringResource(Res.string.login))
-            }
-        }
     }
 }
 
@@ -183,20 +140,17 @@ private fun CompactCallLogsLayout(
         modifier = Modifier.fillMaxSize(),
     ) { pane ->
         when (pane) {
-            CallLogsPane.LIST -> Column(Modifier.fillMaxSize()) {
-                if (!uiState.isLoggedIn) {
-                    NotLoggedInBanner(onLoginClick)
-                }
-                CallLogsList(
-                    callLogs = uiState.callLogs,
-                    contacts = uiState.contacts,
-                    selectedCallLogId = null,
-                    isRefreshing = uiState.isRefreshing,
-                    onCallLogClick = viewModel::selectCallLog,
-                    onRefresh = viewModel::refresh,
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                )
-            }
+            CallLogsPane.LIST -> CallLogsList(
+                callLogs = uiState.callLogs,
+                contacts = uiState.contacts,
+                selectedCallLogId = null,
+                isRefreshing = uiState.isRefreshing,
+                isLoggedIn = uiState.isLoggedIn,
+                onCallLogClick = viewModel::selectCallLog,
+                onRefresh = viewModel::refresh,
+                onLoginClick = onLoginClick,
+                modifier = Modifier.fillMaxSize(),
+            )
             CallLogsPane.DETAILS -> {
                 val callLog = uiState.selectedCallLog
                 if (callLog != null) {
@@ -227,8 +181,10 @@ private fun ExpandedCallLogsLayout(
             contacts = uiState.contacts,
             selectedCallLogId = uiState.selectedCallLog?.id,
             isRefreshing = uiState.isRefreshing,
+            isLoggedIn = uiState.isLoggedIn,
             onCallLogClick = viewModel::selectCallLog,
             onRefresh = viewModel::refresh,
+            onLoginClick = onLoginClick,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 
@@ -239,49 +195,43 @@ private fun ExpandedCallLogsLayout(
                 .background(MaterialTheme.colorScheme.outlineVariant),
         )
 
-        Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            if (!uiState.isLoggedIn) {
-                NotLoggedInBanner(onLoginClick)
-            }
-
-            AnimatedContent(
-                targetState = uiState.currentPane,
-                transitionSpec = {
-                    if (targetState.ordinal > initialState.ordinal) {
-                        slideInHorizontally { it } + fadeIn() togetherWith
-                            slideOutHorizontally { -it } + fadeOut()
-                    } else {
-                        slideInHorizontally { -it } + fadeIn() togetherWith
-                            slideOutHorizontally { it } + fadeOut()
+        AnimatedContent(
+            targetState = uiState.currentPane,
+            transitionSpec = {
+                if (targetState.ordinal > initialState.ordinal) {
+                    slideInHorizontally { it } + fadeIn() togetherWith
+                        slideOutHorizontally { -it } + fadeOut()
+                } else {
+                    slideInHorizontally { -it } + fadeIn() togetherWith
+                        slideOutHorizontally { it } + fadeOut()
+                }
+            },
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+        ) { pane ->
+            when (pane) {
+                CallLogsPane.LIST -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            stringResource(Res.string.select_call_log),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
-                },
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-            ) { pane ->
-                when (pane) {
-                    CallLogsPane.LIST -> {
-                        Box(
+                }
+                CallLogsPane.DETAILS -> {
+                    val callLog = uiState.selectedCallLog
+                    if (callLog != null) {
+                        CallLogDetails(
+                            callLog = callLog,
+                            contact = uiState.contacts[callLog.phoneNumber],
+                            numberCallLogs = uiState.selectedNumberCallLogs,
+                            onBackClick = viewModel::goBack,
+                            onAddContactClick = onAddContact,
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                stringResource(Res.string.select_call_log),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                    CallLogsPane.DETAILS -> {
-                        val callLog = uiState.selectedCallLog
-                        if (callLog != null) {
-                            CallLogDetails(
-                                callLog = callLog,
-                                contact = uiState.contacts[callLog.phoneNumber],
-                                numberCallLogs = uiState.selectedNumberCallLogs,
-                                onBackClick = viewModel::goBack,
-                                onAddContactClick = onAddContact,
-                                modifier = Modifier.fillMaxSize(),
-                            )
-                        }
+                        )
                     }
                 }
             }

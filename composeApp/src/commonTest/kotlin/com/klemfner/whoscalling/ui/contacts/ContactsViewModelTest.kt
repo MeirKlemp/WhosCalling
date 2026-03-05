@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
@@ -53,6 +54,7 @@ class ContactsViewModelTest {
         val callLogRepository = CallLogRepositoryImpl(
             remoteDataSource = callLogRemoteDataSource,
             localDataSource = callLogLocalDataSource,
+            authRepository = FakeAuthRepository().apply { setLoggedIn("user", "token") },
             scope = testScope,
             normalizePhone = { it },
             refreshIntervalMs = Long.MAX_VALUE,
