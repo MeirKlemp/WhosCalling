@@ -3,6 +3,8 @@ package com.klemfner.whoscalling.data.repository
 import app.cash.turbine.test
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
+import com.klemfner.whoscalling.domain.model.UnauthorizedException
+import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
 import kotlinx.coroutines.test.TestScope
@@ -10,12 +12,14 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class CallLogRepositoryImplTest {
 
     private lateinit var remoteDataSource: FakeCallLogRemoteDataSource
     private lateinit var localDataSource: FakeCallLogLocalDataSource
+    private lateinit var authRepository: FakeAuthRepository
     private lateinit var repository: CallLogRepositoryImpl
 
     private var fakeCurrentTimeMillis = 100_000L
@@ -24,6 +28,8 @@ class CallLogRepositoryImplTest {
     fun setup() {
         remoteDataSource = FakeCallLogRemoteDataSource()
         localDataSource = FakeCallLogLocalDataSource()
+        authRepository = FakeAuthRepository()
+        authRepository.setLoggedIn("user", "token")
         repository = createRepository()
     }
 
@@ -32,6 +38,7 @@ class CallLogRepositoryImplTest {
     ) = CallLogRepositoryImpl(
         remoteDataSource,
         localDataSource,
+        authRepository,
         scope = TestScope(),
         currentTimeMillis = { fakeCurrentTimeMillis },
         normalizePhone = normalizePhone,
@@ -214,6 +221,68 @@ class CallLogRepositoryImplTest {
             localDataSource.saveCallLogs(listOf(log))
             assertEquals(log, awaitItem())
 
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshCallLogs_retriesLoginOnUnauthorizedException() = runTest {
+        val throwingRemote = object : com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource {
+            var callCount = 0
+            override suspend fun getCallLogs(token: String?): List<CallLog> {
+                callCount++
+                if (callCount == 1) throw UnauthorizedException()
+                return listOf(CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L))
+            }
+        }
+
+        repository = CallLogRepositoryImpl(
+            throwingRemote,
+            localDataSource,
+            authRepository,
+            scope = TestScope(),
+            currentTimeMillis = { fakeCurrentTimeMillis },
+            normalizePhone = { it },
+            refreshIntervalMs = Long.MAX_VALUE,
+        )
+
+        repository.refreshCallLogs()
+
+        assertEquals(1, authRepository.retryLoginCallCount)
+        repository.callLogs.test {
+            assertEquals(1, awaitItem().size)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshCallLogs_throwsWhenRetryAlsoFails() = runTest {
+        val throwingRemote = object : com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource {
+            override suspend fun getCallLogs(token: String?): List<CallLog> {
+                throw UnauthorizedException()
+            }
+        }
+
+        repository = CallLogRepositoryImpl(
+            throwingRemote,
+            localDataSource,
+            authRepository,
+            scope = TestScope(),
+            currentTimeMillis = { fakeCurrentTimeMillis },
+            normalizePhone = { it },
+            refreshIntervalMs = Long.MAX_VALUE,
+        )
+
+        val oldLogs = listOf(CallLog("old", "+1111111111", CallType.INCOMING, false, 500L, 30L))
+        localDataSource.saveCallLogs(oldLogs)
+
+        assertFailsWith<UnauthorizedException> {
+            repository.refreshCallLogs()
+        }
+
+        // Old call logs should still be there
+        repository.callLogs.test {
+            assertEquals(oldLogs, awaitItem())
             cancelAndConsumeRemainingEvents()
         }
     }

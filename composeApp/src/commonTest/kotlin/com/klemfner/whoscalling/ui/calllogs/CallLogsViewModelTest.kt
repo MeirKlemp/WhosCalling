@@ -6,6 +6,7 @@ import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
@@ -23,6 +24,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CallLogsViewModelTest {
@@ -32,6 +34,7 @@ class CallLogsViewModelTest {
     private lateinit var contactLocalDataSource: FakeContactLocalDataSource
     private lateinit var callLogLocalDataSource: FakeCallLogLocalDataSource
     private lateinit var callLogRemoteDataSource: FakeCallLogRemoteDataSource
+    private lateinit var authRepository: FakeAuthRepository
     private lateinit var viewModel: CallLogsViewModel
 
     private val contact1 = Contact("1", "Alice", "+1234567890", "alice@test.com")
@@ -47,6 +50,8 @@ class CallLogsViewModelTest {
         contactLocalDataSource = FakeContactLocalDataSource()
         callLogLocalDataSource = FakeCallLogLocalDataSource()
         callLogRemoteDataSource = FakeCallLogRemoteDataSource()
+        authRepository = FakeAuthRepository()
+        authRepository.setLoggedIn("user", "token")
 
         val contactRepository = ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
@@ -55,11 +60,12 @@ class CallLogsViewModelTest {
         val callLogRepository = CallLogRepositoryImpl(
             remoteDataSource = callLogRemoteDataSource,
             localDataSource = callLogLocalDataSource,
+            authRepository = authRepository,
             scope = testScope,
             normalizePhone = { it },
             refreshIntervalMs = Long.MAX_VALUE,
         )
-        viewModel = CallLogsViewModel(callLogRepository, contactRepository)
+        viewModel = CallLogsViewModel(callLogRepository, contactRepository, authRepository)
     }
 
     @AfterTest
@@ -218,6 +224,56 @@ class CallLogsViewModelTest {
             skipItems(1)
             val state = awaitItem()
             assertEquals(contact2, state.contacts["+0987654321"])
+        }
+    }
+
+    @Test
+    fun isLoggedInReflectsAuthState() = runTest {
+        viewModel.uiState.test {
+            var state = awaitItem()
+            // Initially logged in (set in setup)
+            assertTrue(state.isLoggedIn)
+
+            authRepository.setLoggedOut()
+            state = awaitItem()
+            assertFalse(state.isLoggedIn)
+        }
+    }
+
+    @Test
+    fun refreshErrorIsSetOnFailure() = runTest {
+        val throwingRemote = object : com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource {
+            override suspend fun getCallLogs(token: String?): List<CallLog> {
+                throw RuntimeException("Network error")
+            }
+        }
+
+        val callLogRepository = CallLogRepositoryImpl(
+            remoteDataSource = throwingRemote,
+            localDataSource = callLogLocalDataSource,
+            authRepository = authRepository,
+            scope = testScope,
+            normalizePhone = { it },
+            refreshIntervalMs = Long.MAX_VALUE,
+        )
+        viewModel = CallLogsViewModel(callLogRepository, ContactRepositoryImpl(
+            localDataSource = contactLocalDataSource,
+            normalizePhone = { it },
+        ), authRepository)
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.refresh()
+
+            var state: CallLogsUiState
+            withTimeout(100) {
+                do {
+                    state = awaitItem()
+                } while (state.refreshError == null && state.isRefreshing)
+            }
+
+            assertEquals("failed to refresh", state.refreshError)
+            assertFalse(state.isRefreshing)
         }
     }
 }

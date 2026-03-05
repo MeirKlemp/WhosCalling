@@ -3,10 +3,13 @@ package com.klemfner.whoscalling.ui.common.utils
 import androidx.compose.runtime.Composable
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.LoggedInUser
+import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import com.klemfner.whoscalling.ui.user.UserViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -26,6 +29,14 @@ private class PreviewCallLogRepository : CallLogRepository {
     override suspend fun refreshCallLogs() {}
 }
 
+private class PreviewAuthRepository : AuthRepository {
+    override val loggedInUser: Flow<LoggedInUser?> = flowOf(null)
+    override suspend fun login(username: String, password: String, rememberMe: Boolean) {}
+    override suspend fun retryLogin() {}
+    override suspend fun logout() {}
+    override fun getToken(): String? = null
+}
+
 @Composable
 fun PreviewKoinApplication(content: @Composable () -> Unit) {
     KoinApplication(application = {
@@ -33,8 +44,10 @@ fun PreviewKoinApplication(content: @Composable () -> Unit) {
             module {
                 single<ContactRepository> { PreviewContactRepository() }
                 single<CallLogRepository> { PreviewCallLogRepository() }
+                single<AuthRepository> { PreviewAuthRepository() }
                 viewModelOf(::ContactsViewModel)
                 viewModelOf(::CallLogsViewModel)
+                viewModelOf(::UserViewModel)
             },
         )
     }) {
