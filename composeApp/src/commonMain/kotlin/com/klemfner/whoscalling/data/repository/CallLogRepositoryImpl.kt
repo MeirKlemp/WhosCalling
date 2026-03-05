@@ -31,7 +31,16 @@ class CallLogRepositoryImpl(
     override val callLogs: Flow<List<CallLog>> = localDataSource.callLogs
 
     init {
-        startAutoRefresh()
+        scope.launch {
+            authRepository.loggedInUser.collect { user ->
+                if (user != null) {
+                    startAutoRefresh()
+                } else {
+                    autoRefreshJob?.cancel()
+                    autoRefreshJob = null
+                }
+            }
+        }
     }
 
     override val incomingCallLog: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
@@ -50,7 +59,6 @@ class CallLogRepositoryImpl(
         autoRefreshJob = scope.launch {
             while (true) {
                 delay(refreshIntervalMs)
-                if (authRepository.getToken() == null) continue
                 try {
                     localDataSource.replaceAllCallLogs(fetchWithAuth())
                 } catch (_: Exception) {

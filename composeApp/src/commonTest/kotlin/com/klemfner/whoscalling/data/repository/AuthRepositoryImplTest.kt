@@ -106,13 +106,22 @@ class AuthRepositoryImplTest {
 
     @Test
     fun retryLoginRefreshesToken() = runTest {
-        repository.login("alice", "pass123", rememberMe = false)
+        repository.login("alice", "pass123", rememberMe = true)
 
         remoteDataSource.setResult(Result.success("new-token"))
         repository.retryLogin()
 
         assertNotNull(repository.getToken())
         assertEquals("new-token", repository.getToken())
+    }
+
+    @Test
+    fun retryLoginWithoutRememberMeThrows() = runTest {
+        repository.login("alice", "pass123", rememberMe = false)
+
+        assertFailsWith<IllegalStateException> {
+            repository.retryLogin()
+        }
     }
 
     @Test

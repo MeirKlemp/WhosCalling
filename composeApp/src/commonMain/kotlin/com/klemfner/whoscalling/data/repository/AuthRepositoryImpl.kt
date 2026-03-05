@@ -37,14 +37,15 @@ class AuthRepositoryImpl(
         val loginTime = currentTimeMillis()
         this.token = newToken
         this.username = username
-        this.password = password
         _loggedInUser.value = LoggedInUser(username, loginTime)
 
         if (rememberMe) {
+            this.password = password
             localDataSource.saveCredentials(
                 SavedCredentials(username, password, loginTime, newToken)
             )
         } else {
+            this.password = null
             localDataSource.clearCredentials()
         }
     }

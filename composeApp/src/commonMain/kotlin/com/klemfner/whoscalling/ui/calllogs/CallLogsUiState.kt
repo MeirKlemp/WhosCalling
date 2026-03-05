@@ -11,7 +11,7 @@ data class CallLogsUiState(
     val currentPane: CallLogsPane = CallLogsPane.LIST,
     val isRefreshing: Boolean = false,
     val isLoggedIn: Boolean = false,
-    val refreshError: String? = null,
+    val refreshError: Boolean = false,
 )
 
 enum class CallLogsPane {

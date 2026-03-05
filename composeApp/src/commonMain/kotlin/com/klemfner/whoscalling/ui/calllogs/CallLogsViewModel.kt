@@ -64,19 +64,19 @@ class CallLogsViewModel(
     }
 
     fun refresh() {
-        _uiState.update { it.copy(isRefreshing = true, refreshError = null) }
+        _uiState.update { it.copy(isRefreshing = true, refreshError = false) }
         viewModelScope.launch {
             try {
                 callLogRepository.refreshCallLogs()
             } catch (_: Exception) {
-                _uiState.update { it.copy(refreshError = "Failed to refresh") }
+                _uiState.update { it.copy(refreshError = true) }
             }
             _uiState.update { it.copy(isRefreshing = false) }
         }
     }
 
     fun clearRefreshError() {
-        _uiState.update { it.copy(refreshError = null) }
+        _uiState.update { it.copy(refreshError = false) }
     }
 
     fun selectCallLog(callLog: CallLog) {

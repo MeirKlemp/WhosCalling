@@ -9,7 +9,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 
 data class NavState(
-    val tab: NavigationTab = NavigationTab.CONTACTS,
+    val tab: NavigationTab = NavigationTab.USER,
     val action: NavAction? = null,
 )
 
@@ -37,7 +37,7 @@ val LocalNavigator = compositionLocalOf<Navigator> {
 @Composable
 fun rememberNavigator(): Navigator {
     return rememberSaveable(saver = navigatorSaver()) {
-        Navigator(NavigationTab.CONTACTS)
+        Navigator(NavigationTab.USER)
     }
 }
 

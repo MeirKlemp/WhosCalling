@@ -144,7 +144,6 @@ class UserViewModelTest {
 
             assertNotNull(state.loginError)
             assertTrue(state.loginError is LoginError.Generic)
-            assertEquals("Network error", (state.loginError as LoginError.Generic).message)
             assertFalse(state.isLoading)
             assertNull(state.loggedInUser)
         }

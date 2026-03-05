@@ -44,8 +44,8 @@ class UserViewModel(
                 authRepository.login(state.username, state.password, state.rememberMe)
             } catch (e: IllegalArgumentException) {
                 _uiState.update { it.copy(loginError = LoginError.BlankCredentials, isLoading = false) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(loginError = LoginError.Generic(e.message), isLoading = false) }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(loginError = LoginError.Generic, isLoading = false) }
             }
         }
     }
