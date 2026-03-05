@@ -269,10 +269,10 @@ class CallLogsViewModelTest {
             withTimeout(100) {
                 do {
                     state = awaitItem()
-                } while (state.refreshError == null && state.isRefreshing)
+                } while (!state.refreshError && state.isRefreshing)
             }
 
-            assertEquals("Failed to refresh", state.refreshError)
+            assertTrue(state.refreshError)
             assertFalse(state.isRefreshing)
         }
     }
