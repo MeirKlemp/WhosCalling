@@ -26,6 +26,7 @@ kotlin {
             implementation(libs.sqldelight.driver.android)
             implementation(libs.libphonenumber)
             implementation(libs.androidx.security.crypto)
+            implementation(libs.ktor.client.android)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -46,6 +47,9 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ksoup)
+            implementation(libs.bignum)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -62,6 +66,7 @@ kotlin {
             implementation(libs.libphonenumber)
             implementation(libs.jna)
             implementation(libs.jna.platform)
+            implementation(libs.ktor.client.cio)
         }
     }
 }
