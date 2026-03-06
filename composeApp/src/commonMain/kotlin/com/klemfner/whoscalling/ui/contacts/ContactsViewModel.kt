@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 class ContactsViewModel(
     private val contactRepository: ContactRepository,
@@ -123,12 +121,11 @@ class ContactsViewModel(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     fun saveContact() {
         val form = _uiState.value.formState
         viewModelScope.launch {
             val contact = Contact(
-                id = form.id ?: Uuid.random().toString(),
+                id = form.id ?: "",
                 name = form.name,
                 phoneNumber = form.phoneNumber,
                 email = form.email.ifBlank { null },
