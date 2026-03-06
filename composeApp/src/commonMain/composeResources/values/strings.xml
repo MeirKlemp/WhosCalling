@@ -48,4 +48,9 @@
     <string name="login_error_generic">Login failed</string>
     <string name="debug_logs">Debug Logs</string>
     <string name="copy">Copy</string>
+    <string name="export_contacts">Export Contacts</string>
+    <string name="import_contacts">Import Contacts</string>
+    <string name="contacts_exported">Contacts exported</string>
+    <string name="contacts_imported">Contacts imported</string>
+    <string name="import_error">Failed to import contacts</string>
 </resources>
