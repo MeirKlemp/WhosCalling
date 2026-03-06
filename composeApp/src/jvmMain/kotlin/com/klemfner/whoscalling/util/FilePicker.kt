@@ -9,7 +9,7 @@ import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
-actual fun rememberFileSaver(): suspend (fileName: String, content: String) -> Unit {
+actual fun rememberFileSaver(): suspend (fileName: String, content: String) -> Boolean {
     return { fileName, content ->
         withContext(Dispatchers.Swing) {
             val chooser = JFileChooser().apply {
@@ -23,6 +23,9 @@ actual fun rememberFileSaver(): suspend (fileName: String, content: String) -> U
                     file = File(file.path + ".json")
                 }
                 file.writeText(content)
+                true
+            } else {
+                false
             }
         }
     }

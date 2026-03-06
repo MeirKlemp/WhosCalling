@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -45,7 +46,8 @@ class SettingsViewModelTest {
     @Test
     fun exportContacts_emptyList() = runTest {
         val json = viewModel.exportContacts()
-        assertEquals("[ ]", json)
+        val contacts = Json.decodeFromString<List<Contact>>(json)
+        assertEquals(emptyList(), contacts)
     }
 
     @Test

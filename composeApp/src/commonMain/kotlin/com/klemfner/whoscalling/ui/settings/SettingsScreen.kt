@@ -105,8 +105,10 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 onClick = {
                     scope.launch {
                         val json = viewModel.exportContacts()
-                        fileSaver("contacts.json", json)
-                        snackbarHostState.showSnackbar(contactsExportedMessage)
+                        val saved = fileSaver("contacts.json", json)
+                        if (saved) {
+                            snackbarHostState.showSnackbar(contactsExportedMessage)
+                        }
                     }
                 },
                 modifier = Modifier.padding(horizontal = 16.dp),

@@ -22,7 +22,7 @@ class SettingsViewModel(
 
     suspend fun exportContacts(): String {
         val contacts = contactRepository.contacts.first()
-        return json.encodeToString(contacts)
+        return json.encodeToString<List<Contact>>(contacts)
     }
 
     fun importContacts(jsonString: String) {

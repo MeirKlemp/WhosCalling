@@ -1,6 +1,5 @@
 package com.klemfner.whoscalling.util
 
-import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -12,27 +11,27 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.CompletableDeferred
 
 @Composable
-actual fun rememberFileSaver(): suspend (fileName: String, content: String) -> Unit {
+actual fun rememberFileSaver(): suspend (fileName: String, content: String) -> Boolean {
     val context = LocalContext.current
     var pendingContent by remember { mutableStateOf<String?>(null) }
-    var saveDeferred by remember { mutableStateOf<CompletableDeferred<Unit>?>(null) }
+    var saveDeferred by remember { mutableStateOf<CompletableDeferred<Boolean>?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json"),
     ) { uri ->
-        uri?.let {
-            context.contentResolver.openOutputStream(it)?.use { stream ->
+        if (uri != null) {
+            context.contentResolver.openOutputStream(uri)?.use { stream ->
                 stream.write(pendingContent?.toByteArray(Charsets.UTF_8) ?: return@use)
             }
         }
         pendingContent = null
-        saveDeferred?.complete(Unit)
+        saveDeferred?.complete(uri != null)
         saveDeferred = null
     }
 
     return { fileName, content ->
         pendingContent = content
-        val deferred = CompletableDeferred<Unit>()
+        val deferred = CompletableDeferred<Boolean>()
         saveDeferred = deferred
         launcher.launch(fileName)
         deferred.await()
