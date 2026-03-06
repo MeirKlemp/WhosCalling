@@ -8,7 +8,6 @@ import com.klemfner.whoscalling.data.local.DatabaseDriverFactory
 import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.data.remote.AuthRemoteDataSource
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
-import com.klemfner.whoscalling.data.remote.DebugErrorLog
 import com.klemfner.whoscalling.data.remote.DummyCallLogRemoteDataSource
 import com.klemfner.whoscalling.data.remote.PartnerAuthenticationDataSource
 import com.klemfner.whoscalling.data.remote.srp.Srp6aClient
@@ -42,8 +41,7 @@ val dataSourceModule = module {
     single<CallLogRemoteDataSource> { DummyCallLogRemoteDataSource() }
     single<HttpClient> { HttpClient() }
     single<Srp6aClient> { Srp6aClientImpl() }
-    single<DebugErrorLog> { DebugErrorLog() }
-    single<AuthRemoteDataSource> { PartnerAuthenticationDataSource(get(), get(), get()) }
+    single<AuthRemoteDataSource> { PartnerAuthenticationDataSource(get(), get()) }
 }
 
 val repositoryModule = module {

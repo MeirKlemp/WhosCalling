@@ -1,7 +1,6 @@
 package com.klemfner.whoscalling.ui.user
 
 import app.cash.turbine.test
-import com.klemfner.whoscalling.data.remote.DebugErrorLog
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.fake.FakeAuthLocalDataSource
 import com.klemfner.whoscalling.fake.FakeAuthRemoteDataSource
@@ -40,7 +39,7 @@ class UserViewModelTest {
             localDataSource = authLocalDataSource,
             currentTimeMillis = { 5000L },
         )
-        viewModel = UserViewModel(authRepository, DebugErrorLog())
+        viewModel = UserViewModel(authRepository)
     }
 
     @AfterTest
