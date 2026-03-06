@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.Ksoup
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.UnauthorizedException
+import com.klemfner.whoscalling.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -17,17 +18,22 @@ import kotlinx.datetime.toInstant
 // TODO: Make router IP configurable - create a GitHub issue to track this.
 //  Currently hardcoded to 192.168.60.1. Should be configurable via settings/preferences.
 private const val ROUTER_BASE_URL = "http://192.168.60.1"
+private const val TAG = "PartnerCallLogsDS"
 
 class PartnerCallLogsDataSource(
     private val httpClient: HttpClient,
 ) : CallLogRemoteDataSource {
 
     override suspend fun getCallLogs(token: String?): List<CallLog> = withContext(Dispatchers.Default) {
+        Logger.d(TAG, "Token is ${if (token == null) "null" else "not null"}")
+
         val response = httpClient.get("$ROUTER_BASE_URL/modals/mmpbx-log-modal.lp") {
             token?.let { header("Cookie", "sessionID=$it") }
         }
 
         val html = response.bodyAsText()
+        Logger.d(TAG, "Response HTML:\n$html")
+
         val document = Ksoup.parse(html)
 
         val table = document.selectFirst("#calllog")
