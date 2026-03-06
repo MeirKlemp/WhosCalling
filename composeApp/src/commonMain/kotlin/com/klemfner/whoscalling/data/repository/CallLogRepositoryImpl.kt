@@ -9,6 +9,7 @@ import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.util.currentTimeMillis
 import com.klemfner.whoscalling.util.normalizePhoneNumber
+import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,8 +62,8 @@ class CallLogRepositoryImpl(
                 delay(refreshIntervalMs)
                 try {
                     localDataSource.replaceAllCallLogs(fetchWithAuth())
-                } catch (_: Exception) {
-                    // Don't replace call logs on failure
+                } catch (e: Exception) {
+                    Logger.e(TAG, "Auto-refresh failed", e)
                 }
             }
         }
@@ -93,6 +94,7 @@ class CallLogRepositoryImpl(
     }
 
     companion object {
+        private const val TAG = "CallLogRepository"
         const val REFRESH_INTERVAL_MS = 5_000L
     }
 }

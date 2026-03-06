@@ -12,8 +12,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,12 +26,23 @@ import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.debug
+import whoscalling.composeapp.generated.resources.debug_logs
 import whoscalling.composeapp.generated.resources.settings
 import whoscalling.composeapp.generated.resources.touch_mode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier) {
+    var showDebugLogs by rememberSaveable { mutableStateOf(false) }
+
+    if (showDebugLogs) {
+        DebugLogsScreen(
+            onBack = { showDebugLogs = false },
+            modifier = modifier,
+        )
+        return
+    }
+
     val touchModeState = LocalTouchModeState.current
     Scaffold(
         topBar = {
@@ -56,6 +72,12 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     text = stringResource(Res.string.touch_mode),
                     modifier = Modifier.padding(start = 8.dp),
                 )
+            }
+            TextButton(
+                onClick = { showDebugLogs = true },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                Text(stringResource(Res.string.debug_logs))
             }
         }
     }

@@ -29,10 +29,7 @@ class PartnerAuthenticationDataSource(
 
         val loginResponse = httpClient.get("$ROUTER_BASE_URL/login.lp")
 
-        val sessionId = loginResponse.headers["Set-Cookie"]
-            ?.split(";")
-            ?.firstOrNull { it.trim().startsWith("sessionID=") }
-            ?.substringAfter("sessionID=")
+        val initialSessionId = extractSessionId(loginResponse.headers["Set-Cookie"])
             ?: throw IllegalStateException("No sessionID cookie found")
 
         val loginHtml = loginResponse.bodyAsText()
@@ -46,7 +43,7 @@ class PartnerAuthenticationDataSource(
 
         val challengeResponse = httpClient.post("$ROUTER_BASE_URL/authenticate") {
             contentType(ContentType.Application.FormUrlEncoded)
-            header("Cookie", "sessionID=$sessionId")
+            header("Cookie", "sessionID=$initialSessionId")
             setBody("CSRFtoken=$csrfToken&I=$username&A=$publicKey")
         }
 
@@ -60,7 +57,7 @@ class PartnerAuthenticationDataSource(
 
         val proofResponse = httpClient.post("$ROUTER_BASE_URL/authenticate") {
             contentType(ContentType.Application.FormUrlEncoded)
-            header("Cookie", "sessionID=$sessionId")
+            header("Cookie", "sessionID=$initialSessionId")
             setBody("CSRFtoken=$csrfToken&M=$clientProof")
         }
 
@@ -72,11 +69,21 @@ class PartnerAuthenticationDataSource(
             throw IllegalStateException("Server proof verification failed")
         }
 
+        val sessionId = extractSessionId(proofResponse.headers["Set-Cookie"])
+            ?: initialSessionId
+
         sessionId
     }
 
     private fun extractJsonStringValue(json: String, key: String): String? {
         val regex = Regex("\"${Regex.escape(key)}\"\\s*:\\s*\"([^\"]+)\"")
         return regex.find(json)?.groupValues?.get(1)
+    }
+
+    private fun extractSessionId(setCookie: String?): String? {
+        return setCookie
+            ?.split(";")
+            ?.firstOrNull { it.trim().startsWith("sessionID=") }
+            ?.substringAfter("sessionID=")
     }
 }
