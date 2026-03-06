@@ -18,9 +18,19 @@ private const val ROUTER_BASE_URL = "http://192.168.60.1"
 class PartnerAuthenticationDataSource(
     private val srpClient: Srp6aClient,
     private val httpClient: HttpClient,
+    private val debugErrorLog: DebugErrorLog,
 ) : AuthRemoteDataSource {
 
     override suspend fun login(username: String, password: String): String {
+        try {
+            return doLogin(username, password)
+        } catch (e: Exception) {
+            debugErrorLog.log(e)
+            throw e
+        }
+    }
+
+    private suspend fun doLogin(username: String, password: String): String {
         if (username.isBlank() || password.isBlank()) {
             throw IllegalArgumentException("Username and password must not be blank")
         }

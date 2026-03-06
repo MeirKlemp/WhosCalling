@@ -2,6 +2,7 @@ package com.klemfner.whoscalling.ui.user
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.klemfner.whoscalling.data.remote.DebugErrorLog
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(
     private val authRepository: AuthRepository,
+    private val debugErrorLog: DebugErrorLog,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UserUiState())
@@ -64,5 +66,13 @@ class UserViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(loginError = null) }
+    }
+
+    fun showDebugScreen() {
+        _uiState.update { it.copy(showDebugScreen = true, debugErrors = debugErrorLog.errors) }
+    }
+
+    fun hideDebugScreen() {
+        _uiState.update { it.copy(showDebugScreen = false) }
     }
 }

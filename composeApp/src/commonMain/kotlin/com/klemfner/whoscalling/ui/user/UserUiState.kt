@@ -9,4 +9,6 @@ data class UserUiState(
     val rememberMe: Boolean = false,
     val isLoading: Boolean = false,
     val loginError: LoginError? = null,
+    val showDebugScreen: Boolean = false,
+    val debugErrors: List<String> = emptyList(),
 )
