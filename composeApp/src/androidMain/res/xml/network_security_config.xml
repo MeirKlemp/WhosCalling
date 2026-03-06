@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow cleartext HTTP so the router IP can be configured dynamically.
+         Authentication uses SRP-6a so credentials are never sent in plaintext. -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
