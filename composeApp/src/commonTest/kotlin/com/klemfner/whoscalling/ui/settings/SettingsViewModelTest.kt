@@ -204,6 +204,8 @@ class SettingsViewModelTest {
         contactLocalDataSource.saveContact(contact2)
 
         viewModel.contactCount.test {
+            assertEquals(0, awaitItem()) // stateIn initial value
+
             assertEquals(2, awaitItem())
 
             contactLocalDataSource.deleteContact("1")
