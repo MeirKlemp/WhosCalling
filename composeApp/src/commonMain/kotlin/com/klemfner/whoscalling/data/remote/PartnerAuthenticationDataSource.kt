@@ -11,7 +11,8 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
-// TODO: Make router IP configurable (see GitHub issue)
+// TODO: Make router IP configurable - create a GitHub issue to track this.
+//  Currently hardcoded to 192.168.60.1. Should be configurable via settings/preferences.
 private const val ROUTER_BASE_URL = "http://192.168.60.1"
 
 class PartnerAuthenticationDataSource(
@@ -77,4 +78,3 @@ class PartnerAuthenticationDataSource(
         return regex.find(json)?.groupValues?.get(1)
     }
 }
-

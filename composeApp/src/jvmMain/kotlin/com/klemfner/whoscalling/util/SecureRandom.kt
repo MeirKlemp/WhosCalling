@@ -1,7 +1,9 @@
 package com.klemfner.whoscalling.util
 
+private val secureRandom = java.security.SecureRandom()
+
 actual fun secureRandomBytes(size: Int): ByteArray {
     val bytes = ByteArray(size)
-    java.security.SecureRandom().nextBytes(bytes)
+    secureRandom.nextBytes(bytes)
     return bytes
 }

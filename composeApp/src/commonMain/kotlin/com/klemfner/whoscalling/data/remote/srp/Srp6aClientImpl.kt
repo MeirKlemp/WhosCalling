@@ -152,5 +152,3 @@ class Srp6aClientImpl : Srp6aClient {
         }
     }
 }
-
-
