@@ -164,7 +164,6 @@ private fun LoginForm(
                 Text(stringResource(Res.string.login))
             }
         }
-
     }
 }
 
