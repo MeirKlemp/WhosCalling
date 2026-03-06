@@ -15,6 +15,8 @@ data class NavState(
 
 sealed interface NavAction {
     data class AddContact(val phoneNumber: String) : NavAction
+    data class ShowContact(val phoneNumber: String) : NavAction
+    data class ShowCallLog(val callLogId: String) : NavAction
 }
 
 class Navigator(initialTab: NavigationTab) {

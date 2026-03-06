@@ -88,6 +88,11 @@ class CallLogsViewModel(
         }
     }
 
+    fun selectCallLogById(callLogId: String) {
+        val callLog = _uiState.value.callLogs.find { it.id == callLogId } ?: return
+        selectCallLog(callLog)
+    }
+
     fun goBack() {
         when (_uiState.value.currentPane) {
             CallLogsPane.DETAILS -> {

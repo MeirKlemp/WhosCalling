@@ -276,4 +276,33 @@ class CallLogsViewModelTest {
             assertFalse(state.isRefreshing)
         }
     }
+
+    @Test
+    fun selectCallLogByIdNavigatesToDetails() = runTest {
+        callLogLocalDataSource.saveCallLogs(listOf(callLog1, callLog2))
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem() // wait for call logs to load
+
+            viewModel.selectCallLogById(callLog1.id)
+            val state = awaitItem()
+
+            assertEquals(CallLogsPane.DETAILS, state.currentPane)
+            assertEquals(callLog1, state.selectedCallLog)
+        }
+    }
+
+    @Test
+    fun selectCallLogByIdWithUnknownIdDoesNothing() = runTest {
+        callLogLocalDataSource.saveCallLogs(listOf(callLog1))
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem() // wait for call logs to load
+
+            viewModel.selectCallLogById("unknown-id")
+            expectNoEvents()
+        }
+    }
 }

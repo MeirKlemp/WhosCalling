@@ -29,6 +29,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
 import com.klemfner.whoscalling.ui.contacts.components.ContactDetails
@@ -36,6 +37,7 @@ import com.klemfner.whoscalling.ui.contacts.components.ContactForm
 import com.klemfner.whoscalling.ui.contacts.components.ContactList
 import com.klemfner.whoscalling.ui.navigation.LocalNavigator
 import com.klemfner.whoscalling.ui.navigation.NavAction
+import com.klemfner.whoscalling.ui.navigation.NavigationTab
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
@@ -52,9 +54,19 @@ fun ContactsScreen(
 
     LaunchedEffect(navigator.navState.action) {
         val action = navigator.navState.action
-        if (action is NavAction.AddContact) {
-            viewModel.openAddContact(action.phoneNumber)
-            navigator.consumeAction()
+        when (action) {
+            is NavAction.AddContact -> {
+                viewModel.openAddContact(action.phoneNumber)
+                navigator.consumeAction()
+            }
+            is NavAction.ShowContact -> {
+                val contact = viewModel.uiState.value.contacts.find { it.phoneNumber == action.phoneNumber }
+                if (contact != null) {
+                    viewModel.selectContact(contact)
+                }
+                navigator.consumeAction()
+            }
+            else -> {}
         }
     }
 
@@ -70,10 +82,16 @@ fun ContactsScreen(
                 handleKeyEvent(event, uiState, viewModel)
             },
     ) {
+        val onCallLogClick: (CallLog) -> Unit = { callLog ->
+            navigator.navigateTo(
+                NavigationTab.CALL_LOGS,
+                NavAction.ShowCallLog(callLog.id),
+            )
+        }
         if (isExpanded) {
-            ExpandedContactsLayout(uiState, viewModel)
+            ExpandedContactsLayout(uiState, viewModel, onCallLogClick)
         } else {
-            CompactContactsLayout(uiState, viewModel)
+            CompactContactsLayout(uiState, viewModel, onCallLogClick)
         }
     }
 }
@@ -103,6 +121,7 @@ private fun handleKeyEvent(
 private fun CompactContactsLayout(
     uiState: ContactsUiState,
     viewModel: ContactsViewModel,
+    onCallLogClick: (CallLog) -> Unit,
 ) {
     AnimatedContent(
         targetState = uiState.currentPane,
@@ -134,6 +153,7 @@ private fun CompactContactsLayout(
                         callLogs = uiState.contactCallLogs,
                         onBackClick = viewModel::goBack,
                         onEditClick = viewModel::openEditContact,
+                        onCallLogClick = onCallLogClick,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -157,6 +177,7 @@ private fun CompactContactsLayout(
 private fun ExpandedContactsLayout(
     uiState: ContactsUiState,
     viewModel: ContactsViewModel,
+    onCallLogClick: (CallLog) -> Unit,
 ) {
     Row(Modifier.fillMaxSize()) {
         ContactList(
@@ -209,6 +230,7 @@ private fun ExpandedContactsLayout(
                             callLogs = uiState.contactCallLogs,
                             onBackClick = viewModel::goBack,
                             onEditClick = viewModel::openEditContact,
+                            onCallLogClick = onCallLogClick,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

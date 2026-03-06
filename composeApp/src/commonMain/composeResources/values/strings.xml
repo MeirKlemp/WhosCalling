@@ -50,4 +50,7 @@
     <string name="login_error_generic">Login failed</string>
     <string name="debug_logs">Debug Logs</string>
     <string name="copy">Copy</string>
+    <string name="show_contact">Show Contact</string>
+    <string name="time_label">Time</string>
+    <string name="call_logs_by_number_count">Call logs with this number (%1$d)</string>
 </resources>

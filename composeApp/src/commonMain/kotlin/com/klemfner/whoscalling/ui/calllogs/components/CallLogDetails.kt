@@ -13,10 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -45,7 +49,7 @@ import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 import whoscalling.composeapp.generated.resources.back
-import whoscalling.composeapp.generated.resources.call_logs_by_number
+import whoscalling.composeapp.generated.resources.call_logs_by_number_count
 import whoscalling.composeapp.generated.resources.details
 import whoscalling.composeapp.generated.resources.duration_label
 import whoscalling.composeapp.generated.resources.incoming_call
@@ -54,8 +58,10 @@ import whoscalling.composeapp.generated.resources.missed_incoming_call
 import whoscalling.composeapp.generated.resources.missed_outgoing_call
 import whoscalling.composeapp.generated.resources.no_call_logs
 import whoscalling.composeapp.generated.resources.outgoing_call
+import whoscalling.composeapp.generated.resources.show_contact
 import whoscalling.composeapp.generated.resources.this_month
 import whoscalling.composeapp.generated.resources.this_week
+import whoscalling.composeapp.generated.resources.time_label
 import whoscalling.composeapp.generated.resources.today
 import whoscalling.composeapp.generated.resources.yesterday
 
@@ -67,6 +73,8 @@ fun CallLogDetails(
     numberCallLogs: List<CallLog>,
     onBackClick: () -> Unit,
     onAddContactClick: (String) -> Unit,
+    onShowContactClick: (String) -> Unit,
+    onCallLogClick: (CallLog) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -98,13 +106,14 @@ fun CallLogDetails(
                     callLog = callLog,
                     contact = contact,
                     onAddContactClick = onAddContactClick,
+                    onShowContactClick = onShowContactClick,
                 )
                 HorizontalDivider()
             }
 
             item {
                 Text(
-                    stringResource(Res.string.call_logs_by_number),
+                    stringResource(Res.string.call_logs_by_number_count, numberCallLogs.size),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(16.dp),
                 )
@@ -126,7 +135,7 @@ fun CallLogDetails(
                     TimePeriodHeader(period)
                 }
                 items(logs, key = { it.id }) { log ->
-                    CallLogItem(callLog = log)
+                    CallLogItem(callLog = log, onClick = { onCallLogClick(log) })
                 }
             }
         }
@@ -138,21 +147,27 @@ private fun CallLogHeader(
     callLog: CallLog,
     contact: Contact?,
     onAddContactClick: (String) -> Unit,
+    onShowContactClick: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ContactInfo(callLog = callLog, contact = contact)
+        SelectionContainer {
+            ContactInfo(callLog = callLog, contact = contact)
+        }
 
         if (contact == null) {
             AddContactButton(phoneNumber = callLog.phoneNumber, onClick = onAddContactClick)
+        } else {
+            ShowContactButton(phoneNumber = callLog.phoneNumber, onClick = onShowContactClick)
         }
 
         HorizontalDivider()
 
         CallTypeRow(callLog)
-        CallMetadata(callLog)
+        TimeRow(callLog)
+        DurationRow(callLog)
     }
 }
 
@@ -161,25 +176,27 @@ private fun ContactInfo(
     callLog: CallLog,
     contact: Contact?,
 ) {
-    if (contact != null) {
-        Text(contact.name, style = MaterialTheme.typography.headlineMedium)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Default.Phone,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(Modifier.width(8.dp))
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        if (contact != null) {
+            Text(contact.name, style = MaterialTheme.typography.headlineMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.Phone,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    callLog.phoneNumber,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        } else {
             Text(
                 callLog.phoneNumber,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.headlineMedium,
             )
         }
-    } else {
-        Text(
-            callLog.phoneNumber,
-            style = MaterialTheme.typography.headlineMedium,
-        )
     }
 }
 
@@ -196,6 +213,22 @@ private fun AddContactButton(
         )
         Spacer(Modifier.width(8.dp))
         Text(stringResource(Res.string.add_contact))
+    }
+}
+
+@Composable
+private fun ShowContactButton(
+    phoneNumber: String,
+    onClick: (String) -> Unit,
+) {
+    TextButton(onClick = { onClick(phoneNumber) }) {
+        Icon(
+            Icons.Default.Person,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(Res.string.show_contact))
     }
 }
 
@@ -222,16 +255,36 @@ private fun CallTypeRow(callLog: CallLog) {
 }
 
 @Composable
-private fun CallMetadata(callLog: CallLog) {
+private fun TimeRow(callLog: CallLog) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            "${stringResource(Res.string.duration_label)}: ${formatDuration(callLog.duration)}",
-            style = MaterialTheme.typography.bodyMedium,
+        Icon(
+            Icons.Default.Schedule,
+            contentDescription = stringResource(Res.string.time_label),
+            modifier = Modifier.size(20.dp),
         )
         Text(
             "${formatShortDate(callLog.timestamp)} ${formatTimestamp(callLog.timestamp)}",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun DurationRow(callLog: CallLog) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            Icons.Default.Timer,
+            contentDescription = stringResource(Res.string.duration_label),
+            modifier = Modifier.size(20.dp),
+        )
+        Text(
+            "${stringResource(Res.string.duration_label)}: ${formatDuration(callLog.duration)}",
             style = MaterialTheme.typography.bodyMedium,
         )
     }

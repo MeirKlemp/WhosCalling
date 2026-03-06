@@ -1,5 +1,6 @@
 package com.klemfner.whoscalling.ui.contacts.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,6 +14,7 @@ import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
 @Composable
 fun CallLogItem(
     callLog: CallLog,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     ListItem(
@@ -28,6 +30,6 @@ fun CallLogItem(
                 style = MaterialTheme.typography.bodySmall,
             )
         },
-        modifier = modifier,
+        modifier = if (onClick != null) modifier.clickable(onClick = onClick) else modifier,
     )
 }

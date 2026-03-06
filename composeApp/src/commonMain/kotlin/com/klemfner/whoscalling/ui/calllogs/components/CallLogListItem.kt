@@ -10,8 +10,11 @@ import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.ui.common.components.CallLogIcon
+import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
+import com.klemfner.whoscalling.ui.common.utils.formatShortDate
 import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
+import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 
 @Composable
 fun CallLogListItem(
@@ -21,6 +24,13 @@ fun CallLogListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val period = getTimePeriod(callLog.timestamp)
+    val displayTime = if (period == TimePeriod.TODAY || period == TimePeriod.YESTERDAY) {
+        formatTimestamp(callLog.timestamp)
+    } else {
+        formatShortDate(callLog.timestamp)
+    }
+
     ListItem(
         leadingContent = {
             CallLogIcon(callLog)
@@ -35,7 +45,7 @@ fun CallLogListItem(
         },
         trailingContent = {
             Text(
-                formatTimestamp(callLog.timestamp),
+                displayTime,
                 style = MaterialTheme.typography.bodySmall,
             )
         },
