@@ -40,6 +40,8 @@
     <string name="logout">Logout</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
     <string name="remember_me">Remember Me</string>
     <string name="login_time">Login Time</string>
     <string name="not_logged_in_warning">You are not logged in</string>
