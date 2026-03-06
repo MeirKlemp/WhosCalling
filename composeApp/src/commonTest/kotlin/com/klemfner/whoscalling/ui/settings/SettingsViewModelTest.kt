@@ -45,7 +45,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun exportContacts_emptyList() = runTest {
+    fun exportContacts_emptyList() = runTest(testDispatcher) {
         val result = viewModel.exportContacts()
         assertEquals(0, result.count)
         val contacts = Json.decodeFromString<List<Contact>>(result.json)
@@ -53,7 +53,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun exportContacts_withContacts() = runTest {
+    fun exportContacts_withContacts() = runTest(testDispatcher) {
         contactLocalDataSource.saveContact(contact1)
         contactLocalDataSource.saveContact(contact2)
 
@@ -68,7 +68,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun importContacts_validJson() = runTest {
+    fun importContacts_validJson() = runTest(testDispatcher) {
         val json = """
             [
                 {"name":"Alice","phoneNumber":"+1234567890","email":"alice@test.com"},
@@ -82,12 +82,12 @@ class SettingsViewModelTest {
             skipItems(1)
             val result = awaitItem()
             assertTrue(result is ImportResult.Success)
-            assertEquals(2, (result as ImportResult.Success).count)
+            assertEquals(2, result.count)
         }
     }
 
     @Test
-    fun importContacts_jsonWithIdIsIgnored() = runTest {
+    fun importContacts_jsonWithIdIsIgnored() = runTest(testDispatcher) {
         val json = """
             [
                 {"id":"old-id","name":"Alice","phoneNumber":"+1234567890"}
@@ -100,12 +100,12 @@ class SettingsViewModelTest {
             skipItems(1)
             val result = awaitItem()
             assertTrue(result is ImportResult.Success)
-            assertEquals(1, (result as ImportResult.Success).count)
+            assertEquals(1, result.count)
         }
     }
 
     @Test
-    fun importContacts_invalidJson() = runTest {
+    fun importContacts_invalidJson() = runTest(testDispatcher) {
         viewModel.importContacts("invalid json")
 
         viewModel.importResult.test {
@@ -116,7 +116,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun importContacts_partiallyValid() = runTest {
+    fun importContacts_partiallyValid() = runTest(testDispatcher) {
         val contactRepository = ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
             normalizePhone = { phone ->
@@ -139,12 +139,12 @@ class SettingsViewModelTest {
             skipItems(1)
             val result = awaitItem()
             assertTrue(result is ImportResult.Success)
-            assertEquals(1, (result as ImportResult.Success).count)
+            assertEquals(1, result.count)
         }
     }
 
     @Test
-    fun clearImportResult_resetsToNull() = runTest {
+    fun clearImportResult_resetsToNull() = runTest(testDispatcher) {
         viewModel.importContacts("[]")
 
         viewModel.importResult.test {
@@ -158,7 +158,7 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun exportThenImport_roundTrip() = runTest {
+    fun exportThenImport_roundTrip() = runTest(testDispatcher) {
         contactLocalDataSource.saveContact(contact1)
         contactLocalDataSource.saveContact(contact2)
 
@@ -174,7 +174,7 @@ class SettingsViewModelTest {
             skipItems(1)
             val result = awaitItem()
             assertTrue(result is ImportResult.Success)
-            assertEquals(2, (result as ImportResult.Success).count)
+            assertEquals(2, result.count)
         }
     }
 }

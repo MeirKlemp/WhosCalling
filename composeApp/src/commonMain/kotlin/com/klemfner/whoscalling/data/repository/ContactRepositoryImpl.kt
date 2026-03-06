@@ -7,7 +7,6 @@ import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.util.Logger
 import com.klemfner.whoscalling.util.normalizePhoneNumber
 import kotlinx.coroutines.flow.Flow
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class ContactRepositoryImpl(
@@ -21,7 +20,6 @@ class ContactRepositoryImpl(
 
     override val contacts: Flow<List<Contact>> = localDataSource.contacts
 
-    @OptIn(ExperimentalUuidApi::class)
     override suspend fun addContact(contact: Contact) {
         val id = contact.id.ifEmpty { Uuid.random().toString() }
         val normalized = try {

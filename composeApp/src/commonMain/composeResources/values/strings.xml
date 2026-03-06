@@ -48,6 +48,7 @@
     <string name="login_error_generic">Login failed</string>
     <string name="debug_logs">Debug Logs</string>
     <string name="copy">Copy</string>
+    <string name="contact_count">%1$d contact(s)</string>
     <string name="export_contacts">Export Contacts</string>
     <string name="import_contacts">Import Contacts</string>
     <string name="contacts_exported">Exported %1$d contact(s)</string>

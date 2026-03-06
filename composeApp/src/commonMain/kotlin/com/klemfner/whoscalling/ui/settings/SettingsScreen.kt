@@ -36,6 +36,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
+import whoscalling.composeapp.generated.resources.contact_count
 import whoscalling.composeapp.generated.resources.contacts
 import whoscalling.composeapp.generated.resources.contacts_exported
 import whoscalling.composeapp.generated.resources.contacts_imported
@@ -44,6 +45,7 @@ import whoscalling.composeapp.generated.resources.debug_logs
 import whoscalling.composeapp.generated.resources.export_contacts
 import whoscalling.composeapp.generated.resources.import_contacts
 import whoscalling.composeapp.generated.resources.import_error
+import whoscalling.composeapp.generated.resources.no_contacts
 import whoscalling.composeapp.generated.resources.settings
 import whoscalling.composeapp.generated.resources.touch_mode
 
@@ -62,6 +64,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
     val viewModel: SettingsViewModel = koinViewModel()
     val importResult by viewModel.importResult.collectAsStateWithLifecycle()
+    val contactCount by viewModel.contactCount.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val fileSaver = rememberFileSaver()
@@ -99,6 +102,15 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
             HorizontalDivider()
+            Text(
+                text = if (contactCount == 0) {
+                    stringResource(Res.string.no_contacts)
+                } else {
+                    stringResource(Res.string.contact_count, contactCount)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
             TextButton(
                 onClick = {
                     scope.launch {
@@ -110,6 +122,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 },
+                enabled = contactCount > 0,
                 modifier = Modifier.padding(horizontal = 16.dp),
             ) {
                 Text(stringResource(Res.string.export_contacts))

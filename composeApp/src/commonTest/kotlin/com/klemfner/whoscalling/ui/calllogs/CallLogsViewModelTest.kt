@@ -241,7 +241,7 @@ class CallLogsViewModelTest {
     }
 
     @Test
-    fun refreshErrorIsSetOnFailure() = runTest {
+    fun refreshErrorIsSetOnFailure() = runTest(testDispatcher) {
         val throwingRemote = object : com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource {
             override suspend fun getCallLogs(token: String?): List<CallLog> {
                 throw RuntimeException("Network error")
