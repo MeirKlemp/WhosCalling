@@ -177,4 +177,40 @@ class SettingsViewModelTest {
             assertEquals(2, result.count)
         }
     }
+
+    @Test
+    fun contactCount_initiallyZero() = runTest(testDispatcher) {
+        viewModel.contactCount.test {
+            assertEquals(0, awaitItem())
+        }
+    }
+
+    @Test
+    fun contactCount_updatesWhenContactsAdded() = runTest(testDispatcher) {
+        viewModel.contactCount.test {
+            assertEquals(0, awaitItem())
+
+            contactLocalDataSource.saveContact(contact1)
+            assertEquals(1, awaitItem())
+
+            contactLocalDataSource.saveContact(contact2)
+            assertEquals(2, awaitItem())
+        }
+    }
+
+    @Test
+    fun contactCount_updatesWhenContactsRemoved() = runTest(testDispatcher) {
+        contactLocalDataSource.saveContact(contact1)
+        contactLocalDataSource.saveContact(contact2)
+
+        viewModel.contactCount.test {
+            assertEquals(2, awaitItem())
+
+            contactLocalDataSource.deleteContact("1")
+            assertEquals(1, awaitItem())
+
+            contactLocalDataSource.deleteContact("2")
+            assertEquals(0, awaitItem())
+        }
+    }
 }
