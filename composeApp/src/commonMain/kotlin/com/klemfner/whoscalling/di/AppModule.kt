@@ -8,8 +8,10 @@ import com.klemfner.whoscalling.data.local.DatabaseDriverFactory
 import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.data.remote.AuthRemoteDataSource
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
-import com.klemfner.whoscalling.data.remote.DummyAuthRemoteDataSource
 import com.klemfner.whoscalling.data.remote.DummyCallLogRemoteDataSource
+import com.klemfner.whoscalling.data.remote.PartnerAuthenticationDataSource
+import com.klemfner.whoscalling.data.remote.srp.Srp6aClient
+import com.klemfner.whoscalling.data.remote.srp.Srp6aClientImpl
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
@@ -19,6 +21,8 @@ import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
+import com.klemfner.whoscalling.util.createHttpClient
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,7 +40,9 @@ val dataSourceModule = module {
     single<CallLogLocalDataSource> { CallLogLocalDataSourceImpl(get()) }
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
     single<CallLogRemoteDataSource> { DummyCallLogRemoteDataSource() }
-    single<AuthRemoteDataSource> { DummyAuthRemoteDataSource() }
+    single<HttpClient> { createHttpClient() }
+    single<Srp6aClient> { Srp6aClientImpl() }
+    single<AuthRemoteDataSource> { PartnerAuthenticationDataSource(get(), get()) }
 }
 
 val repositoryModule = module {
