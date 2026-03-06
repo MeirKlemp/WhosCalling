@@ -6,6 +6,7 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,7 +69,8 @@ class CallLogsViewModel(
         viewModelScope.launch {
             try {
                 callLogRepository.refreshCallLogs()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Logger.e(TAG, "Manual refresh failed", e)
                 _uiState.update { it.copy(refreshError = true) }
             }
             _uiState.update { it.copy(isRefreshing = false) }
@@ -96,5 +98,9 @@ class CallLogsViewModel(
             }
             CallLogsPane.LIST -> { /* nothing */ }
         }
+    }
+
+    companion object {
+        private const val TAG = "CallLogsViewModel"
     }
 }
