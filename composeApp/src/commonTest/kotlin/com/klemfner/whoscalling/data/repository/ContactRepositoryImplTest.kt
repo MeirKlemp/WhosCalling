@@ -9,6 +9,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class ContactRepositoryImplTest {
 
@@ -131,5 +132,66 @@ class ContactRepositoryImplTest {
             assertEquals("Alice Smith", contacts[0].name)
             cancelAndConsumeRemainingEvents()
         }
+    }
+
+    @Test
+    fun addContact_generatesIdWhenEmpty() = runTest {
+        val contact = Contact(name = "Alice", phoneNumber = "+1234567890")
+
+        repository.addContact(contact)
+
+        repository.contacts.test {
+            val contacts = awaitItem()
+            assertEquals(1, contacts.size)
+            assertTrue(contacts[0].id.isNotEmpty())
+            assertEquals("Alice", contacts[0].name)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun addContacts_addsMultipleContacts() = runTest {
+        val contacts = listOf(
+            Contact(name = "Alice", phoneNumber = "+1234567890"),
+            Contact(name = "Bob", phoneNumber = "+0987654321"),
+        )
+
+        val count = repository.addContacts(contacts)
+
+        assertEquals(2, count)
+        repository.contacts.test {
+            val result = awaitItem()
+            assertEquals(2, result.size)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun addContacts_skipsInvalidAndReturnsCount() = runTest {
+        repository = createRepository(normalizePhone = { phone ->
+            if (phone == "invalid") throw IllegalArgumentException("Invalid")
+            phone
+        })
+
+        val contacts = listOf(
+            Contact(name = "Alice", phoneNumber = "+1234567890"),
+            Contact(name = "Bob", phoneNumber = "invalid"),
+            Contact(name = "Charlie", phoneNumber = "+1112223333"),
+        )
+
+        val count = repository.addContacts(contacts)
+
+        assertEquals(2, count)
+        repository.contacts.test {
+            val result = awaitItem()
+            assertEquals(2, result.size)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun addContacts_emptyList() = runTest {
+        val count = repository.addContacts(emptyList())
+        assertEquals(0, count)
     }
 }

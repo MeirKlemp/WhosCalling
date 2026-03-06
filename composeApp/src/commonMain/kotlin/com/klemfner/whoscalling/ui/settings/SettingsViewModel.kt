@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,31 +16,34 @@ class SettingsViewModel(
     private val contactRepository: ContactRepository,
 ) : ViewModel() {
 
-    private val json = Json { prettyPrint = true }
+    companion object {
+        private const val TAG = "Settings"
+    }
+
+    private val json = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+    }
 
     private val _importResult = MutableStateFlow<ImportResult?>(null)
     val importResult: StateFlow<ImportResult?> = _importResult.asStateFlow()
 
-    suspend fun exportContacts(): String {
+    suspend fun exportContacts(): ExportData {
         val contacts = contactRepository.contacts.first()
-        return json.encodeToString<List<Contact>>(contacts)
+        return ExportData(
+            json = json.encodeToString<List<Contact>>(contacts),
+            count = contacts.size,
+        )
     }
 
     fun importContacts(jsonString: String) {
         viewModelScope.launch {
             try {
                 val contacts = json.decodeFromString<List<Contact>>(jsonString)
-                var imported = 0
-                for (contact in contacts) {
-                    try {
-                        contactRepository.addContact(contact)
-                        imported++
-                    } catch (_: Exception) {
-                        // Skip contacts that fail validation
-                    }
-                }
+                val imported = contactRepository.addContacts(contacts)
                 _importResult.value = ImportResult.Success(imported)
             } catch (e: Exception) {
+                Logger.e(TAG, "Failed to import contacts", e)
                 _importResult.value = ImportResult.Error
             }
         }
@@ -49,6 +53,8 @@ class SettingsViewModel(
         _importResult.value = null
     }
 }
+
+data class ExportData(val json: String, val count: Int)
 
 sealed interface ImportResult {
     data class Success(val count: Int) : ImportResult

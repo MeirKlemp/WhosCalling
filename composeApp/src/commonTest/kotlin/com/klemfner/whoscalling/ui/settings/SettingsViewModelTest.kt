@@ -15,6 +15,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,8 +46,9 @@ class SettingsViewModelTest {
 
     @Test
     fun exportContacts_emptyList() = runTest {
-        val json = viewModel.exportContacts()
-        val contacts = Json.decodeFromString<List<Contact>>(json)
+        val result = viewModel.exportContacts()
+        assertEquals(0, result.count)
+        val contacts = Json.decodeFromString<List<Contact>>(result.json)
         assertEquals(emptyList(), contacts)
     }
 
@@ -55,20 +57,22 @@ class SettingsViewModelTest {
         contactLocalDataSource.saveContact(contact1)
         contactLocalDataSource.saveContact(contact2)
 
-        val json = viewModel.exportContacts()
-        assertTrue(json.contains("\"Alice\""))
-        assertTrue(json.contains("\"+1234567890\""))
-        assertTrue(json.contains("\"alice@test.com\""))
-        assertTrue(json.contains("\"Bob\""))
-        assertTrue(json.contains("\"+0987654321\""))
+        val result = viewModel.exportContacts()
+        assertEquals(2, result.count)
+        assertTrue(result.json.contains("\"Alice\""))
+        assertTrue(result.json.contains("\"+1234567890\""))
+        assertTrue(result.json.contains("\"alice@test.com\""))
+        assertTrue(result.json.contains("\"Bob\""))
+        assertTrue(result.json.contains("\"+0987654321\""))
+        assertFalse(result.json.contains("\"id\""))
     }
 
     @Test
     fun importContacts_validJson() = runTest {
         val json = """
             [
-                {"id":"1","name":"Alice","phoneNumber":"+1234567890","email":"alice@test.com"},
-                {"id":"2","name":"Bob","phoneNumber":"+0987654321"}
+                {"name":"Alice","phoneNumber":"+1234567890","email":"alice@test.com"},
+                {"name":"Bob","phoneNumber":"+0987654321"}
             ]
         """.trimIndent()
 
@@ -79,6 +83,24 @@ class SettingsViewModelTest {
             val result = awaitItem()
             assertTrue(result is ImportResult.Success)
             assertEquals(2, (result as ImportResult.Success).count)
+        }
+    }
+
+    @Test
+    fun importContacts_jsonWithIdIsIgnored() = runTest {
+        val json = """
+            [
+                {"id":"old-id","name":"Alice","phoneNumber":"+1234567890"}
+            ]
+        """.trimIndent()
+
+        viewModel.importContacts(json)
+
+        viewModel.importResult.test {
+            skipItems(1)
+            val result = awaitItem()
+            assertTrue(result is ImportResult.Success)
+            assertEquals(1, (result as ImportResult.Success).count)
         }
     }
 
@@ -106,8 +128,8 @@ class SettingsViewModelTest {
 
         val json = """
             [
-                {"id":"1","name":"Alice","phoneNumber":"+1234567890"},
-                {"id":"2","name":"Bob","phoneNumber":"invalid"}
+                {"name":"Alice","phoneNumber":"+1234567890"},
+                {"name":"Bob","phoneNumber":"invalid"}
             ]
         """.trimIndent()
 
@@ -140,13 +162,13 @@ class SettingsViewModelTest {
         contactLocalDataSource.saveContact(contact1)
         contactLocalDataSource.saveContact(contact2)
 
-        val json = viewModel.exportContacts()
+        val exportData = viewModel.exportContacts()
 
         // Clear and re-import
         contactLocalDataSource.deleteContact("1")
         contactLocalDataSource.deleteContact("2")
 
-        viewModel.importContacts(json)
+        viewModel.importContacts(exportData.json)
 
         viewModel.importResult.test {
             skipItems(1)

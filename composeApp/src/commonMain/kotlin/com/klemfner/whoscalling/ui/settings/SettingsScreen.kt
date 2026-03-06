@@ -32,6 +32,7 @@ import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
 import com.klemfner.whoscalling.util.rememberFileLoader
 import com.klemfner.whoscalling.util.rememberFileSaver
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
@@ -66,16 +67,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val fileSaver = rememberFileSaver()
     val fileLoader = rememberFileLoader()
 
-    val contactsExportedMessage = stringResource(Res.string.contacts_exported)
-    val contactsImportedMessage = stringResource(Res.string.contacts_imported)
     val importErrorMessage = stringResource(Res.string.import_error)
 
     LaunchedEffect(importResult) {
         when (val result = importResult) {
             is ImportResult.Success -> {
-                snackbarHostState.showSnackbar(
-                    "$contactsImportedMessage: ${result.count}",
-                )
+                val message = getString(Res.string.contacts_imported, result.count)
+                snackbarHostState.showSnackbar(message)
                 viewModel.clearImportResult()
             }
             is ImportResult.Error -> {
@@ -104,10 +102,11 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             TextButton(
                 onClick = {
                     scope.launch {
-                        val json = viewModel.exportContacts()
-                        val saved = fileSaver("contacts.json", json)
+                        val exportData = viewModel.exportContacts()
+                        val saved = fileSaver("contacts.json", exportData.json)
                         if (saved) {
-                            snackbarHostState.showSnackbar(contactsExportedMessage)
+                            val message = getString(Res.string.contacts_exported, exportData.count)
+                            snackbarHostState.showSnackbar(message)
                         }
                     }
                 },
