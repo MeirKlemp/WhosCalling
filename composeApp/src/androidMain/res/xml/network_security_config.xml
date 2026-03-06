@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Allow cleartext HTTP to the partner router which only serves HTTP.
+    <!-- Allow cleartext HTTP so the router IP can be configured dynamically.
          Authentication uses SRP-6a so credentials are never sent in plaintext. -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">192.168.60.1</domain>
-    </domain-config>
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>
