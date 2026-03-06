@@ -10,6 +10,8 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 // TODO: Make router IP configurable - create a GitHub issue to track this.
 //  Currently hardcoded to 192.168.60.1. Should be configurable via settings/preferences.
@@ -20,7 +22,7 @@ class PartnerAuthenticationDataSource(
     private val httpClient: HttpClient,
 ) : AuthRemoteDataSource {
 
-    override suspend fun login(username: String, password: String): String {
+    override suspend fun login(username: String, password: String): String = withContext(Dispatchers.Default) {
         if (username.isBlank() || password.isBlank()) {
             throw IllegalArgumentException("Username and password must not be blank")
         }
@@ -70,7 +72,7 @@ class PartnerAuthenticationDataSource(
             throw IllegalStateException("Server proof verification failed")
         }
 
-        return sessionId
+        sessionId
     }
 
     private fun extractJsonStringValue(json: String, key: String): String? {
