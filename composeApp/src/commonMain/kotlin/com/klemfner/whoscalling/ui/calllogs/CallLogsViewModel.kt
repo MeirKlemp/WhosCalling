@@ -6,6 +6,7 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ class CallLogsViewModel(
     private val callLogRepository: CallLogRepository,
     private val contactRepository: ContactRepository,
     private val authRepository: AuthRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CallLogsUiState())
@@ -60,6 +62,12 @@ class CallLogsViewModel(
         viewModelScope.launch {
             authRepository.loggedInUser.collect { user ->
                 _uiState.update { it.copy(isLoggedIn = user != null) }
+            }
+        }
+
+        viewModelScope.launch {
+            settingsRepository.preferences.collect { prefs ->
+                _uiState.update { it.copy(defaultCountryIso = prefs.countryIso) }
             }
         }
     }

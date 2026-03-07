@@ -61,6 +61,7 @@
     <string name="import_error">Failed to import contacts</string>
     <string name="phone_country_code">Phone Country Code</string>
     <string name="reset_to_default">Reset to Default</string>
+    <string name="general">General</string>
     <string name="country_picker_title">Pick a Country</string>
     <string name="country_picker_dismiss">Cancel</string>
     <string name="country_picker_confirm">Confirm</string>

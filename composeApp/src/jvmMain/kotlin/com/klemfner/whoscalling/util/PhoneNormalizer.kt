@@ -2,16 +2,7 @@ package com.klemfner.whoscalling.util
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 
-actual fun normalizePhoneNumber(phoneNumber: String): String {
-    val phoneUtil = PhoneNumberUtil.getInstance()
-    val parsed = phoneUtil.parse(phoneNumber, null)
-    if (!phoneUtil.isValidNumber(parsed)) {
-        throw IllegalArgumentException("Invalid phone number: $phoneNumber")
-    }
-    return phoneUtil.format(parsed, PhoneNumberUtil.PhoneNumberFormat.E164)
-}
-
-actual fun normalizePhoneNumberWithRegion(phoneNumber: String, defaultRegion: String?): String {
+actual fun normalizePhoneNumber(phoneNumber: String, defaultRegion: String?): String {
     val phoneUtil = PhoneNumberUtil.getInstance()
     val parsed = phoneUtil.parse(phoneNumber, defaultRegion)
     if (!phoneUtil.isValidNumber(parsed)) {
@@ -20,7 +11,7 @@ actual fun normalizePhoneNumberWithRegion(phoneNumber: String, defaultRegion: St
     return phoneUtil.format(parsed, PhoneNumberUtil.PhoneNumberFormat.E164)
 }
 
-actual fun formatPhoneForDisplay(phoneNumber: String, defaultCountryIso: String): String {
+actual fun formatPhoneForDisplay(phoneNumber: String, defaultCountryIso: String): FormattedPhone {
     val phoneUtil = PhoneNumberUtil.getInstance()
     return try {
         val number = phoneUtil.parse(phoneNumber, null)
@@ -28,13 +19,13 @@ actual fun formatPhoneForDisplay(phoneNumber: String, defaultCountryIso: String)
         val defaultCountryCode = phoneUtil.getCountryCodeForRegion(defaultCountryIso)
         val national = phoneUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.NATIONAL)
         if (defaultCountryIso.isNotEmpty() && countryCode == defaultCountryCode) {
-            national
+            FormattedPhone(internationalPrefix = null, nationalNumber = national)
         } else {
-            "+$countryCode | $national"
+            FormattedPhone(internationalPrefix = "+$countryCode", nationalNumber = national)
         }
     } catch (e: Exception) {
         Logger.w("PhoneNormalizer", "Failed to format phone for display: $phoneNumber", e)
-        phoneNumber
+        FormattedPhone(internationalPrefix = null, nationalNumber = phoneNumber)
     }
 }
 

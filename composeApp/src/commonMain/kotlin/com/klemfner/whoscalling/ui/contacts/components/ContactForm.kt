@@ -41,9 +41,6 @@ import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 import whoscalling.composeapp.generated.resources.cancel
 import whoscalling.composeapp.generated.resources.close
-import whoscalling.composeapp.generated.resources.country_picker_confirm
-import whoscalling.composeapp.generated.resources.country_picker_dismiss
-import whoscalling.composeapp.generated.resources.country_picker_title
 import whoscalling.composeapp.generated.resources.edit_contact
 import whoscalling.composeapp.generated.resources.email
 import whoscalling.composeapp.generated.resources.name
@@ -83,9 +80,6 @@ fun ContactForm(
                 showCountryDialog = false
             },
             onDismiss = { showCountryDialog = false },
-            title = stringResource(Res.string.country_picker_title),
-            dismissButton = stringResource(Res.string.country_picker_dismiss),
-            confirmButton = stringResource(Res.string.country_picker_confirm),
         )
     }
 
@@ -132,7 +126,10 @@ fun ContactForm(
                 singleLine = true,
             )
             Spacer(Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 CountryCodeField(
                     selectedCountryIso = formState.selectedCountryIso,
                     onClick = { showCountryDialog = true },

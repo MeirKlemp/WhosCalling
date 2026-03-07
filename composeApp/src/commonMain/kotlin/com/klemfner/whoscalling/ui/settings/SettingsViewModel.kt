@@ -34,18 +34,24 @@ class SettingsViewModel(
 
     val uiState: StateFlow<SettingsUiState> = combine(
         contactRepository.contacts.map { it.size },
-        settingsRepository.countryIso,
+        settingsRepository.preferences,
         _importResult,
-    ) { count, iso, importResult ->
+    ) { count, prefs, importResult ->
         SettingsUiState(
             contactCount = count,
-            countryIso = iso,
+            countryIso = prefs.countryIso,
+            touchMode = prefs.touchMode,
             importResult = importResult,
         )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        SettingsUiState(countryIso = settingsRepository.currentCountryIso),
+        with(settingsRepository) {
+            SettingsUiState(
+                countryIso = currentCountryIso,
+                touchMode = currentTouchMode,
+            )
+        },
     )
 
     suspend fun exportContacts(): ExportData {
@@ -79,7 +85,13 @@ class SettingsViewModel(
         }
     }
 
-    fun resetCountryIsoToDefault() {
+    fun setTouchMode(touchMode: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setTouchMode(touchMode)
+        }
+    }
+
+    fun resetToDefault() {
         viewModelScope.launch {
             settingsRepository.resetToDefault()
         }

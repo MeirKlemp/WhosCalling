@@ -1,30 +1,53 @@
 package com.klemfner.whoscalling.data.local
 
+import com.klemfner.whoscalling.domain.model.UserPreferences
+import com.klemfner.whoscalling.util.Logger
+import com.klemfner.whoscalling.util.defaultCountryIso
+import com.klemfner.whoscalling.util.defaultTouchMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.serialization.json.Json
 import java.io.File
 
 class FileSettingsLocalDataSource(
     private val settingsFile: File,
-    private val defaultIso: String,
 ) : SettingsLocalDataSource {
 
-    private val _countryIso = MutableStateFlow(loadFromFile() ?: defaultIso)
-    override val countryIso: Flow<String> = _countryIso.asStateFlow()
+    private val json = Json { ignoreUnknownKeys = true }
 
-    override suspend fun setCountryIso(iso: String) {
-        settingsFile.parentFile?.mkdirs()
-        settingsFile.writeText(iso)
-        _countryIso.value = iso
+    private val _preferences = MutableStateFlow(loadFromFile() ?: defaultPreferences())
+    override val preferences: Flow<UserPreferences> = _preferences.asStateFlow()
+
+    override suspend fun updatePreferences(update: (UserPreferences) -> UserPreferences) {
+        _preferences.update { current ->
+            val updated = update(current)
+            saveToFile(updated)
+            updated
+        }
     }
 
-    private fun loadFromFile(): String? {
+    private fun defaultPreferences() = UserPreferences(
+        countryIso = defaultCountryIso(),
+        touchMode = defaultTouchMode(),
+    )
+
+    private fun loadFromFile(): UserPreferences? {
         if (!settingsFile.exists()) return null
         return try {
-            settingsFile.readText().trim().ifEmpty { null }
+            json.decodeFromString<UserPreferences>(settingsFile.readText())
         } catch (_: Exception) {
             null
+        }
+    }
+
+    private fun saveToFile(preferences: UserPreferences) {
+        try {
+            settingsFile.parentFile?.mkdirs()
+            settingsFile.writeText(json.encodeToString(UserPreferences.serializer(), preferences))
+        } catch (e: Exception) {
+            Logger.w("FileSettingsLocalDataSource", "Failed to save settings to file", e)
         }
     }
 }

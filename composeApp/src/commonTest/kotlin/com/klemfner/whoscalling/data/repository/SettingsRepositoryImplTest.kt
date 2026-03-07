@@ -2,6 +2,7 @@ package com.klemfner.whoscalling.data.repository
 
 import app.cash.turbine.test
 import com.klemfner.whoscalling.data.local.InMemorySettingsLocalDataSource
+import com.klemfner.whoscalling.domain.model.UserPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -15,58 +16,72 @@ class SettingsRepositoryImplTest {
     private val testDispatcher = StandardTestDispatcher()
 
     private fun createRepository(
-        defaultIso: String = "US",
         scope: CoroutineScope = CoroutineScope(testDispatcher),
     ) = SettingsRepositoryImpl(
-        localDataSource = InMemorySettingsLocalDataSource(defaultIso),
-        defaultIso = defaultIso,
+        localDataSource = InMemorySettingsLocalDataSource(),
         scope = scope,
     )
 
     @Test
-    fun countryIso_defaultValue() = runTest(testDispatcher) {
-        val repository = createRepository(defaultIso = "IL")
-        repository.countryIso.test {
-            assertEquals("IL", awaitItem())
+    fun preferences_emitsInitialValue() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.preferences.test {
+            val initial = awaitItem()
+            assertEquals("", initial.countryIso)
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun currentCountryIso_returnsCurrentValue() = runTest(testDispatcher) {
-        val repository = createRepository(defaultIso = "IL")
-        assertEquals("IL", repository.currentCountryIso)
-    }
-
-    @Test
-    fun setCountryIso_updatesFlow() = runTest(testDispatcher) {
-        val repository = createRepository(defaultIso = "US")
-        repository.countryIso.test {
-            assertEquals("US", awaitItem())
+    fun setCountryIso_updatesPreferences() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.preferences.test {
+            awaitItem() // initial
 
             repository.setCountryIso("IL")
-            assertEquals("IL", awaitItem())
+            assertEquals("IL", awaitItem().countryIso)
 
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun setCountryIso_updatesCurrentCountryIso() = runTest(testDispatcher) {
-        val repository = createRepository(defaultIso = "US")
+    fun setCountryIso_updatesSyncCurrentCountryIso() = runTest(testDispatcher) {
+        val repository = createRepository()
         repository.setCountryIso("IL")
         assertEquals("IL", repository.currentCountryIso)
     }
 
     @Test
-    fun resetToDefault_restoresDefaultIso() = runTest(testDispatcher) {
-        val repository = createRepository(defaultIso = "US")
+    fun setTouchMode_updatesPreferences() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.preferences.test {
+            awaitItem() // initial
+
+            repository.setTouchMode(false)
+            assertEquals(false, awaitItem().touchMode)
+
+            repository.setTouchMode(true)
+            assertEquals(true, awaitItem().touchMode)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun resetToDefault_restoresDefaultValues() = runTest(testDispatcher) {
+        val repository = createRepository()
         repository.setCountryIso("IL")
-        repository.countryIso.test {
-            assertEquals("IL", awaitItem())
+        repository.setTouchMode(false)
+        repository.preferences.test {
+            // After double update, eagerly-started flow emits current value
+            val current = awaitItem()
+            assertEquals("IL", current.countryIso)
+            assertEquals(false, current.touchMode)
 
             repository.resetToDefault()
-            assertEquals("US", awaitItem())
+            val reset = awaitItem()
+            assertEquals("", reset.countryIso)
 
             cancelAndConsumeRemainingEvents()
         }
@@ -74,18 +89,15 @@ class SettingsRepositoryImplTest {
 
     @Test
     fun multipleChanges_emitsEach() = runTest(testDispatcher) {
-        val repository = createRepository(defaultIso = "US")
-        repository.countryIso.test {
-            assertEquals("US", awaitItem())
+        val repository = createRepository()
+        repository.preferences.test {
+            awaitItem() // initial
 
             repository.setCountryIso("IL")
-            assertEquals("IL", awaitItem())
+            assertEquals("IL", awaitItem().countryIso)
 
             repository.setCountryIso("DE")
-            assertEquals("DE", awaitItem())
-
-            repository.resetToDefault()
-            assertEquals("US", awaitItem())
+            assertEquals("DE", awaitItem().countryIso)
 
             cancelAndConsumeRemainingEvents()
         }

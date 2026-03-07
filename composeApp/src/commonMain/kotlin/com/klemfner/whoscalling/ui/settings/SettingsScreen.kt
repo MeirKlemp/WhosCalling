@@ -21,10 +21,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
 import com.klemfner.whoscalling.ui.settings.components.ContactsSection
 import com.klemfner.whoscalling.ui.settings.components.DebugSection
 import com.klemfner.whoscalling.ui.settings.components.PhoneSection
+import com.klemfner.whoscalling.ui.settings.components.ResetSection
 import com.klemfner.whoscalling.util.rememberFileLoader
 import com.klemfner.whoscalling.util.rememberFileSaver
 import kotlinx.coroutines.launch
@@ -74,7 +74,6 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    val touchModeState = LocalTouchModeState.current
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(Res.string.settings)) })
@@ -88,6 +87,11 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState()),
         ) {
+            PhoneSection(
+                countryIso = uiState.countryIso,
+                onCountryIsoChange = viewModel::setCountryIso,
+            )
+
             ContactsSection(
                 contactCount = uiState.contactCount,
                 onExport = {
@@ -109,16 +113,12 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             )
 
             DebugSection(
-                isTouchMode = touchModeState.isTouchMode,
-                onTouchModeChange = touchModeState.setTouchMode,
+                isTouchMode = uiState.touchMode,
+                onTouchModeChange = viewModel::setTouchMode,
                 onShowDebugLogs = { showDebugLogs = true },
             )
 
-            PhoneSection(
-                countryIso = uiState.countryIso,
-                onCountryIsoChange = viewModel::setCountryIso,
-                onResetToDefault = viewModel::resetCountryIsoToDefault,
-            )
+            ResetSection(onResetToDefault = viewModel::resetToDefault)
         }
     }
 }

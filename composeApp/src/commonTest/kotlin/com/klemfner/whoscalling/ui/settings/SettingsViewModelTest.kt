@@ -34,7 +34,7 @@ class SettingsViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         contactLocalDataSource = FakeContactLocalDataSource()
-        settingsRepository = FakeSettingsRepository(initialIso = "US")
+        settingsRepository = FakeSettingsRepository()
         val contactRepository = ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
             normalizePhone = { it },
@@ -274,7 +274,7 @@ class SettingsViewModelTest {
             viewModel.setCountryIso("IL")
             assertEquals("IL", awaitItem().countryIso)
 
-            viewModel.resetCountryIsoToDefault()
+            viewModel.resetToDefault()
             assertEquals("US", awaitItem().countryIso)
 
             cancelAndConsumeRemainingEvents()

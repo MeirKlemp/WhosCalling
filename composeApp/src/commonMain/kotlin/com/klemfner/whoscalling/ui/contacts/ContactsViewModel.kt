@@ -7,7 +7,7 @@ import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.getCountryIsoFromPhoneNumber
-import com.klemfner.whoscalling.util.normalizePhoneNumberWithRegion
+import com.klemfner.whoscalling.util.normalizePhoneNumber
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,8 +53,8 @@ class ContactsViewModel(
             }
         }
         viewModelScope.launch {
-            settingsRepository.countryIso.collect { iso ->
-                _uiState.update { it.copy(defaultCountryIso = iso) }
+            settingsRepository.preferences.collect { prefs ->
+                _uiState.update { it.copy(defaultCountryIso = prefs.countryIso) }
             }
         }
     }
@@ -146,7 +146,7 @@ class ContactsViewModel(
         val form = _uiState.value.formState
         viewModelScope.launch {
             val phoneNumber = try {
-                normalizePhoneNumberWithRegion(
+                normalizePhoneNumber(
                     form.phoneNumber,
                     form.selectedCountryIso.ifEmpty { null },
                 )

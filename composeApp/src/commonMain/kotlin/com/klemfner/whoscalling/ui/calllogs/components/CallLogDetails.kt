@@ -45,6 +45,8 @@ import com.klemfner.whoscalling.ui.common.utils.formatShortDate
 import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
+import com.klemfner.whoscalling.util.FormattedPhone
+import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
@@ -75,6 +77,7 @@ fun CallLogDetails(
     onAddContactClick: (String) -> Unit,
     onShowContactClick: (String) -> Unit,
     onCallLogClick: (CallLog) -> Unit,
+    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -93,6 +96,9 @@ fun CallLogDetails(
         },
         modifier = modifier,
     ) { paddingValues ->
+        val formattedPhone = remember(callLog.phoneNumber, defaultCountryIso) {
+            formatPhoneForDisplay(callLog.phoneNumber, defaultCountryIso)
+        }
         val timePeriodGroups = remember(numberCallLogs) {
             numberCallLogs.groupBy { getTimePeriod(it.timestamp) }
                 .toSortedMap(compareBy { it.ordinal })
@@ -105,6 +111,7 @@ fun CallLogDetails(
                 CallLogHeader(
                     callLog = callLog,
                     contact = contact,
+                    formattedPhone = formattedPhone,
                     onAddContactClick = onAddContactClick,
                     onShowContactClick = onShowContactClick,
                 )
@@ -146,6 +153,7 @@ fun CallLogDetails(
 private fun CallLogHeader(
     callLog: CallLog,
     contact: Contact?,
+    formattedPhone: FormattedPhone,
     onAddContactClick: (String) -> Unit,
     onShowContactClick: (String) -> Unit,
 ) {
@@ -154,7 +162,7 @@ private fun CallLogHeader(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         SelectionContainer {
-            ContactInfo(callLog = callLog, contact = contact)
+            ContactInfo(callLog = callLog, contact = contact, formattedPhone = formattedPhone)
         }
 
         if (contact == null) {
@@ -175,6 +183,7 @@ private fun CallLogHeader(
 private fun ContactInfo(
     callLog: CallLog,
     contact: Contact?,
+    formattedPhone: FormattedPhone,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (contact != null) {
@@ -186,16 +195,42 @@ private fun ContactInfo(
                     modifier = Modifier.size(20.dp),
                 )
                 Spacer(Modifier.width(8.dp))
+                if (formattedPhone.internationalPrefix != null) {
+                    Text(
+                        formattedPhone.internationalPrefix,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                    Text(
+                        " | ",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
                 Text(
-                    callLog.phoneNumber,
+                    formattedPhone.nationalNumber,
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
         } else {
-            Text(
-                callLog.phoneNumber,
-                style = MaterialTheme.typography.headlineMedium,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (formattedPhone.internationalPrefix != null) {
+                    Text(
+                        formattedPhone.internationalPrefix,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                    Text(
+                        " | ",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+                Text(
+                    formattedPhone.nationalNumber,
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+            }
         }
     }
 }

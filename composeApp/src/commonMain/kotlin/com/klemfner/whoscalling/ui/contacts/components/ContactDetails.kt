@@ -124,7 +124,22 @@ fun ContactDetails(
                                 modifier = Modifier.size(20.dp),
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(formattedPhone, style = MaterialTheme.typography.bodyLarge)
+                            if (formattedPhone.internationalPrefix != null) {
+                                Text(
+                                    formattedPhone.internationalPrefix,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                                Text(
+                                    " | ",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
+                            Text(
+                                formattedPhone.nationalNumber,
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
                         }
                         if (!contact.email.isNullOrBlank()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {

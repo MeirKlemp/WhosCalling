@@ -10,6 +10,7 @@ import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
+import com.klemfner.whoscalling.fake.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withTimeout
@@ -65,7 +66,7 @@ class CallLogsViewModelTest {
             normalizePhone = { it },
             refreshIntervalMs = Long.MAX_VALUE,
         )
-        viewModel = CallLogsViewModel(callLogRepository, contactRepository, authRepository)
+        viewModel = CallLogsViewModel(callLogRepository, contactRepository, authRepository, FakeSettingsRepository())
     }
 
     @AfterTest

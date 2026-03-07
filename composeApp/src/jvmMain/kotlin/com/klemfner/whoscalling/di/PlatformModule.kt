@@ -8,7 +8,6 @@ import com.klemfner.whoscalling.data.local.InMemoryAuthLocalDataSource
 import com.klemfner.whoscalling.data.local.JvmDatabaseDriverFactory
 import com.klemfner.whoscalling.data.local.SecretToolAuthLocalDataSource
 import com.klemfner.whoscalling.data.local.SettingsLocalDataSource
-import com.klemfner.whoscalling.util.defaultCountryIso
 import org.koin.dsl.module
 import java.io.File
 
@@ -16,12 +15,8 @@ actual val platformModule = module {
     single<DatabaseDriverFactory> { JvmDatabaseDriverFactory() }
     single<AuthLocalDataSource> { createDesktopAuthLocalDataSource() }
     single<SettingsLocalDataSource> {
-        FileSettingsLocalDataSource(
-            settingsFile = desktopSettingsFile(),
-            defaultIso = defaultCountryIso(),
-        )
+        FileSettingsLocalDataSource(settingsFile = desktopSettingsFile())
     }
-    single { SettingsDefaultIso(defaultCountryIso()) }
 }
 
 private fun createDesktopAuthLocalDataSource(): AuthLocalDataSource {
