@@ -24,9 +24,11 @@ class ContactRepositoryImpl(
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun addContact(contact: Contact) {
         val id = contact.id.ifEmpty { Uuid.random().toString() }
+        Logger.d(TAG, "addContact: name=${contact.name}, phone=${contact.phoneNumber}")
         val normalized = try {
             normalizePhone(contact.phoneNumber)
         } catch (e: Exception) {
+            Logger.e(TAG, "addContact: normalization failed for phone=${contact.phoneNumber}", e)
             throw InvalidPhoneNumberException(contact.phoneNumber)
         }
         localDataSource.saveContact(contact.copy(id = id, phoneNumber = normalized))

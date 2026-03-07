@@ -9,6 +9,7 @@ import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import com.klemfner.whoscalling.util.getCountryIsoFromPhoneNumber
 import com.klemfner.whoscalling.util.normalizePhoneNumber
+import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +22,10 @@ class ContactsViewModel(
     private val callLogRepository: CallLogRepository,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "ContactsViewModel"
+    }
 
     private val _uiState = MutableStateFlow(
         ContactsUiState(defaultCountryIso = settingsRepository.currentCountryIso),
@@ -161,6 +166,7 @@ class ContactsViewModel(
         val form = _uiState.value.formState
         viewModelScope.launch {
             try {
+                Logger.d(TAG, "saveContact: name=${form.name}, phone=${form.phoneNumber}, iso=${form.selectedCountryIso}")
                 val phoneNumber = normalizePhoneNumber(
                     form.phoneNumber,
                     form.selectedCountryIso.ifEmpty { null },
@@ -184,6 +190,7 @@ class ContactsViewModel(
                     }
                 }
             } catch (e: Exception) {
+                Logger.e(TAG, "saveContact failed: name=${form.name}, phone=${form.phoneNumber}, iso=${form.selectedCountryIso}", e)
                 _uiState.update { it.copy(errorMessage = e.message) }
             }
         }

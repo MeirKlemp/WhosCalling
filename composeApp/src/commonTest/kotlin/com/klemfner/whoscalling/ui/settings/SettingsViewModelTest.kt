@@ -89,7 +89,7 @@ class SettingsViewModelTest {
                 state = awaitItem()
             }
             assertTrue(state.importResult is ImportResult.Success)
-            assertEquals(2, (state.importResult as ImportResult.Success).count)
+            assertEquals(2, state.importResult.count)
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -112,7 +112,7 @@ class SettingsViewModelTest {
                 state = awaitItem()
             }
             assertTrue(state.importResult is ImportResult.Success)
-            assertEquals(1, (state.importResult as ImportResult.Success).count)
+            assertEquals(1, state.importResult.count)
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -158,7 +158,7 @@ class SettingsViewModelTest {
                 state = awaitItem()
             }
             assertTrue(state.importResult is ImportResult.Success)
-            assertEquals(1, (state.importResult as ImportResult.Success).count)
+            assertEquals(1, state.importResult.count)
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -203,7 +203,7 @@ class SettingsViewModelTest {
                 state = awaitItem()
             }
             assertTrue(state.importResult is ImportResult.Success)
-            assertEquals(2, (state.importResult as ImportResult.Success).count)
+            assertEquals(2, state.importResult.count)
             cancelAndConsumeRemainingEvents()
         }
     }
