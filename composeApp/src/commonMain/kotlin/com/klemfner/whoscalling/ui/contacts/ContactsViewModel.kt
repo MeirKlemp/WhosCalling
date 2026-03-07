@@ -162,6 +162,108 @@ class ContactsViewModel(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
+    fun enterDeleteMode() {
+        _uiState.update {
+            it.copy(isDeleteMode = true, selectedForDeletion = emptySet())
+        }
+    }
+
+    fun exitDeleteMode() {
+        _uiState.update {
+            it.copy(isDeleteMode = false, selectedForDeletion = emptySet())
+        }
+    }
+
+    fun toggleContactSelection(contactId: String) {
+        _uiState.update {
+            val updated = if (contactId in it.selectedForDeletion) {
+                it.selectedForDeletion - contactId
+            } else {
+                it.selectedForDeletion + contactId
+            }
+            it.copy(selectedForDeletion = updated)
+        }
+    }
+
+    fun selectAllContacts() {
+        _uiState.update {
+            it.copy(selectedForDeletion = it.contacts.map { c -> c.id }.toSet())
+        }
+    }
+
+    fun unselectAllContacts() {
+        _uiState.update { it.copy(selectedForDeletion = emptySet()) }
+    }
+
+    fun requestDeleteSelectedContacts() {
+        val state = _uiState.value
+        val selectedIds = state.selectedForDeletion
+        if (selectedIds.isEmpty()) return
+        val contactName = if (selectedIds.size == 1) {
+            state.contacts.find { it.id == selectedIds.first() }?.name
+        } else {
+            null
+        }
+        _uiState.update {
+            it.copy(showDeleteDialog = true, deleteDialogContactName = contactName)
+        }
+    }
+
+    fun requestDeleteContact(contact: Contact) {
+        _uiState.update {
+            it.copy(
+                showDeleteDialog = true,
+                deleteDialogContactName = contact.name,
+                selectedForDeletion = setOf(contact.id),
+            )
+        }
+    }
+
+    fun confirmDelete() {
+        val state = _uiState.value
+        val idsToDelete = state.selectedForDeletion
+        viewModelScope.launch {
+            try {
+                for (id in idsToDelete) {
+                    contactRepository.deleteContact(id)
+                }
+                val deletedSelectedContact = state.selectedContact?.id in idsToDelete
+                _uiState.update {
+                    it.copy(
+                        showDeleteDialog = false,
+                        deleteDialogContactName = null,
+                        isDeleteMode = false,
+                        selectedForDeletion = emptySet(),
+                        selectedContact = if (deletedSelectedContact) null else it.selectedContact,
+                        currentPane = if (deletedSelectedContact && it.currentPane == ContactsPane.DETAILS) {
+                            ContactsPane.LIST
+                        } else {
+                            it.currentPane
+                        },
+                    )
+                }
+                if (deletedSelectedContact) {
+                    selectedContactPhone.value = null
+                }
+            } catch (e: Exception) {
+                Logger.e(TAG, "confirmDelete failed", e)
+                _uiState.update {
+                    it.copy(
+                        showDeleteDialog = false,
+                        deleteDialogContactName = null,
+                        errorMessage = e.message,
+                    )
+                }
+            }
+        }
+    }
+
+    fun dismissDeleteDialog() {
+        _uiState.update {
+            it.copy(showDeleteDialog = false, deleteDialogContactName = null)
+        }
+    }
+
     fun saveContact() {
         val form = _uiState.value.formState
         viewModelScope.launch {

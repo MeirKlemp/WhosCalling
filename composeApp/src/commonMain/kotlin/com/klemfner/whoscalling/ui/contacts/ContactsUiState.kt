@@ -12,6 +12,10 @@ data class ContactsUiState(
     val formState: ContactFormState = ContactFormState(),
     val errorMessage: String? = null,
     val defaultCountryIso: String = "",
+    val isDeleteMode: Boolean = false,
+    val selectedForDeletion: Set<String> = emptySet(),
+    val showDeleteDialog: Boolean = false,
+    val deleteDialogContactName: String? = null,
 )
 
 enum class ContactsPane {

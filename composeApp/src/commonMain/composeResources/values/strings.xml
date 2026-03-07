@@ -65,4 +65,11 @@
     <string name="country_picker_title">Pick a Country</string>
     <string name="country_picker_dismiss">Cancel</string>
     <string name="country_picker_confirm">Confirm</string>
+    <string name="delete">Delete</string>
+    <string name="delete_contact">Delete Contact</string>
+    <string name="select_all">Select All</string>
+    <string name="unselect_all">Unselect All</string>
+    <string name="selected_count">%1$d selected</string>
+    <string name="confirm_delete_single">Are you sure you want to delete %1$s?</string>
+    <string name="confirm_delete_multiple">Are you sure you want to delete %1$d contacts?</string>
 </resources>
