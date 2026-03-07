@@ -90,15 +90,20 @@ class ContactsViewModel(
 
     fun openEditContact() {
         val contact = _uiState.value.selectedContact ?: return
-        val iso = getCountryIsoFromPhoneNumber(contact.phoneNumber)
-            ?: _uiState.value.defaultCountryIso
+        val extractedIso = getCountryIsoFromPhoneNumber(contact.phoneNumber)
+        val iso = extractedIso ?: _uiState.value.defaultCountryIso
+        val nationalNumber = if (extractedIso != null) {
+            formatPhoneForDisplay(contact.phoneNumber, iso).nationalNumber
+        } else {
+            contact.phoneNumber
+        }
         _uiState.update {
             it.copy(
                 currentPane = ContactsPane.FORM,
                 formState = ContactFormState(
                     id = contact.id,
                     name = contact.name,
-                    phoneNumber = contact.phoneNumber,
+                    phoneNumber = nationalNumber,
                     email = contact.email ?: "",
                     isNew = false,
                     selectedCountryIso = iso,

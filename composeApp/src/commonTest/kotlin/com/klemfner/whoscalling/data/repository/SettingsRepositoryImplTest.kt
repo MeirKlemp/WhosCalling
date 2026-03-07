@@ -53,6 +53,7 @@ class SettingsRepositoryImplTest {
     fun setCountryIso_updatesSyncCurrentCountryIso() = runTest(testDispatcher) {
         val repository = createRepository()
         repository.setCountryIso("IL")
+        testDispatcher.scheduler.advanceUntilIdle()
         assertEquals("IL", repository.currentCountryIso)
     }
 
@@ -77,8 +78,9 @@ class SettingsRepositoryImplTest {
         val repository = createRepository(defaultCountryIso = { "US" }, defaultTouchMode = { true })
         repository.setCountryIso("IL")
         repository.setTouchMode(false)
+        testDispatcher.scheduler.advanceUntilIdle()
         repository.preferences.test {
-            // After double update, eagerly-started flow emits current value
+            // After advancing, stateIn has propagated the updates
             val current = awaitItem()
             assertEquals("IL", current.countryIso)
             assertEquals(false, current.touchMode)
