@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,11 +72,21 @@ fun CallLogsList(
                 title = { Text(stringResource(Res.string.call_logs)) },
                 actions = {
                     if (!isTouchMode) {
-                        IconButton(onClick = onRefresh) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = stringResource(Res.string.refresh),
-                            )
+                        IconButton(
+                            onClick = onRefresh,
+                            enabled = isLoggedIn && !isRefreshing,
+                        ) {
+                            if (isRefreshing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = stringResource(Res.string.refresh),
+                                )
+                            }
                         }
                     }
                 },
@@ -147,7 +159,7 @@ fun CallLogsList(
                 }
             }
 
-            if (isTouchMode) {
+            if (isTouchMode && isLoggedIn) {
                 PullToRefreshBox(
                     isRefreshing = isRefreshing,
                     onRefresh = onRefresh,
