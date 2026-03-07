@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
+import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
@@ -124,22 +125,7 @@ fun ContactDetails(
                                 modifier = Modifier.size(20.dp),
                             )
                             Spacer(Modifier.width(8.dp))
-                            if (formattedPhone.internationalPrefix != null) {
-                                Text(
-                                    formattedPhone.internationalPrefix,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.outline,
-                                )
-                                Text(
-                                    " | ",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.outline,
-                                )
-                            }
-                            Text(
-                                formattedPhone.nationalNumber,
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
+                            FormattedPhoneText(formattedPhone = formattedPhone)
                         }
                         if (!contact.email.isNullOrBlank()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {

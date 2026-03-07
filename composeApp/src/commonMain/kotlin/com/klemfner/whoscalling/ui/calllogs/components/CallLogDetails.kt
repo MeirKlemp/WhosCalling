@@ -39,6 +39,7 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.ui.common.components.CallLogIcon
+import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
@@ -195,42 +196,13 @@ private fun ContactInfo(
                     modifier = Modifier.size(20.dp),
                 )
                 Spacer(Modifier.width(8.dp))
-                if (formattedPhone.internationalPrefix != null) {
-                    Text(
-                        formattedPhone.internationalPrefix,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                    Text(
-                        " | ",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                }
-                Text(
-                    formattedPhone.nationalNumber,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+                FormattedPhoneText(formattedPhone = formattedPhone)
             }
         } else {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (formattedPhone.internationalPrefix != null) {
-                    Text(
-                        formattedPhone.internationalPrefix,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                    Text(
-                        " | ",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                }
-                Text(
-                    formattedPhone.nationalNumber,
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-            }
+            FormattedPhoneText(
+                formattedPhone = formattedPhone,
+                style = MaterialTheme.typography.headlineMedium,
+            )
         }
     }
 }

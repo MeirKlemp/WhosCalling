@@ -143,6 +143,7 @@ private fun CompactContactsLayout(
                 selectedContactId = null,
                 onContactClick = viewModel::selectContact,
                 onAddClick = { viewModel.openAddContact() },
+                defaultCountryIso = uiState.defaultCountryIso,
                 modifier = Modifier.fillMaxSize(),
             )
             ContactsPane.DETAILS -> {
@@ -188,6 +189,7 @@ private fun ExpandedContactsLayout(
             selectedContactId = uiState.selectedContact?.id,
             onContactClick = viewModel::selectContact,
             onAddClick = { viewModel.openAddContact() },
+            defaultCountryIso = uiState.defaultCountryIso,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 

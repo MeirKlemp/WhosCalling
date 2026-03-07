@@ -6,6 +6,7 @@ import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import com.klemfner.whoscalling.util.getCountryIsoFromPhoneNumber
 import com.klemfner.whoscalling.util.normalizePhoneNumber
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,13 +69,20 @@ class ContactsViewModel(
 
     fun openAddContact(phoneNumber: String = "") {
         val defaultIso = _uiState.value.defaultCountryIso
+        val extractedIso = if (phoneNumber.isNotEmpty()) getCountryIsoFromPhoneNumber(phoneNumber) else null
+        val iso = extractedIso ?: defaultIso
+        val nationalNumber = if (phoneNumber.isNotEmpty() && extractedIso != null) {
+            formatPhoneForDisplay(phoneNumber, iso).nationalNumber
+        } else {
+            phoneNumber
+        }
         _uiState.update {
             it.copy(
                 currentPane = ContactsPane.FORM,
                 formState = ContactFormState(
                     isNew = true,
-                    phoneNumber = phoneNumber,
-                    selectedCountryIso = defaultIso,
+                    phoneNumber = nationalNumber,
+                    selectedCountryIso = iso,
                 ),
             )
         }

@@ -58,6 +58,7 @@ fun CallLogsList(
     onCallLogClick: (CallLog) -> Unit,
     onRefresh: () -> Unit,
     onLoginClick: () -> Unit,
+    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
 ) {
     val isTouchMode = LocalIsTouchMode.current
@@ -130,6 +131,7 @@ fun CallLogsList(
                                 contact = contacts[log.phoneNumber],
                                 isSelected = log.id == selectedCallLogId,
                                 onClick = { onCallLogClick(log) },
+                                defaultCountryIso = defaultCountryIso,
                             )
                         }
                     }

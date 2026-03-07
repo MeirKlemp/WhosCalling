@@ -129,11 +129,11 @@ fun ContactForm(
             Spacer(Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
             ) {
                 CountryCodeField(
                     selectedCountryIso = formState.selectedCountryIso,
                     onClick = { showCountryDialog = true },
+                    modifier = Modifier.align(Alignment.Bottom),
                 )
                 Spacer(Modifier.width(8.dp))
                 OutlinedTextField(

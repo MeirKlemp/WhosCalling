@@ -162,6 +162,7 @@ private fun CompactCallLogsLayout(
                 onCallLogClick = viewModel::selectCallLog,
                 onRefresh = viewModel::refresh,
                 onLoginClick = onLoginClick,
+                defaultCountryIso = uiState.defaultCountryIso,
                 modifier = Modifier.fillMaxSize(),
             )
             CallLogsPane.DETAILS -> {
@@ -202,6 +203,7 @@ private fun ExpandedCallLogsLayout(
             onCallLogClick = viewModel::selectCallLog,
             onRefresh = viewModel::refresh,
             onLoginClick = onLoginClick,
+            defaultCountryIso = uiState.defaultCountryIso,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 

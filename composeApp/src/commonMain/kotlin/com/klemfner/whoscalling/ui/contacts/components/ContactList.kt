@@ -40,6 +40,7 @@ fun ContactList(
     selectedContactId: String?,
     onContactClick: (Contact) -> Unit,
     onAddClick: () -> Unit,
+    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
 ) {
     val isTouchMode = LocalIsTouchMode.current
@@ -105,6 +106,7 @@ fun ContactList(
                                 callCount = callCounts[contact.phoneNumber] ?: 0,
                                 isSelected = contact.id == selectedContactId,
                                 onClick = { onContactClick(contact) },
+                                defaultCountryIso = defaultCountryIso,
                             )
                         }
                     }

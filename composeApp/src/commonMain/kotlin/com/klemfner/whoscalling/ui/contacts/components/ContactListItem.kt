@@ -6,8 +6,11 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
+import com.klemfner.whoscalling.util.formatPhoneForDisplay
 
 @Composable
 fun ContactListItem(
@@ -15,8 +18,12 @@ fun ContactListItem(
     callCount: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
+    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
 ) {
+    val formattedPhone = remember(contact.phoneNumber, defaultCountryIso) {
+        formatPhoneForDisplay(contact.phoneNumber, defaultCountryIso)
+    }
     ListItem(
         headlineContent = {
             Text(
@@ -27,7 +34,10 @@ fun ContactListItem(
             )
         },
         trailingContent = {
-            Text(contact.phoneNumber, style = MaterialTheme.typography.bodyMedium)
+            FormattedPhoneText(
+                formattedPhone = formattedPhone,
+                style = MaterialTheme.typography.bodyMedium,
+            )
         },
         colors = if (isSelected) {
             ListItemDefaults.colors(
