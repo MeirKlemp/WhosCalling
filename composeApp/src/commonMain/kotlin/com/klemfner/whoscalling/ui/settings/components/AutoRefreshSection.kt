@@ -66,8 +66,10 @@ fun AutoRefreshSection(
         selectedOption
     }
 
-    val isCustomValid = selectedOption != CUSTOM_MARKER ||
-            (customSeconds.toLongOrNull() != null && customSeconds.toLongOrNull()!! > 0)
+    val isCustomValid = selectedOption != CUSTOM_MARKER || run {
+        val value = customSeconds.toLongOrNull()
+        value != null && value > 0
+    }
 
     val hasChanges = draftSeconds != refreshRateSeconds
     val canSave = hasChanges && (selectedOption != CUSTOM_MARKER || isCustomValid)

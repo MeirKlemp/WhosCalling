@@ -80,5 +80,4 @@
     <string name="auto_refresh_never">Never</string>
     <string name="auto_refresh_custom">Custom</string>
     <string name="auto_refresh_seconds_input">Seconds</string>
-    <string name="auto_refresh_duration_format">%1$s</string>
 </resources>
