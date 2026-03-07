@@ -62,8 +62,20 @@ fun CallLogsScreen(
         navigator.navigateTo(NavigationTab.CONTACTS, NavAction.AddContact(phoneNumber))
     }
 
+    val onShowContact: (String) -> Unit = { contactId ->
+        navigator.navigateTo(NavigationTab.CONTACTS, NavAction.ShowContact(contactId))
+    }
+
     val onLoginClick: () -> Unit = {
         navigator.navigateTo(NavigationTab.USER)
+    }
+
+    LaunchedEffect(navigator.navState.action) {
+        val action = navigator.navState.action
+        if (action is NavAction.ShowCallLog) {
+            viewModel.selectCallLogById(action.callLogId)
+            navigator.consumeAction()
+        }
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -85,9 +97,9 @@ fun CallLogsScreen(
             },
     ) {
         if (isExpanded) {
-            ExpandedCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
+            ExpandedCallLogsLayout(uiState, viewModel, onAddContact, onShowContact, onLoginClick)
         } else {
-            CompactCallLogsLayout(uiState, viewModel, onAddContact, onLoginClick)
+            CompactCallLogsLayout(uiState, viewModel, onAddContact, onShowContact, onLoginClick)
         }
 
         SnackbarHost(
@@ -124,6 +136,7 @@ private fun CompactCallLogsLayout(
     uiState: CallLogsUiState,
     viewModel: CallLogsViewModel,
     onAddContact: (String) -> Unit,
+    onShowContact: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
     AnimatedContent(
@@ -160,6 +173,8 @@ private fun CompactCallLogsLayout(
                         numberCallLogs = uiState.selectedNumberCallLogs,
                         onBackClick = viewModel::goBack,
                         onAddContactClick = onAddContact,
+                        onShowContactClick = onShowContact,
+                        onCallLogClick = viewModel::selectCallLog,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -173,6 +188,7 @@ private fun ExpandedCallLogsLayout(
     uiState: CallLogsUiState,
     viewModel: CallLogsViewModel,
     onAddContact: (String) -> Unit,
+    onShowContact: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
     Row(Modifier.fillMaxSize()) {
@@ -230,6 +246,8 @@ private fun ExpandedCallLogsLayout(
                             numberCallLogs = uiState.selectedNumberCallLogs,
                             onBackClick = viewModel::goBack,
                             onAddContactClick = onAddContact,
+                            onShowContactClick = onShowContact,
+                            onCallLogClick = viewModel::selectCallLog,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

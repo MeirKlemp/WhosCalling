@@ -1,4 +1,4 @@
-package com.klemfner.whoscalling.ui.calllogs.components
+package com.klemfner.whoscalling.ui.common.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.ListItem
@@ -8,8 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.domain.model.CallLog
-import com.klemfner.whoscalling.domain.model.Contact
-import com.klemfner.whoscalling.ui.common.components.CallLogIcon
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
@@ -17,11 +15,10 @@ import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 
 @Composable
-fun CallLogListItem(
+fun ContactCallLogItem(
     callLog: CallLog,
-    contact: Contact?,
-    isSelected: Boolean,
-    onClick: () -> Unit,
+    isSelected: Boolean = false,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val period = getTimePeriod(callLog.timestamp)
@@ -36,12 +33,7 @@ fun CallLogListItem(
             CallLogIcon(callLog)
         },
         headlineContent = {
-            Text(
-                buildString {
-                    append(contact?.name ?: callLog.phoneNumber)
-                    append(" (${formatDuration(callLog.duration)})")
-                },
-            )
+            Text(formatDuration(callLog.duration))
         },
         trailingContent = {
             Text(
@@ -56,6 +48,6 @@ fun CallLogListItem(
         } else {
             ListItemDefaults.colors()
         },
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = if (onClick != null) modifier.clickable(onClick = onClick) else modifier,
     )
 }

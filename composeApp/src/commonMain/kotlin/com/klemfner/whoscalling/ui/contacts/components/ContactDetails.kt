@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
@@ -35,12 +36,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.back
+import whoscalling.composeapp.generated.resources.call_logs_by_number_count
 import whoscalling.composeapp.generated.resources.details
 import whoscalling.composeapp.generated.resources.edit_contact
 import whoscalling.composeapp.generated.resources.long_time_ago
@@ -57,6 +60,7 @@ fun ContactDetails(
     callLogs: List<CallLog>,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
+    onCallLogClick: (CallLog) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isTouchMode = LocalIsTouchMode.current
@@ -102,33 +106,43 @@ fun ContactDetails(
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
         ) {
             item {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(contact.name, style = MaterialTheme.typography.headlineMedium)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Phone,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(contact.phoneNumber, style = MaterialTheme.typography.bodyLarge)
-                    }
-                    if (!contact.email.isNullOrBlank()) {
+                SelectionContainer {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(contact.name, style = MaterialTheme.typography.headlineMedium)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                Icons.Default.Email,
+                                Icons.Default.Phone,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(contact.email, style = MaterialTheme.typography.bodyLarge)
+                            Text(contact.phoneNumber, style = MaterialTheme.typography.bodyLarge)
+                        }
+                        if (!contact.email.isNullOrBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Email,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(contact.email, style = MaterialTheme.typography.bodyLarge)
+                            }
                         }
                     }
                 }
                 HorizontalDivider()
+            }
+
+            item {
+                Text(
+                    stringResource(Res.string.call_logs_by_number_count, callLogs.size),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(16.dp),
+                )
             }
 
             if (callLogs.isEmpty()) {
@@ -161,7 +175,7 @@ fun ContactDetails(
                     )
                 }
                 items(logs, key = { it.id }) { log ->
-                    CallLogItem(callLog = log)
+                    ContactCallLogItem(callLog = log, onClick = { onCallLogClick(log) })
                 }
             }
         }
