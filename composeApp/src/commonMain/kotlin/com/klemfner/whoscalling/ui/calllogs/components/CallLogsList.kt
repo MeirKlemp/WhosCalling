@@ -2,7 +2,6 @@ package com.klemfner.whoscalling.ui.calllogs.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,13 +16,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -37,6 +37,8 @@ import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
+import whoscalling.composeapp.generated.resources.call_log_count
+import whoscalling.composeapp.generated.resources.call_logs
 import whoscalling.composeapp.generated.resources.login
 import whoscalling.composeapp.generated.resources.long_time_ago
 import whoscalling.composeapp.generated.resources.no_call_logs
@@ -63,12 +65,34 @@ fun CallLogsList(
 ) {
     val isTouchMode = LocalIsTouchMode.current
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(Res.string.call_logs)) },
+                actions = {
+                    if (!isTouchMode) {
+                        IconButton(onClick = onRefresh) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = stringResource(Res.string.refresh),
+                            )
+                        }
+                    }
+                },
+            )
+        },
         modifier = modifier,
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues).fillMaxSize()) {
             if (!isLoggedIn) {
                 NotLoggedInBanner(onLoginClick)
             }
+
+            Text(
+                text = stringResource(Res.string.call_log_count, callLogs.size),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
 
             val content: @Composable () -> Unit = {
                 val timePeriodGroups = remember(callLogs) {
@@ -77,21 +101,6 @@ fun CallLogsList(
                 }
 
                 LazyColumn(Modifier.fillMaxSize()) {
-                    if (!isTouchMode) {
-                        item(key = "refresh_button") {
-                            Row(
-                                modifier = Modifier.fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.End,
-                            ) {
-                                FilledTonalButton(onClick = onRefresh) {
-                                    Icon(Icons.Default.Refresh, contentDescription = null)
-                                    Text(stringResource(Res.string.refresh))
-                                }
-                            }
-                        }
-                    }
-
                     if (callLogs.isEmpty()) {
                         item {
                             Box(

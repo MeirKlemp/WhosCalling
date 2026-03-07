@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,8 +26,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.Contact
@@ -36,6 +37,7 @@ import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 import whoscalling.composeapp.generated.resources.cancel
 import whoscalling.composeapp.generated.resources.contact_count
+import whoscalling.composeapp.generated.resources.contacts
 import whoscalling.composeapp.generated.resources.delete
 import whoscalling.composeapp.generated.resources.delete_contact
 import whoscalling.composeapp.generated.resources.no_contacts
@@ -43,7 +45,7 @@ import whoscalling.composeapp.generated.resources.select_all
 import whoscalling.composeapp.generated.resources.selected_count
 import whoscalling.composeapp.generated.resources.unselect_all
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ContactList(
     contacts: List<Contact>,
@@ -65,10 +67,15 @@ fun ContactList(
     val isTouchMode = LocalIsTouchMode.current
 
     if (contacts.isEmpty()) {
-        Scaffold(modifier = modifier) { paddingValues ->
+        Scaffold(
+            topBar = {
+                TopAppBar(title = { Text(stringResource(Res.string.contacts)) })
+            },
+            modifier = modifier,
+        ) { paddingValues ->
             Box(
                 modifier = Modifier.padding(paddingValues).fillMaxSize(),
-                contentAlignment = Alignment.Center,
+                contentAlignment = androidx.compose.ui.Alignment.Center,
             ) {
                 Text(
                     stringResource(Res.string.no_contacts),
@@ -81,6 +88,49 @@ fun ContactList(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(Res.string.contacts)) },
+                navigationIcon = {
+                    if (isDeleteMode) {
+                        IconButton(onClick = onDeleteModeExit) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = stringResource(Res.string.cancel),
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    if (isDeleteMode) {
+                        if (selectedForDeletion.size == contacts.size) {
+                            TextButton(onClick = onUnselectAll) {
+                                Text(stringResource(Res.string.unselect_all))
+                            }
+                        } else {
+                            TextButton(onClick = onSelectAll) {
+                                Text(stringResource(Res.string.select_all))
+                            }
+                        }
+                    } else {
+                        if (!isTouchMode) {
+                            IconButton(onClick = onAddClick) {
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = stringResource(Res.string.add_contact),
+                                )
+                            }
+                        }
+                        IconButton(onClick = onDeleteModeEnter) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(Res.string.delete_contact),
+                            )
+                        }
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             if (isTouchMode) {
                 if (isDeleteMode) {
@@ -103,60 +153,6 @@ fun ContactList(
         modifier = modifier,
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            if (isDeleteMode) {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = onDeleteModeExit) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = stringResource(Res.string.cancel),
-                        )
-                    }
-                    Row {
-                        if (selectedForDeletion.size == contacts.size) {
-                            IconButton(onClick = onUnselectAll) {
-                                Text(
-                                    stringResource(Res.string.unselect_all),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                        } else {
-                            IconButton(onClick = onSelectAll) {
-                                Text(
-                                    stringResource(Res.string.select_all),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    if (!isTouchMode) {
-                        IconButton(onClick = onAddClick) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = stringResource(Res.string.add_contact),
-                            )
-                        }
-                    }
-                    IconButton(onClick = onDeleteModeEnter) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = stringResource(Res.string.delete_contact),
-                        )
-                    }
-                }
-            }
-
             Text(
                 text = if (isDeleteMode) {
                     stringResource(Res.string.selected_count, selectedForDeletion.size)
