@@ -166,7 +166,6 @@ class ContactsViewModel(
         val form = _uiState.value.formState
         viewModelScope.launch {
             try {
-                Logger.d(TAG, "saveContact: name=${form.name}, phone=${form.phoneNumber}, iso=${form.selectedCountryIso}")
                 val phoneNumber = normalizePhoneNumber(
                     form.phoneNumber,
                     form.selectedCountryIso.ifEmpty { null },
