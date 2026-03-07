@@ -11,6 +11,7 @@ data class ContactsUiState(
     val currentPane: ContactsPane = ContactsPane.LIST,
     val formState: ContactFormState = ContactFormState(),
     val errorMessage: String? = null,
+    val defaultCountryIso: String = "",
 )
 
 enum class ContactsPane {
@@ -23,4 +24,5 @@ data class ContactFormState(
     val phoneNumber: String = "",
     val email: String = "",
     val isNew: Boolean = true,
+    val selectedCountryIso: String = "",
 )

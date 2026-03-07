@@ -15,13 +15,16 @@ import com.klemfner.whoscalling.data.remote.srp.Srp6aClientImpl
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
+import com.klemfner.whoscalling.data.repository.SettingsRepositoryImpl
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.settings.SettingsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
+import com.klemfner.whoscalling.util.normalizePhoneNumber
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,10 +50,29 @@ val dataSourceModule = module {
 
 val repositoryModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
-    single<CallLogRepository> {
-        CallLogRepositoryImpl(get(), get(), get(), CoroutineScope(SupervisorJob() + Dispatchers.Default))
+    single<SettingsRepository> {
+        SettingsRepositoryImpl(
+            localDataSource = get(),
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        )
     }
-    single<ContactRepository> { ContactRepositoryImpl(get()) }
+    single<CallLogRepository> {
+        val settingsRepo: SettingsRepository = get()
+        CallLogRepositoryImpl(
+            remoteDataSource = get(),
+            localDataSource = get(),
+            authRepository = get(),
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+            normalizePhone = { phone -> normalizePhoneNumber(phone, settingsRepo.currentCountryIso) },
+        )
+    }
+    single<ContactRepository> {
+        val settingsRepo: SettingsRepository = get()
+        ContactRepositoryImpl(
+            localDataSource = get(),
+            normalizePhone = { phone -> normalizePhoneNumber(phone, settingsRepo.currentCountryIso) },
+        )
+    }
 }
 
 val viewModelModule = module {

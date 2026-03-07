@@ -12,6 +12,7 @@ data class CallLogsUiState(
     val isRefreshing: Boolean = false,
     val isLoggedIn: Boolean = false,
     val refreshError: Boolean = false,
+    val defaultCountryIso: String = "",
 )
 
 enum class CallLogsPane {

@@ -143,6 +143,7 @@ private fun CompactContactsLayout(
                 selectedContactId = null,
                 onContactClick = viewModel::selectContact,
                 onAddClick = { viewModel.openAddContact() },
+                defaultCountryIso = uiState.defaultCountryIso,
                 modifier = Modifier.fillMaxSize(),
             )
             ContactsPane.DETAILS -> {
@@ -154,6 +155,7 @@ private fun CompactContactsLayout(
                         onBackClick = viewModel::goBack,
                         onEditClick = viewModel::openEditContact,
                         onCallLogClick = onCallLogClick,
+                        defaultCountryIso = uiState.defaultCountryIso,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -163,6 +165,7 @@ private fun CompactContactsLayout(
                 onNameChange = viewModel::updateFormName,
                 onPhoneChange = viewModel::updateFormPhone,
                 onEmailChange = viewModel::updateFormEmail,
+                onCountryIsoChange = viewModel::updateFormCountryIso,
                 onSave = viewModel::saveContact,
                 onCancel = viewModel::goBack,
                 errorMessage = uiState.errorMessage,
@@ -186,6 +189,7 @@ private fun ExpandedContactsLayout(
             selectedContactId = uiState.selectedContact?.id,
             onContactClick = viewModel::selectContact,
             onAddClick = { viewModel.openAddContact() },
+            defaultCountryIso = uiState.defaultCountryIso,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 
@@ -231,6 +235,7 @@ private fun ExpandedContactsLayout(
                             onBackClick = viewModel::goBack,
                             onEditClick = viewModel::openEditContact,
                             onCallLogClick = onCallLogClick,
+                            defaultCountryIso = uiState.defaultCountryIso,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
@@ -240,6 +245,7 @@ private fun ExpandedContactsLayout(
                     onNameChange = viewModel::updateFormName,
                     onPhoneChange = viewModel::updateFormPhone,
                     onEmailChange = viewModel::updateFormEmail,
+                    onCountryIsoChange = viewModel::updateFormCountryIso,
                     onSave = viewModel::saveContact,
                     onCancel = viewModel::goBack,
                     errorMessage = uiState.errorMessage,

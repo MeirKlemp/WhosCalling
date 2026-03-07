@@ -12,7 +12,7 @@ import kotlin.uuid.Uuid
 
 class ContactRepositoryImpl(
     private val localDataSource: ContactLocalDataSource,
-    private val normalizePhone: (String) -> String = ::normalizePhoneNumber
+    private val normalizePhone: (String) -> String = { normalizePhoneNumber(it) }
 ) : ContactRepository {
 
     companion object {

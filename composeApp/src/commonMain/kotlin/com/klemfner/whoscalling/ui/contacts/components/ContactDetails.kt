@@ -37,9 +37,11 @@ import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
+import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
+import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.back
@@ -61,6 +63,7 @@ fun ContactDetails(
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onCallLogClick: (CallLog) -> Unit,
+    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
 ) {
     val isTouchMode = LocalIsTouchMode.current
@@ -101,6 +104,9 @@ fun ContactDetails(
             callLogs.groupBy { getTimePeriod(it.timestamp) }
                 .toSortedMap(compareBy { it.ordinal })
         }
+        val formattedPhone = remember(contact.phoneNumber, defaultCountryIso) {
+            formatPhoneForDisplay(contact.phoneNumber, defaultCountryIso)
+        }
 
         LazyColumn(
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
@@ -119,7 +125,7 @@ fun ContactDetails(
                                 modifier = Modifier.size(20.dp),
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(contact.phoneNumber, style = MaterialTheme.typography.bodyLarge)
+                            FormattedPhoneText(formattedPhone = formattedPhone)
                         }
                         if (!contact.email.isNullOrBlank()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {

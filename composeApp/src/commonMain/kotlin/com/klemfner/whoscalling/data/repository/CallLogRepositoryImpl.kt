@@ -23,7 +23,7 @@ class CallLogRepositoryImpl(
     private val authRepository: AuthRepository,
     private val scope: CoroutineScope,
     private val currentTimeMillis: () -> Long = ::currentTimeMillis,
-    private val normalizePhone: (String) -> String = ::normalizePhoneNumber,
+    private val normalizePhone: (String) -> String = { normalizePhoneNumber(it) },
     private val refreshIntervalMs: Long = REFRESH_INTERVAL_MS,
 ) : CallLogRepository {
 

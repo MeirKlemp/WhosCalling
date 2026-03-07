@@ -25,10 +25,16 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.klemfner.whoscalling.ui.common.components.CountryCodeDialog
+import com.klemfner.whoscalling.ui.common.components.CountryCodeField
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.contacts.ContactFormState
 import org.jetbrains.compose.resources.stringResource
@@ -49,6 +55,7 @@ fun ContactForm(
     onNameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
+    onCountryIsoChange: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
     errorMessage: String? = null,
@@ -57,12 +64,24 @@ fun ContactForm(
 ) {
     val isTouchMode = LocalIsTouchMode.current
     val snackbarHostState = remember { SnackbarHostState() }
+    var showCountryDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(errorMessage) {
         if (errorMessage != null) {
             snackbarHostState.showSnackbar(errorMessage)
             onErrorDismiss()
         }
+    }
+
+    if (showCountryDialog) {
+        CountryCodeDialog(
+            selectedCountryIso = formState.selectedCountryIso,
+            onConfirm = { iso ->
+                onCountryIsoChange(iso)
+                showCountryDialog = false
+            },
+            onDismiss = { showCountryDialog = false },
+        )
     }
 
     Scaffold(
@@ -108,14 +127,24 @@ fun ContactForm(
                 singleLine = true,
             )
             Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
-                value = formState.phoneNumber,
-                onValueChange = onPhoneChange,
-                label = { Text(stringResource(Res.string.phone_number)) },
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            )
+            ) {
+                CountryCodeField(
+                    selectedCountryIso = formState.selectedCountryIso,
+                    onClick = { showCountryDialog = true },
+                    modifier = Modifier.align(Alignment.Bottom),
+                )
+                Spacer(Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = formState.phoneNumber,
+                    onValueChange = onPhoneChange,
+                    label = { Text(stringResource(Res.string.phone_number)) },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                )
+            }
             Spacer(Modifier.height(16.dp))
             OutlinedTextField(
                 value = formState.email,
