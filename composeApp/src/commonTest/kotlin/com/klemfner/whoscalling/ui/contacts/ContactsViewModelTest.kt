@@ -22,7 +22,9 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ContactsViewModelTest {
@@ -285,6 +287,245 @@ class ContactsViewModelTest {
 
             viewModel.openEditContact()
             expectNoEvents()
+        }
+    }
+
+    @Test
+    fun enterDeleteModeUpdatesState() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            val state = awaitItem()
+            assertTrue(state.isDeleteMode)
+            assertEquals(emptySet(), state.selectedForDeletion)
+        }
+    }
+
+    @Test
+    fun exitDeleteModeClearsState() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.exitDeleteMode()
+            val state = awaitItem()
+            assertFalse(state.isDeleteMode)
+            assertEquals(emptySet(), state.selectedForDeletion)
+        }
+    }
+
+    @Test
+    fun toggleContactSelectionAddsAndRemoves() = runTest {
+        contactLocalDataSource.saveContact(contact1)
+        contactLocalDataSource.saveContact(contact2)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.toggleContactSelection("1")
+            var state = awaitItem()
+            assertEquals(setOf("1"), state.selectedForDeletion)
+
+            viewModel.toggleContactSelection("2")
+            state = awaitItem()
+            assertEquals(setOf("1", "2"), state.selectedForDeletion)
+
+            viewModel.toggleContactSelection("1")
+            state = awaitItem()
+            assertEquals(setOf("2"), state.selectedForDeletion)
+        }
+    }
+
+    @Test
+    fun selectAllContactsSelectsAll() = runTest {
+        contactLocalDataSource.saveContact(contact1)
+        contactLocalDataSource.saveContact(contact2)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.selectAllContacts()
+            val state = awaitItem()
+            assertEquals(setOf("1", "2"), state.selectedForDeletion)
+        }
+    }
+
+    @Test
+    fun unselectAllContactsClearsSelection() = runTest {
+        contactLocalDataSource.saveContact(contact1)
+        contactLocalDataSource.saveContact(contact2)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.selectAllContacts()
+            awaitItem()
+
+            viewModel.unselectAllContacts()
+            val state = awaitItem()
+            assertEquals(emptySet(), state.selectedForDeletion)
+        }
+    }
+
+    @Test
+    fun requestDeleteSelectedContactsShowsDialogWithCount() = runTest {
+        contactLocalDataSource.saveContact(contact1)
+        contactLocalDataSource.saveContact(contact2)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.toggleContactSelection("1")
+            awaitItem()
+            viewModel.toggleContactSelection("2")
+            awaitItem()
+
+            viewModel.requestDeleteSelectedContacts()
+            val state = awaitItem()
+            assertTrue(state.showDeleteDialog)
+            assertNull(state.deleteDialogContactName)
+        }
+    }
+
+    @Test
+    fun requestDeleteSelectedContactsShowsDialogWithName() = runTest {
+        contactLocalDataSource.saveContact(contact1)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.toggleContactSelection("1")
+            awaitItem()
+
+            viewModel.requestDeleteSelectedContacts()
+            val state = awaitItem()
+            assertTrue(state.showDeleteDialog)
+            assertEquals("Alice", state.deleteDialogContactName)
+        }
+    }
+
+    @Test
+    fun requestDeleteSelectedContactsWithEmptySelectionDoesNothing() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.requestDeleteSelectedContacts()
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun requestDeleteContactShowsDialogWithName() = runTest {
+        contactLocalDataSource.saveContact(contact1)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.requestDeleteContact(contact1)
+            val state = awaitItem()
+            assertTrue(state.showDeleteDialog)
+            assertEquals("Alice", state.deleteDialogContactName)
+            assertEquals(setOf("1"), state.selectedForDeletion)
+        }
+    }
+
+    @Test
+    fun dismissDeleteDialogClearsDialog() = runTest {
+        contactLocalDataSource.saveContact(contact1)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.requestDeleteContact(contact1)
+            awaitItem()
+
+            viewModel.dismissDeleteDialog()
+            val state = awaitItem()
+            assertFalse(state.showDeleteDialog)
+            assertNull(state.deleteDialogContactName)
+        }
+    }
+
+    @Test
+    fun confirmDeleteRemovesContactsAndExitsDeleteMode() = runTest(testDispatcher) {
+        contactLocalDataSource.saveContact(contact1)
+        contactLocalDataSource.saveContact(contact2)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.enterDeleteMode()
+            awaitItem()
+
+            viewModel.toggleContactSelection("1")
+            awaitItem()
+
+            viewModel.requestDeleteSelectedContacts()
+            awaitItem()
+
+            viewModel.confirmDelete()
+            val state = awaitItem()
+            assertFalse(state.showDeleteDialog)
+            assertFalse(state.isDeleteMode)
+            assertEquals(emptySet(), state.selectedForDeletion)
+
+            val contactsState = awaitItem()
+            assertEquals(1, contactsState.contacts.size)
+            assertEquals("Bob", contactsState.contacts[0].name)
+        }
+    }
+
+    @Test
+    fun confirmDeleteFromDetailsNavigatesToList() = runTest(testDispatcher) {
+        contactLocalDataSource.saveContact(contact1)
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.selectContact(contact1)
+            awaitItem()
+
+            viewModel.requestDeleteContact(contact1)
+            awaitItem()
+
+            viewModel.confirmDelete()
+            val state = awaitItem()
+            assertEquals(ContactsPane.LIST, state.currentPane)
+            assertNull(state.selectedContact)
+            assertFalse(state.showDeleteDialog)
+
+            val contactsState = awaitItem()
+            assertEquals(0, contactsState.contacts.size)
         }
     }
 }

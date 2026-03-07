@@ -17,10 +17,10 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -46,6 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.back
 import whoscalling.composeapp.generated.resources.call_logs_by_number_count
+import whoscalling.composeapp.generated.resources.delete_contact
 import whoscalling.composeapp.generated.resources.details
 import whoscalling.composeapp.generated.resources.edit_contact
 import whoscalling.composeapp.generated.resources.long_time_ago
@@ -62,6 +63,7 @@ fun ContactDetails(
     callLogs: List<CallLog>,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onCallLogClick: (CallLog) -> Unit,
     defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
@@ -81,9 +83,18 @@ fun ContactDetails(
                 },
                 actions = {
                     if (!isTouchMode) {
-                        FilledTonalButton(onClick = onEditClick) {
-                            Text(stringResource(Res.string.edit_contact))
+                        IconButton(onClick = onEditClick) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = stringResource(Res.string.edit_contact),
+                            )
                         }
+                    }
+                    IconButton(onClick = onDeleteClick) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = stringResource(Res.string.delete_contact),
+                        )
                     }
                 },
             )

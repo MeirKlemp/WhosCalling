@@ -30,6 +30,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.domain.model.CallLog
+import com.klemfner.whoscalling.ui.common.components.ConfirmDeleteDialog
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
 import com.klemfner.whoscalling.ui.contacts.components.ContactDetails
@@ -72,6 +73,15 @@ fun ContactsScreen(
 
     PlatformBackHandler(enabled = uiState.currentPane != ContactsPane.LIST) {
         viewModel.goBack()
+    }
+
+    if (uiState.showDeleteDialog) {
+        ConfirmDeleteDialog(
+            contactName = uiState.deleteDialogContactName,
+            deleteCount = uiState.selectedForDeletion.size,
+            onConfirm = viewModel::confirmDelete,
+            onDismiss = viewModel::dismissDeleteDialog,
+        )
     }
 
     Box(
@@ -143,6 +153,14 @@ private fun CompactContactsLayout(
                 selectedContactId = null,
                 onContactClick = viewModel::selectContact,
                 onAddClick = { viewModel.openAddContact() },
+                onDeleteModeEnter = viewModel::enterDeleteMode,
+                onDeleteModeExit = viewModel::exitDeleteMode,
+                onToggleSelection = viewModel::toggleContactSelection,
+                onSelectAll = viewModel::selectAllContacts,
+                onUnselectAll = viewModel::unselectAllContacts,
+                onDeleteClick = viewModel::requestDeleteSelectedContacts,
+                isDeleteMode = uiState.isDeleteMode,
+                selectedForDeletion = uiState.selectedForDeletion,
                 defaultCountryIso = uiState.defaultCountryIso,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -154,6 +172,7 @@ private fun CompactContactsLayout(
                         callLogs = uiState.contactCallLogs,
                         onBackClick = viewModel::goBack,
                         onEditClick = viewModel::openEditContact,
+                        onDeleteClick = { viewModel.requestDeleteContact(contact) },
                         onCallLogClick = onCallLogClick,
                         defaultCountryIso = uiState.defaultCountryIso,
                         modifier = Modifier.fillMaxSize(),
@@ -189,6 +208,14 @@ private fun ExpandedContactsLayout(
             selectedContactId = uiState.selectedContact?.id,
             onContactClick = viewModel::selectContact,
             onAddClick = { viewModel.openAddContact() },
+            onDeleteModeEnter = viewModel::enterDeleteMode,
+            onDeleteModeExit = viewModel::exitDeleteMode,
+            onToggleSelection = viewModel::toggleContactSelection,
+            onSelectAll = viewModel::selectAllContacts,
+            onUnselectAll = viewModel::unselectAllContacts,
+            onDeleteClick = viewModel::requestDeleteSelectedContacts,
+            isDeleteMode = uiState.isDeleteMode,
+            selectedForDeletion = uiState.selectedForDeletion,
             defaultCountryIso = uiState.defaultCountryIso,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
@@ -234,6 +261,7 @@ private fun ExpandedContactsLayout(
                             callLogs = uiState.contactCallLogs,
                             onBackClick = viewModel::goBack,
                             onEditClick = viewModel::openEditContact,
+                            onDeleteClick = { viewModel.requestDeleteContact(contact) },
                             onCallLogClick = onCallLogClick,
                             defaultCountryIso = uiState.defaultCountryIso,
                             modifier = Modifier.fillMaxSize(),
