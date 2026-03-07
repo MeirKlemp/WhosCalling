@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.klemfner.whoscalling.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
