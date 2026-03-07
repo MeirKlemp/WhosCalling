@@ -44,7 +44,7 @@ import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
 import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
-import com.klemfner.whoscalling.ui.contacts.components.CallLogItem
+import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
@@ -135,7 +135,7 @@ fun CallLogDetails(
                     TimePeriodHeader(period)
                 }
                 items(logs, key = { it.id }) { log ->
-                    CallLogItem(callLog = log, isSelected = log.id == callLog.id, onClick = { onCallLogClick(log) })
+                    ContactCallLogItem(callLog = log, isSelected = log.id == callLog.id, onClick = { onCallLogClick(log) })
                 }
             }
         }

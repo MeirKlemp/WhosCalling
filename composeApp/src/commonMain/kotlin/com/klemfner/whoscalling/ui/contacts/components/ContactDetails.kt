@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
@@ -174,7 +175,7 @@ fun ContactDetails(
                     )
                 }
                 items(logs, key = { it.id }) { log ->
-                    CallLogItem(callLog = log, onClick = { onCallLogClick(log) })
+                    ContactCallLogItem(callLog = log, onClick = { onCallLogClick(log) })
                 }
             }
         }
