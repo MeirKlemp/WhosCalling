@@ -90,7 +90,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         ) {
             RouterSection(
                 routerIp = uiState.routerIp,
-                onRouterIpChange = viewModel::setRouterIp,
+                onRouterIpSave = viewModel::setRouterIp,
             )
 
             PhoneSection(

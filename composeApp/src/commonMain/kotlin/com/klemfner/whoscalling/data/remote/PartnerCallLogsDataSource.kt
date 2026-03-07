@@ -16,11 +16,11 @@ import kotlinx.datetime.toInstant
 
 class PartnerCallLogsDataSource(
     private val httpClient: HttpClient,
-    private val routerBaseUrl: () -> String,
+    private val routerIp: () -> String,
 ) : CallLogRemoteDataSource {
 
     override suspend fun getCallLogs(token: String?): List<CallLog> = withContext(Dispatchers.Default) {
-        val baseUrl = routerBaseUrl()
+        val baseUrl = "http://${routerIp()}"
         val response = httpClient.get("$baseUrl/modals/mmpbx-log-modal.lp") {
             token?.let { header("Cookie", "sessionID=$it") }
         }

@@ -15,7 +15,6 @@ import com.klemfner.whoscalling.data.remote.srp.Srp6aClientImpl
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
-import com.klemfner.whoscalling.data.repository.SettingsRepositoryImpl
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
@@ -44,24 +43,18 @@ val dataSourceModule = module {
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
     single<CallLogRemoteDataSource> {
         val settingsRepo: SettingsRepository = get()
-        PartnerCallLogsDataSource(get()) { "http://${settingsRepo.currentRouterIp}" }
+        PartnerCallLogsDataSource(get()) { settingsRepo.currentRouterIp }
     }
     single<HttpClient> { HttpClient() }
     single<Srp6aClient> { Srp6aClientImpl() }
     single<AuthRemoteDataSource> {
         val settingsRepo: SettingsRepository = get()
-        PartnerAuthenticationDataSource(get(), get()) { "http://${settingsRepo.currentRouterIp}" }
+        PartnerAuthenticationDataSource(get(), get()) { settingsRepo.currentRouterIp }
     }
 }
 
 val repositoryModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
-    single<SettingsRepository> {
-        SettingsRepositoryImpl(
-            localDataSource = get(),
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
-        )
-    }
     single<CallLogRepository> {
         val settingsRepo: SettingsRepository = get()
         CallLogRepositoryImpl(

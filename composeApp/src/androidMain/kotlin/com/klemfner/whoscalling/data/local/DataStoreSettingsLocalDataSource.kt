@@ -21,11 +21,11 @@ class DataStoreSettingsLocalDataSource(
 ) : SettingsLocalDataSource {
 
     override val preferences: Flow<UserPreferences> = context.settingsDataStore.data
-        .map { prefs -> prefs.toUserPreferences() }
+        .map { prefs -> prefs.toUserPreferences(context) }
 
     override suspend fun updatePreferences(update: (UserPreferences) -> UserPreferences) {
         context.settingsDataStore.edit { prefs ->
-            val updated = update(prefs.toUserPreferences())
+            val updated = update(prefs.toUserPreferences(context))
             prefs[KEY_COUNTRY_ISO] = updated.countryIso
             prefs[KEY_TOUCH_MODE] = updated.touchMode
             prefs[KEY_ROUTER_IP] = updated.routerIp
@@ -37,10 +37,10 @@ class DataStoreSettingsLocalDataSource(
         private val KEY_TOUCH_MODE = booleanPreferencesKey("touch_mode")
         private val KEY_ROUTER_IP = stringPreferencesKey("router_ip")
 
-        private fun Preferences.toUserPreferences() = UserPreferences(
+        private fun Preferences.toUserPreferences(context: Context) = UserPreferences(
             countryIso = this[KEY_COUNTRY_ISO] ?: defaultCountryIso(),
             touchMode = this[KEY_TOUCH_MODE] ?: defaultTouchMode(),
-            routerIp = this[KEY_ROUTER_IP] ?: defaultRouterIp(),
+            routerIp = this[KEY_ROUTER_IP] ?: defaultRouterIp(context),
         )
     }
 }

@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 class PartnerAuthenticationDataSource(
     private val srpClient: Srp6aClient,
     private val httpClient: HttpClient,
-    private val routerBaseUrl: () -> String,
+    private val routerIp: () -> String,
 ) : AuthRemoteDataSource {
 
     override suspend fun login(username: String, password: String): String = withContext(Dispatchers.Default) {
@@ -24,7 +24,7 @@ class PartnerAuthenticationDataSource(
             throw IllegalArgumentException("Username and password must not be blank")
         }
 
-        val baseUrl = routerBaseUrl()
+        val baseUrl = "http://${routerIp()}"
         val loginResponse = httpClient.get("$baseUrl/login.lp")
 
         val initialSessionId = extractSessionId(loginResponse.headers["Set-Cookie"])
