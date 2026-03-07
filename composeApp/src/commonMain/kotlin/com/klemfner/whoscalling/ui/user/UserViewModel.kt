@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.repository.AuthRepository
+import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,9 +12,12 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(
     private val authRepository: AuthRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(UserUiState())
+    private val _uiState = MutableStateFlow(
+        UserUiState(routerIp = settingsRepository.currentRouterIp),
+    )
     val uiState: StateFlow<UserUiState> = _uiState.asStateFlow()
 
     init {
@@ -26,6 +30,11 @@ class UserViewModel(
                         password = if (user != null) "" else it.password,
                     )
                 }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.preferences.collect { prefs ->
+                _uiState.update { it.copy(routerIp = prefs.routerIp) }
             }
         }
     }

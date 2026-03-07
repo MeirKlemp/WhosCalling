@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.data.local
 import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.util.Logger
 import com.klemfner.whoscalling.util.defaultCountryIso
+import com.klemfner.whoscalling.util.defaultRouterIp
 import com.klemfner.whoscalling.util.defaultTouchMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ class FileSettingsLocalDataSource(
     private fun defaultPreferences() = UserPreferences(
         countryIso = defaultCountryIso(),
         touchMode = defaultTouchMode(),
+        routerIp = defaultRouterIp(),
     )
 
     private fun loadFromFile(): UserPreferences? {

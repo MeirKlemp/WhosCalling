@@ -183,7 +183,7 @@ private fun LoginForm(
 
         Button(
             onClick = viewModel::login,
-            enabled = !uiState.isLoading,
+            enabled = !uiState.isLoading && uiState.routerIp.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
         ) {
             if (uiState.isLoading) {

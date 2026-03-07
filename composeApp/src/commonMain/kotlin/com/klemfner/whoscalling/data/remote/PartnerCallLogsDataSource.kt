@@ -14,16 +14,14 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 
-// TODO: Make router IP configurable - create a GitHub issue to track this.
-//  Currently hardcoded to 192.168.60.1. Should be configurable via settings/preferences.
-private const val ROUTER_BASE_URL = "http://192.168.60.1"
-
 class PartnerCallLogsDataSource(
     private val httpClient: HttpClient,
+    private val routerIp: () -> String,
 ) : CallLogRemoteDataSource {
 
     override suspend fun getCallLogs(token: String?): List<CallLog> = withContext(Dispatchers.Default) {
-        val response = httpClient.get("$ROUTER_BASE_URL/modals/mmpbx-log-modal.lp") {
+        val baseUrl = "http://${routerIp()}"
+        val response = httpClient.get("$baseUrl/modals/mmpbx-log-modal.lp") {
             token?.let { header("Cookie", "sessionID=$it") }
         }
 

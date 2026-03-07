@@ -280,4 +280,39 @@ class SettingsViewModelTest {
             cancelAndConsumeRemainingEvents()
         }
     }
+
+    @Test
+    fun routerIp_initialValue() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals("", awaitItem().routerIp)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRouterIp_updatesUiState() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals("", awaitItem().routerIp)
+
+            viewModel.setRouterIp("192.168.1.1")
+            assertEquals("192.168.1.1", awaitItem().routerIp)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun resetRouterIpToDefault_restoresDefault() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals("", awaitItem().routerIp)
+
+            viewModel.setRouterIp("10.0.0.1")
+            assertEquals("10.0.0.1", awaitItem().routerIp)
+
+            viewModel.resetToDefault()
+            assertEquals("", awaitItem().routerIp)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

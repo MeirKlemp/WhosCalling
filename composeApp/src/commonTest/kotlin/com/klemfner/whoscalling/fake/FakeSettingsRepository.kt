@@ -21,12 +21,19 @@ class FakeSettingsRepository(
     override val currentTouchMode: Boolean
         get() = _preferences.value.touchMode
 
+    override val currentRouterIp: String
+        get() = _preferences.value.routerIp
+
     override suspend fun setCountryIso(iso: String) {
         _preferences.update { it.copy(countryIso = iso) }
     }
 
     override suspend fun setTouchMode(touchMode: Boolean) {
         _preferences.update { it.copy(touchMode = touchMode) }
+    }
+
+    override suspend fun setRouterIp(ip: String) {
+        _preferences.update { it.copy(routerIp = ip) }
     }
 
     override suspend fun resetToDefault() {
