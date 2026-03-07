@@ -9,6 +9,7 @@ import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import com.klemfner.whoscalling.ui.settings.SettingsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import org.koin.dsl.module
 private class PreviewContactRepository : ContactRepository {
     override val contacts: Flow<List<Contact>> = MutableStateFlow(previewContacts)
     override suspend fun addContact(contact: Contact) {}
+    override suspend fun addContacts(contacts: List<Contact>): Int = contacts.size
     override suspend fun deleteContact(contactId: String) {}
 }
 
@@ -48,6 +50,7 @@ fun PreviewKoinApplication(content: @Composable () -> Unit) {
                 viewModelOf(::ContactsViewModel)
                 viewModelOf(::CallLogsViewModel)
                 viewModelOf(::UserViewModel)
+                viewModelOf(::SettingsViewModel)
             },
         )
     }) {

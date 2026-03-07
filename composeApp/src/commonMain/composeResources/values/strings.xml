@@ -53,4 +53,10 @@
     <string name="show_contact">Show Contact</string>
     <string name="time_label">Time</string>
     <string name="call_logs_by_number_count">Call logs with this number (%1$d)</string>
+    <string name="contact_count">%1$d contact(s)</string>
+    <string name="export_contacts">Export Contacts</string>
+    <string name="import_contacts">Import Contacts</string>
+    <string name="contacts_exported">Exported %1$d contact(s)</string>
+    <string name="contacts_imported">Imported %1$d contact(s)</string>
+    <string name="import_error">Failed to import contacts</string>
 </resources>

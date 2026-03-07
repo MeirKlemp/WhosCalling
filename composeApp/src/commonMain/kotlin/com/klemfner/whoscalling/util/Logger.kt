@@ -47,6 +47,10 @@ object Logger {
             throwable = throwable?.stackTraceToString(),
         )
         _logs.update { (it + entry).takeLast(MAX_LOG_ENTRIES) }
-        platformLog(level, tag, message, throwable)
+        try {
+            platformLog(level, tag, message, throwable)
+        } catch (_: Exception) {
+            // Platform logging may not be available (e.g., in unit tests)
+        }
     }
 }

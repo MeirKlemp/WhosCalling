@@ -20,6 +20,7 @@ import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import com.klemfner.whoscalling.ui.settings.SettingsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +57,7 @@ val viewModelModule = module {
     viewModelOf(::ContactsViewModel)
     viewModelOf(::CallLogsViewModel)
     viewModelOf(::UserViewModel)
+    viewModelOf(::SettingsViewModel)
 }
 
 val appModules = listOf(databaseModule, dataSourceModule, repositoryModule, viewModelModule)
