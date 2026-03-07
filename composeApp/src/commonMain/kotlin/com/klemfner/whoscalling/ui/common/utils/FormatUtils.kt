@@ -1,7 +1,8 @@
 package com.klemfner.whoscalling.ui.common.utils
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 
 fun formatDuration(durationSeconds: Long): String {
@@ -27,8 +28,8 @@ fun formatTimestamp(timestampMillis: Long): String {
 fun formatShortDate(timestampMillis: Long): String {
     val tz = TimeZone.currentSystemDefault()
     val dateTime = Instant.fromEpochMilliseconds(timestampMillis).toLocalDateTime(tz)
-    val day = dateTime.dayOfMonth.toString().padStart(2, '0')
-    val month = dateTime.monthNumber.toString().padStart(2, '0')
+    val day = dateTime.day.toString().padStart(2, '0')
+    val month = dateTime.month.number.toString().padStart(2, '0')
     val year = (dateTime.year % 100).toString().padStart(2, '0')
     return "$day/$month/$year"
 }
