@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
+import com.klemfner.whoscalling.fake.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -23,6 +24,7 @@ class SettingsViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var contactLocalDataSource: FakeContactLocalDataSource
+    private lateinit var settingsRepository: FakeSettingsRepository
     private lateinit var viewModel: SettingsViewModel
 
     private val contact1 = Contact("1", "Alice", "+1234567890", "alice@test.com")
@@ -32,11 +34,12 @@ class SettingsViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         contactLocalDataSource = FakeContactLocalDataSource()
+        settingsRepository = FakeSettingsRepository(initialIso = "US")
         val contactRepository = ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
             normalizePhone = { it },
         )
-        viewModel = SettingsViewModel(contactRepository)
+        viewModel = SettingsViewModel(contactRepository, settingsRepository)
     }
 
     @AfterTest
@@ -76,13 +79,18 @@ class SettingsViewModelTest {
             ]
         """.trimIndent()
 
-        viewModel.importContacts(json)
+        viewModel.uiState.test {
+            awaitItem() // initial state
 
-        viewModel.importResult.test {
-            skipItems(1)
-            val result = awaitItem()
-            assertTrue(result is ImportResult.Success)
-            assertEquals(2, result.count)
+            viewModel.importContacts(json)
+
+            var state = awaitItem()
+            while (state.importResult == null) {
+                state = awaitItem()
+            }
+            assertTrue(state.importResult is ImportResult.Success)
+            assertEquals(2, (state.importResult as ImportResult.Success).count)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
@@ -94,24 +102,31 @@ class SettingsViewModelTest {
             ]
         """.trimIndent()
 
-        viewModel.importContacts(json)
+        viewModel.uiState.test {
+            awaitItem() // initial state
 
-        viewModel.importResult.test {
-            skipItems(1)
-            val result = awaitItem()
-            assertTrue(result is ImportResult.Success)
-            assertEquals(1, result.count)
+            viewModel.importContacts(json)
+
+            var state = awaitItem()
+            while (state.importResult == null) {
+                state = awaitItem()
+            }
+            assertTrue(state.importResult is ImportResult.Success)
+            assertEquals(1, (state.importResult as ImportResult.Success).count)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
     fun importContacts_invalidJson() = runTest(testDispatcher) {
-        viewModel.importContacts("invalid json")
+        viewModel.uiState.test {
+            awaitItem() // initial state
 
-        viewModel.importResult.test {
-            skipItems(1)
-            val result = awaitItem()
-            assertTrue(result is ImportResult.Error)
+            viewModel.importContacts("invalid json")
+
+            val state = awaitItem()
+            assertTrue(state.importResult is ImportResult.Error)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
@@ -124,7 +139,7 @@ class SettingsViewModelTest {
                 phone
             },
         )
-        viewModel = SettingsViewModel(contactRepository)
+        viewModel = SettingsViewModel(contactRepository, settingsRepository)
 
         val json = """
             [
@@ -133,27 +148,38 @@ class SettingsViewModelTest {
             ]
         """.trimIndent()
 
-        viewModel.importContacts(json)
+        viewModel.uiState.test {
+            awaitItem() // initial state
 
-        viewModel.importResult.test {
-            skipItems(1)
-            val result = awaitItem()
-            assertTrue(result is ImportResult.Success)
-            assertEquals(1, result.count)
+            viewModel.importContacts(json)
+
+            var state = awaitItem()
+            while (state.importResult == null) {
+                state = awaitItem()
+            }
+            assertTrue(state.importResult is ImportResult.Success)
+            assertEquals(1, (state.importResult as ImportResult.Success).count)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
     fun clearImportResult_resetsToNull() = runTest(testDispatcher) {
-        viewModel.importContacts("[]")
+        viewModel.uiState.test {
+            awaitItem() // initial state
 
-        viewModel.importResult.test {
-            skipItems(1)
-            awaitItem()
+            viewModel.importContacts("[]")
+
+            var state = awaitItem()
+            while (state.importResult == null) {
+                state = awaitItem()
+            }
+            assertTrue(state.importResult is ImportResult.Success)
 
             viewModel.clearImportResult()
-            val result = awaitItem()
-            assertEquals(null, result)
+            val stateCleared = awaitItem()
+            assertEquals(null, stateCleared.importResult)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
@@ -164,37 +190,41 @@ class SettingsViewModelTest {
 
         val exportData = viewModel.exportContacts()
 
-        // Clear and re-import
         contactLocalDataSource.deleteContact("1")
         contactLocalDataSource.deleteContact("2")
 
-        viewModel.importContacts(exportData.json)
+        viewModel.uiState.test {
+            awaitItem() // initial state
 
-        viewModel.importResult.test {
-            skipItems(1)
-            val result = awaitItem()
-            assertTrue(result is ImportResult.Success)
-            assertEquals(2, result.count)
+            viewModel.importContacts(exportData.json)
+
+            var state = awaitItem()
+            while (state.importResult == null) {
+                state = awaitItem()
+            }
+            assertTrue(state.importResult is ImportResult.Success)
+            assertEquals(2, (state.importResult as ImportResult.Success).count)
+            cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
     fun contactCount_initiallyZero() = runTest(testDispatcher) {
-        viewModel.contactCount.test {
-            assertEquals(0, awaitItem())
+        viewModel.uiState.test {
+            assertEquals(0, awaitItem().contactCount)
         }
     }
 
     @Test
     fun contactCount_updatesWhenContactsAdded() = runTest(testDispatcher) {
-        viewModel.contactCount.test {
-            assertEquals(0, awaitItem())
+        viewModel.uiState.test {
+            assertEquals(0, awaitItem().contactCount)
 
             contactLocalDataSource.saveContact(contact1)
-            assertEquals(1, awaitItem())
+            assertEquals(1, awaitItem().contactCount)
 
             contactLocalDataSource.saveContact(contact2)
-            assertEquals(2, awaitItem())
+            assertEquals(2, awaitItem().contactCount)
         }
     }
 
@@ -203,16 +233,51 @@ class SettingsViewModelTest {
         contactLocalDataSource.saveContact(contact1)
         contactLocalDataSource.saveContact(contact2)
 
-        viewModel.contactCount.test {
-            assertEquals(0, awaitItem()) // stateIn initial value
+        viewModel.uiState.test {
+            assertEquals(0, awaitItem().contactCount) // stateIn initial value
 
-            assertEquals(2, awaitItem())
+            assertEquals(2, awaitItem().contactCount)
 
             contactLocalDataSource.deleteContact("1")
-            assertEquals(1, awaitItem())
+            assertEquals(1, awaitItem().contactCount)
 
             contactLocalDataSource.deleteContact("2")
-            assertEquals(0, awaitItem())
+            assertEquals(0, awaitItem().contactCount)
+        }
+    }
+
+    @Test
+    fun countryIso_initialValue() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals("US", awaitItem().countryIso)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setCountryIso_updatesUiState() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals("US", awaitItem().countryIso)
+
+            viewModel.setCountryIso("IL")
+            assertEquals("IL", awaitItem().countryIso)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun resetCountryIsoToDefault_restoresDefault() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals("US", awaitItem().countryIso)
+
+            viewModel.setCountryIso("IL")
+            assertEquals("IL", awaitItem().countryIso)
+
+            viewModel.resetCountryIsoToDefault()
+            assertEquals("US", awaitItem().countryIso)
+
+            cancelAndConsumeRemainingEvents()
         }
     }
 }

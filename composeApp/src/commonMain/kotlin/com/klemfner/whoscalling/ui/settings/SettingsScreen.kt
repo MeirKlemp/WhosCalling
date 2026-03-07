@@ -3,6 +3,8 @@ package com.klemfner.whoscalling.ui.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -22,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
 import com.klemfner.whoscalling.ui.settings.components.ContactsSection
 import com.klemfner.whoscalling.ui.settings.components.DebugSection
+import com.klemfner.whoscalling.ui.settings.components.PhoneSection
 import com.klemfner.whoscalling.util.rememberFileLoader
 import com.klemfner.whoscalling.util.rememberFileSaver
 import kotlinx.coroutines.launch
@@ -48,8 +51,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     }
 
     val viewModel: SettingsViewModel = koinViewModel()
-    val importResult by viewModel.importResult.collectAsStateWithLifecycle()
-    val contactCount by viewModel.contactCount.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val fileSaver = rememberFileSaver()
@@ -57,8 +59,8 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
     val importErrorMessage = stringResource(Res.string.import_error)
 
-    LaunchedEffect(importResult) {
-        when (val result = importResult) {
+    LaunchedEffect(uiState.importResult) {
+        when (val result = uiState.importResult) {
             is ImportResult.Success -> {
                 val message = getString(Res.string.contacts_imported, result.count)
                 snackbarHostState.showSnackbar(message)
@@ -80,9 +82,14 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = modifier,
     ) { paddingValues ->
-        Column(Modifier.fillMaxSize().padding(paddingValues)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState()),
+        ) {
             ContactsSection(
-                contactCount = contactCount,
+                contactCount = uiState.contactCount,
                 onExport = {
                     scope.launch {
                         val exportData = viewModel.exportContacts()
@@ -105,6 +112,12 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 isTouchMode = touchModeState.isTouchMode,
                 onTouchModeChange = touchModeState.setTouchMode,
                 onShowDebugLogs = { showDebugLogs = true },
+            )
+
+            PhoneSection(
+                countryIso = uiState.countryIso,
+                onCountryIsoChange = viewModel::setCountryIso,
+                onResetToDefault = viewModel::resetCountryIsoToDefault,
             )
         }
     }

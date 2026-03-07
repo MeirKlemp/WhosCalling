@@ -4,11 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -17,6 +18,7 @@ import kotlinx.serialization.json.Json
 
 class SettingsViewModel(
     private val contactRepository: ContactRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     companion object {
@@ -29,11 +31,22 @@ class SettingsViewModel(
     }
 
     private val _importResult = MutableStateFlow<ImportResult?>(null)
-    val importResult: StateFlow<ImportResult?> = _importResult.asStateFlow()
 
-    val contactCount: StateFlow<Int> = contactRepository.contacts
-        .map { it.size }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val uiState: StateFlow<SettingsUiState> = combine(
+        contactRepository.contacts.map { it.size },
+        settingsRepository.countryIso,
+        _importResult,
+    ) { count, iso, importResult ->
+        SettingsUiState(
+            contactCount = count,
+            countryIso = iso,
+            importResult = importResult,
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        SettingsUiState(countryIso = settingsRepository.currentCountryIso),
+    )
 
     suspend fun exportContacts(): ExportData {
         val contacts = contactRepository.contacts.first()
@@ -58,6 +71,18 @@ class SettingsViewModel(
 
     fun clearImportResult() {
         _importResult.value = null
+    }
+
+    fun setCountryIso(iso: String) {
+        viewModelScope.launch {
+            settingsRepository.setCountryIso(iso)
+        }
+    }
+
+    fun resetCountryIsoToDefault() {
+        viewModelScope.launch {
+            settingsRepository.resetToDefault()
+        }
     }
 }
 

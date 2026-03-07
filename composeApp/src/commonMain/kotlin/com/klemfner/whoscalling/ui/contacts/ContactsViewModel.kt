@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.util.getCountryIsoFromPhoneNumber
+import com.klemfner.whoscalling.util.normalizePhoneNumberWithRegion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +18,7 @@ import kotlinx.coroutines.launch
 class ContactsViewModel(
     private val contactRepository: ContactRepository,
     private val callLogRepository: CallLogRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ContactsUiState())
@@ -48,6 +52,11 @@ class ContactsViewModel(
                 _uiState.update { it.copy(callCounts = counts, contactCallLogs = filtered) }
             }
         }
+        viewModelScope.launch {
+            settingsRepository.countryIso.collect { iso ->
+                _uiState.update { it.copy(defaultCountryIso = iso) }
+            }
+        }
     }
 
     fun selectContact(contact: Contact) {
@@ -58,16 +67,23 @@ class ContactsViewModel(
     }
 
     fun openAddContact(phoneNumber: String = "") {
+        val defaultIso = _uiState.value.defaultCountryIso
         _uiState.update {
             it.copy(
                 currentPane = ContactsPane.FORM,
-                formState = ContactFormState(isNew = true, phoneNumber = phoneNumber),
+                formState = ContactFormState(
+                    isNew = true,
+                    phoneNumber = phoneNumber,
+                    selectedCountryIso = defaultIso,
+                ),
             )
         }
     }
 
     fun openEditContact() {
         val contact = _uiState.value.selectedContact ?: return
+        val iso = getCountryIsoFromPhoneNumber(contact.phoneNumber)
+            ?: _uiState.value.defaultCountryIso
         _uiState.update {
             it.copy(
                 currentPane = ContactsPane.FORM,
@@ -77,6 +93,7 @@ class ContactsViewModel(
                     phoneNumber = contact.phoneNumber,
                     email = contact.email ?: "",
                     isNew = false,
+                    selectedCountryIso = iso,
                 ),
             )
         }
@@ -117,6 +134,10 @@ class ContactsViewModel(
         _uiState.update { it.copy(formState = it.formState.copy(email = email)) }
     }
 
+    fun updateFormCountryIso(iso: String) {
+        _uiState.update { it.copy(formState = it.formState.copy(selectedCountryIso = iso)) }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
     }
@@ -124,10 +145,18 @@ class ContactsViewModel(
     fun saveContact() {
         val form = _uiState.value.formState
         viewModelScope.launch {
+            val phoneNumber = try {
+                normalizePhoneNumberWithRegion(
+                    form.phoneNumber,
+                    form.selectedCountryIso.ifEmpty { null },
+                )
+            } catch (_: Exception) {
+                form.phoneNumber
+            }
             val contact = Contact(
                 id = form.id ?: "",
                 name = form.name,
-                phoneNumber = form.phoneNumber,
+                phoneNumber = phoneNumber,
                 email = form.email.ifBlank { null },
             )
             try {

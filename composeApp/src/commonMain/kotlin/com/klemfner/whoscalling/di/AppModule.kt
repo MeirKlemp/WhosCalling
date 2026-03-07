@@ -15,13 +15,16 @@ import com.klemfner.whoscalling.data.remote.srp.Srp6aClientImpl
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
+import com.klemfner.whoscalling.data.repository.SettingsRepositoryImpl
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
+import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.settings.SettingsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
+import com.klemfner.whoscalling.util.normalizePhoneNumberWithRegion
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +53,22 @@ val repositoryModule = module {
     single<CallLogRepository> {
         CallLogRepositoryImpl(get(), get(), get(), CoroutineScope(SupervisorJob() + Dispatchers.Default))
     }
-    single<ContactRepository> { ContactRepositoryImpl(get()) }
+    single<SettingsRepository> {
+        SettingsRepositoryImpl(
+            localDataSource = get(),
+            defaultIso = get<SettingsDefaultIso>().value,
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        )
+    }
+    single<ContactRepository> {
+        val settingsRepo: SettingsRepository = get()
+        ContactRepositoryImpl(
+            localDataSource = get(),
+            normalizePhone = { phone ->
+                normalizePhoneNumberWithRegion(phone, settingsRepo.currentCountryIso)
+            },
+        )
+    }
 }
 
 val viewModelModule = module {
@@ -61,3 +79,5 @@ val viewModelModule = module {
 }
 
 val appModules = listOf(databaseModule, dataSourceModule, repositoryModule, viewModelModule)
+
+data class SettingsDefaultIso(val value: String)

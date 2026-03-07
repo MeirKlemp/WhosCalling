@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.libphonenumber)
             implementation(libs.androidx.security.crypto)
             implementation(libs.ktor.client.android)
+            implementation(libs.androidx.datastore.preferences)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -52,6 +53,7 @@ kotlin {
             implementation(libs.ksoup)
             implementation(libs.bignum)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.countrypicker)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
