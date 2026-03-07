@@ -25,6 +25,7 @@ import com.klemfner.whoscalling.ui.settings.components.ContactsSection
 import com.klemfner.whoscalling.ui.settings.components.DebugSection
 import com.klemfner.whoscalling.ui.settings.components.PhoneSection
 import com.klemfner.whoscalling.ui.settings.components.ResetSection
+import com.klemfner.whoscalling.ui.settings.components.RouterSection
 import com.klemfner.whoscalling.util.rememberFileLoader
 import com.klemfner.whoscalling.util.rememberFileSaver
 import kotlinx.coroutines.launch
@@ -87,6 +88,11 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState()),
         ) {
+            RouterSection(
+                routerIp = uiState.routerIp,
+                onRouterIpChange = viewModel::setRouterIp,
+            )
+
             PhoneSection(
                 countryIso = uiState.countryIso,
                 onCountryIsoChange = viewModel::setCountryIso,

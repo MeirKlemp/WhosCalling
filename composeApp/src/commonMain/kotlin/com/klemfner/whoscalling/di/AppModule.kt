@@ -42,10 +42,16 @@ val databaseModule = module {
 val dataSourceModule = module {
     single<CallLogLocalDataSource> { CallLogLocalDataSourceImpl(get()) }
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
-    single<CallLogRemoteDataSource> { PartnerCallLogsDataSource(get()) }
+    single<CallLogRemoteDataSource> {
+        val settingsRepo: SettingsRepository = get()
+        PartnerCallLogsDataSource(get()) { "http://${settingsRepo.currentRouterIp}" }
+    }
     single<HttpClient> { HttpClient() }
     single<Srp6aClient> { Srp6aClientImpl() }
-    single<AuthRemoteDataSource> { PartnerAuthenticationDataSource(get(), get()) }
+    single<AuthRemoteDataSource> {
+        val settingsRepo: SettingsRepository = get()
+        PartnerAuthenticationDataSource(get(), get()) { "http://${settingsRepo.currentRouterIp}" }
+    }
 }
 
 val repositoryModule = module {

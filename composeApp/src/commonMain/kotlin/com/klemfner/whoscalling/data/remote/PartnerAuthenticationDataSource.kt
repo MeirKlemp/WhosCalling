@@ -13,13 +13,10 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// TODO: Make router IP configurable - create a GitHub issue to track this.
-//  Currently hardcoded to 192.168.60.1. Should be configurable via settings/preferences.
-private const val ROUTER_BASE_URL = "http://192.168.60.1"
-
 class PartnerAuthenticationDataSource(
     private val srpClient: Srp6aClient,
     private val httpClient: HttpClient,
+    private val routerBaseUrl: () -> String,
 ) : AuthRemoteDataSource {
 
     override suspend fun login(username: String, password: String): String = withContext(Dispatchers.Default) {
@@ -27,7 +24,8 @@ class PartnerAuthenticationDataSource(
             throw IllegalArgumentException("Username and password must not be blank")
         }
 
-        val loginResponse = httpClient.get("$ROUTER_BASE_URL/login.lp")
+        val baseUrl = routerBaseUrl()
+        val loginResponse = httpClient.get("$baseUrl/login.lp")
 
         val initialSessionId = extractSessionId(loginResponse.headers["Set-Cookie"])
             ?: throw IllegalStateException("No sessionID cookie found")
@@ -41,7 +39,7 @@ class PartnerAuthenticationDataSource(
 
         val publicKey = srpClient.generatePublicKey()
 
-        val challengeResponse = httpClient.post("$ROUTER_BASE_URL/authenticate") {
+        val challengeResponse = httpClient.post("$baseUrl/authenticate") {
             contentType(ContentType.Application.FormUrlEncoded)
             header("Cookie", "sessionID=$initialSessionId")
             setBody("CSRFtoken=$csrfToken&I=$username&A=$publicKey")
@@ -55,7 +53,7 @@ class PartnerAuthenticationDataSource(
 
         val clientProof = srpClient.processChallenge(username, password, salt, serverPublicKey)
 
-        val proofResponse = httpClient.post("$ROUTER_BASE_URL/authenticate") {
+        val proofResponse = httpClient.post("$baseUrl/authenticate") {
             contentType(ContentType.Application.FormUrlEncoded)
             header("Cookie", "sessionID=$initialSessionId")
             setBody("CSRFtoken=$csrfToken&M=$clientProof")

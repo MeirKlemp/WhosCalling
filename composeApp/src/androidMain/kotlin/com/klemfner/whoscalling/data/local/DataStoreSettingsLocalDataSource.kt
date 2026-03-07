@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.util.defaultCountryIso
+import com.klemfner.whoscalling.util.defaultRouterIp
 import com.klemfner.whoscalling.util.defaultTouchMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -27,16 +28,19 @@ class DataStoreSettingsLocalDataSource(
             val updated = update(prefs.toUserPreferences())
             prefs[KEY_COUNTRY_ISO] = updated.countryIso
             prefs[KEY_TOUCH_MODE] = updated.touchMode
+            prefs[KEY_ROUTER_IP] = updated.routerIp
         }
     }
 
     companion object {
         private val KEY_COUNTRY_ISO = stringPreferencesKey("country_iso")
         private val KEY_TOUCH_MODE = booleanPreferencesKey("touch_mode")
+        private val KEY_ROUTER_IP = stringPreferencesKey("router_ip")
 
         private fun Preferences.toUserPreferences() = UserPreferences(
             countryIso = this[KEY_COUNTRY_ISO] ?: defaultCountryIso(),
             touchMode = this[KEY_TOUCH_MODE] ?: defaultTouchMode(),
+            routerIp = this[KEY_ROUTER_IP] ?: defaultRouterIp(),
         )
     }
 }

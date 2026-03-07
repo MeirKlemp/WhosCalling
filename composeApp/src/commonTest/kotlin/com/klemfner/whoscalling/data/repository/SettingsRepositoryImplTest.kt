@@ -109,4 +109,40 @@ class SettingsRepositoryImplTest {
             cancelAndConsumeRemainingEvents()
         }
     }
+
+    @Test
+    fun setRouterIp_updatesPreferences() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.preferences.test {
+            awaitItem() // initial
+
+            repository.setRouterIp("192.168.1.1")
+            assertEquals("192.168.1.1", awaitItem().routerIp)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRouterIp_updatesSyncCurrentRouterIp() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setRouterIp("10.0.0.1")
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals("10.0.0.1", repository.currentRouterIp)
+    }
+
+    @Test
+    fun resetToDefault_restoresRouterIp() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setRouterIp("10.0.0.1")
+        testDispatcher.scheduler.advanceUntilIdle()
+        repository.preferences.test {
+            assertEquals("10.0.0.1", awaitItem().routerIp)
+
+            repository.resetToDefault()
+            assertEquals("", awaitItem().routerIp)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

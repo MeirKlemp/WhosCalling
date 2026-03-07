@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class UserPreferences(
     val countryIso: String = "",
     val touchMode: Boolean = true,
+    val routerIp: String = "",
 )

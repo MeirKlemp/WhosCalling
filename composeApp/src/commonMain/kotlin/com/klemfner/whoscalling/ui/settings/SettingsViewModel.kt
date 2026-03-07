@@ -41,6 +41,7 @@ class SettingsViewModel(
             contactCount = count,
             countryIso = prefs.countryIso,
             touchMode = prefs.touchMode,
+            routerIp = prefs.routerIp,
             importResult = importResult,
         )
     }.stateIn(
@@ -50,6 +51,7 @@ class SettingsViewModel(
             SettingsUiState(
                 countryIso = currentCountryIso,
                 touchMode = currentTouchMode,
+                routerIp = currentRouterIp,
             )
         },
     )
@@ -88,6 +90,12 @@ class SettingsViewModel(
     fun setTouchMode(touchMode: Boolean) {
         viewModelScope.launch {
             settingsRepository.setTouchMode(touchMode)
+        }
+    }
+
+    fun setRouterIp(ip: String) {
+        viewModelScope.launch {
+            settingsRepository.setRouterIp(ip)
         }
     }
 

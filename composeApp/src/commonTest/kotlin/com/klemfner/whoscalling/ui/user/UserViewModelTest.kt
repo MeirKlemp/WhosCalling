@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.fake.FakeAuthLocalDataSource
 import com.klemfner.whoscalling.fake.FakeAuthRemoteDataSource
+import com.klemfner.whoscalling.fake.FakeSettingsRepository
 import com.klemfner.whoscalling.ui.user.LoginError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +27,7 @@ class UserViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var authRemoteDataSource: FakeAuthRemoteDataSource
     private lateinit var authLocalDataSource: FakeAuthLocalDataSource
+    private lateinit var settingsRepository: FakeSettingsRepository
     private lateinit var viewModel: UserViewModel
 
     @BeforeTest
@@ -33,13 +35,14 @@ class UserViewModelTest {
         Dispatchers.setMain(testDispatcher)
         authRemoteDataSource = FakeAuthRemoteDataSource()
         authLocalDataSource = FakeAuthLocalDataSource()
+        settingsRepository = FakeSettingsRepository()
 
         val authRepository = AuthRepositoryImpl(
             remoteDataSource = authRemoteDataSource,
             localDataSource = authLocalDataSource,
             currentTimeMillis = { 5000L },
         )
-        viewModel = UserViewModel(authRepository)
+        viewModel = UserViewModel(authRepository, settingsRepository)
     }
 
     @AfterTest
@@ -209,6 +212,50 @@ class UserViewModelTest {
             viewModel.clearError()
             state = awaitItem()
             assertNull(state.loginError)
+        }
+    }
+
+    @Test
+    fun routerIp_initialValueFromSettings() = runTest {
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertEquals("", state.routerIp)
+        }
+    }
+
+    @Test
+    fun routerIp_updatesWhenSettingsChange() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+
+            settingsRepository.setRouterIp("192.168.1.1")
+            var state = awaitItem()
+            while (state.routerIp != "192.168.1.1") {
+                state = awaitItem()
+            }
+            assertEquals("192.168.1.1", state.routerIp)
+        }
+    }
+
+    @Test
+    fun routerIp_initializedWithConfiguredValue() = runTest {
+        val configuredSettingsRepository = FakeSettingsRepository(
+            initialPreferences = com.klemfner.whoscalling.domain.model.UserPreferences(
+                countryIso = "US",
+                touchMode = true,
+                routerIp = "10.0.0.1",
+            ),
+        )
+        val authRepository = AuthRepositoryImpl(
+            remoteDataSource = authRemoteDataSource,
+            localDataSource = authLocalDataSource,
+            currentTimeMillis = { 5000L },
+        )
+        val vm = UserViewModel(authRepository, configuredSettingsRepository)
+
+        vm.uiState.test {
+            val state = awaitItem()
+            assertEquals("10.0.0.1", state.routerIp)
         }
     }
 }
