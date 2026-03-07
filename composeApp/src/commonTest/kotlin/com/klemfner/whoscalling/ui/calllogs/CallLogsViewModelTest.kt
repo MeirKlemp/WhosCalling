@@ -260,7 +260,7 @@ class CallLogsViewModelTest {
         viewModel = CallLogsViewModel(callLogRepository, ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
             normalizePhone = { it },
-        ), authRepository)
+        ), authRepository, FakeSettingsRepository())
 
         viewModel.uiState.test {
             awaitItem()
