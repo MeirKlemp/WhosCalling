@@ -93,7 +93,7 @@ fun CallLogsScreen(
             .fillMaxSize()
             .focusable()
             .onPreviewKeyEvent { event ->
-                handleKeyEvent(event, viewModel)
+                handleKeyEvent(event, viewModel, uiState.isLoggedIn)
             },
     ) {
         if (isExpanded) {
@@ -112,6 +112,7 @@ fun CallLogsScreen(
 private fun handleKeyEvent(
     event: KeyEvent,
     viewModel: CallLogsViewModel,
+    isLoggedIn: Boolean,
 ): Boolean {
     if (event.type != KeyEventType.KeyDown) return false
     return when {
@@ -119,11 +120,11 @@ private fun handleKeyEvent(
             viewModel.goBack()
             true
         }
-        event.isCtrlPressed && event.key == Key.R -> {
+        isLoggedIn && event.isCtrlPressed && event.key == Key.R -> {
             viewModel.refresh()
             true
         }
-        event.key == Key.F5 -> {
+        isLoggedIn && event.key == Key.F5 -> {
             viewModel.refresh()
             true
         }
