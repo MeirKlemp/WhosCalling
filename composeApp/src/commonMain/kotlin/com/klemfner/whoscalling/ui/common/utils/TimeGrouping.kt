@@ -1,6 +1,6 @@
 package com.klemfner.whoscalling.ui.common.utils
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -14,7 +14,7 @@ fun getTimePeriod(timestampMillis: Long): TimePeriod {
     val now = Clock.System.now().toLocalDateTime(tz).date
     val date = Instant.fromEpochMilliseconds(timestampMillis).toLocalDateTime(tz).date
 
-    val daysDiff = now.toEpochDays() - date.toEpochDays()
+    val daysDiff = (now.toEpochDays() - date.toEpochDays()).toInt()
 
     return when {
         daysDiff == 0 -> TimePeriod.TODAY

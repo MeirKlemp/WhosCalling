@@ -2,6 +2,7 @@ package com.klemfner.whoscalling.ui.common.utils
 
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 
 fun formatDuration(durationSeconds: Long): String {
