@@ -46,9 +46,7 @@ fun AutoRefreshSection(
     val presetOptions = listOf(
         RefreshOption(stringResource(Res.string.auto_refresh_never), 0),
         RefreshOption("5s", 5),
-        RefreshOption("10s", 10),
         RefreshOption("30s", 30),
-        RefreshOption("1m", 60),
         RefreshOption(stringResource(Res.string.auto_refresh_custom), CUSTOM_MARKER),
     )
 

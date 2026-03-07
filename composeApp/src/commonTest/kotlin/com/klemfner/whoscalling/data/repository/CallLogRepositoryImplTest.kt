@@ -32,7 +32,9 @@ class CallLogRepositoryImplTest {
         remoteDataSource = FakeCallLogRemoteDataSource()
         localDataSource = FakeCallLogLocalDataSource()
         authRepository = FakeAuthRepository()
-        settingsRepository = FakeSettingsRepository()
+        settingsRepository = FakeSettingsRepository(
+            UserPreferences(countryIso = "US", touchMode = true, refreshRateSeconds = 0),
+        )
         authRepository.setLoggedIn("user", "token")
         repository = createRepository()
     }
