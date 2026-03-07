@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.stateIn
 class SettingsRepositoryImpl(
     private val localDataSource: SettingsLocalDataSource,
     private val scope: CoroutineScope,
+    private val defaultCountryIso: () -> String = ::defaultCountryIso,
+    private val defaultTouchMode: () -> Boolean = ::defaultTouchMode,
 ) : SettingsRepository {
 
     override val preferences: StateFlow<UserPreferences> = localDataSource.preferences

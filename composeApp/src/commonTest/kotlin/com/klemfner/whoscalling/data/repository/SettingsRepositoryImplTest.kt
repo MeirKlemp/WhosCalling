@@ -2,7 +2,6 @@ package com.klemfner.whoscalling.data.repository
 
 import app.cash.turbine.test
 import com.klemfner.whoscalling.data.local.InMemorySettingsLocalDataSource
-import com.klemfner.whoscalling.domain.model.UserPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -16,18 +15,23 @@ class SettingsRepositoryImplTest {
     private val testDispatcher = StandardTestDispatcher()
 
     private fun createRepository(
+        defaultCountryIso: () -> String = { "US" },
+        defaultTouchMode: () -> Boolean = { true },
         scope: CoroutineScope = CoroutineScope(testDispatcher),
     ) = SettingsRepositoryImpl(
         localDataSource = InMemorySettingsLocalDataSource(),
         scope = scope,
+        defaultCountryIso = defaultCountryIso,
+        defaultTouchMode = defaultTouchMode,
     )
 
     @Test
     fun preferences_emitsInitialValue() = runTest(testDispatcher) {
-        val repository = createRepository()
+        val repository = createRepository(defaultCountryIso = { "US" }, defaultTouchMode = { true })
         repository.preferences.test {
             val initial = awaitItem()
-            assertEquals("", initial.countryIso)
+            assertEquals("US", initial.countryIso)
+            assertEquals(true, initial.touchMode)
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -70,7 +74,7 @@ class SettingsRepositoryImplTest {
 
     @Test
     fun resetToDefault_restoresDefaultValues() = runTest(testDispatcher) {
-        val repository = createRepository()
+        val repository = createRepository(defaultCountryIso = { "US" }, defaultTouchMode = { true })
         repository.setCountryIso("IL")
         repository.setTouchMode(false)
         repository.preferences.test {
@@ -81,7 +85,8 @@ class SettingsRepositoryImplTest {
 
             repository.resetToDefault()
             val reset = awaitItem()
-            assertEquals("", reset.countryIso)
+            assertEquals("US", reset.countryIso)
+            assertEquals(true, reset.touchMode)
 
             cancelAndConsumeRemainingEvents()
         }

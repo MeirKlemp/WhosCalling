@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -37,7 +38,7 @@ fun App(additionalModules: List<Module> = emptyList()) {
                     val isTouchMode = preferences.touchMode
                     val scope = rememberCoroutineScope()
 
-                    androidx.compose.runtime.CompositionLocalProvider(
+                    CompositionLocalProvider(
                         LocalIsExpanded provides isExpanded,
                         LocalIsTouchMode provides isTouchMode,
                         LocalTouchModeState provides TouchModeState(
