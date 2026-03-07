@@ -22,7 +22,9 @@ class ContactsViewModel(
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ContactsUiState())
+    private val _uiState = MutableStateFlow(
+        ContactsUiState(defaultCountryIso = settingsRepository.currentCountryIso),
+    )
     val uiState: StateFlow<ContactsUiState> = _uiState.asStateFlow()
 
     private val selectedContactPhone = MutableStateFlow<String?>(null)
@@ -158,21 +160,17 @@ class ContactsViewModel(
     fun saveContact() {
         val form = _uiState.value.formState
         viewModelScope.launch {
-            val phoneNumber = try {
-                normalizePhoneNumber(
+            try {
+                val phoneNumber = normalizePhoneNumber(
                     form.phoneNumber,
                     form.selectedCountryIso.ifEmpty { null },
                 )
-            } catch (_: Exception) {
-                form.phoneNumber
-            }
-            val contact = Contact(
-                id = form.id ?: "",
-                name = form.name,
-                phoneNumber = phoneNumber,
-                email = form.email.ifBlank { null },
-            )
-            try {
+                val contact = Contact(
+                    id = form.id ?: "",
+                    name = form.name,
+                    phoneNumber = phoneNumber,
+                    email = form.email.ifBlank { null },
+                )
                 contactRepository.addContact(contact)
                 if (form.isNew) {
                     _uiState.update { it.copy(currentPane = ContactsPane.LIST) }
