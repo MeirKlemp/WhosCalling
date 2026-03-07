@@ -62,8 +62,8 @@ fun CallLogsScreen(
         navigator.navigateTo(NavigationTab.CONTACTS, NavAction.AddContact(phoneNumber))
     }
 
-    val onShowContact: (String) -> Unit = { phoneNumber ->
-        navigator.navigateTo(NavigationTab.CONTACTS, NavAction.ShowContact(phoneNumber))
+    val onShowContact: (String) -> Unit = { contactId ->
+        navigator.navigateTo(NavigationTab.CONTACTS, NavAction.ShowContact(contactId))
     }
 
     val onLoginClick: () -> Unit = {

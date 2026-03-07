@@ -160,7 +160,7 @@ private fun CallLogHeader(
         if (contact == null) {
             AddContactButton(phoneNumber = callLog.phoneNumber, onClick = onAddContactClick)
         } else {
-            ShowContactButton(phoneNumber = callLog.phoneNumber, onClick = onShowContactClick)
+            ShowContactButton(contactId = contact.id, onClick = onShowContactClick)
         }
 
         HorizontalDivider()
@@ -218,10 +218,10 @@ private fun AddContactButton(
 
 @Composable
 private fun ShowContactButton(
-    phoneNumber: String,
+    contactId: String,
     onClick: (String) -> Unit,
 ) {
-    TextButton(onClick = { onClick(phoneNumber) }) {
+    TextButton(onClick = { onClick(contactId) }) {
         Icon(
             Icons.Default.Person,
             contentDescription = null,

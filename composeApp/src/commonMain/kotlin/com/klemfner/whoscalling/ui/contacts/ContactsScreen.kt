@@ -60,7 +60,7 @@ fun ContactsScreen(
                 navigator.consumeAction()
             }
             is NavAction.ShowContact -> {
-                val contact = viewModel.uiState.value.contacts.find { it.phoneNumber == action.phoneNumber }
+                val contact = viewModel.uiState.value.contacts.find { it.id == action.contactId }
                 if (contact != null) {
                     viewModel.selectContact(contact)
                 }
