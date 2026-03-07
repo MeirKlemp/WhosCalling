@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.klemfner.whoscalling.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +60,7 @@ fun DebugLogsScreen(
 ) {
     val logs by Logger.logs.collectAsStateWithLifecycle()
     val reversedLogs = remember(logs) { logs.reversed() }
+    @Suppress("DEPRECATION")
     val clipboardManager = LocalClipboardManager.current
 
     PlatformBackHandler(enabled = true, onBack = onBack)

@@ -1,6 +1,6 @@
 package com.klemfner.whoscalling.ui.common.utils
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
