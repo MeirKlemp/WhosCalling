@@ -135,7 +135,7 @@ fun CallLogDetails(
                     TimePeriodHeader(period)
                 }
                 items(logs, key = { it.id }) { log ->
-                    CallLogItem(callLog = log, onClick = { onCallLogClick(log) })
+                    CallLogItem(callLog = log, isSelected = log.id == callLog.id, onClick = { onCallLogClick(log) })
                 }
             }
         }
