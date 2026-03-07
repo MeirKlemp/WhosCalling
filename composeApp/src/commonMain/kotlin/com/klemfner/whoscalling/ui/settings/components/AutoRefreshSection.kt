@@ -2,8 +2,6 @@ package com.klemfner.whoscalling.ui.settings.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +11,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,7 +37,6 @@ private data class RefreshOption(val label: String, val seconds: Long)
 
 private const val CUSTOM_MARKER = -1L
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AutoRefreshSection(
     refreshRateSeconds: Long,
@@ -50,7 +49,7 @@ fun AutoRefreshSection(
         RefreshOption("10s", 10),
         RefreshOption("30s", 30),
         RefreshOption("1m", 60),
-        RefreshOption("5m", 300),
+        RefreshOption(stringResource(Res.string.auto_refresh_custom), CUSTOM_MARKER),
     )
 
     val isPreset = presetOptions.any { it.seconds == refreshRateSeconds }
@@ -90,30 +89,18 @@ fun AutoRefreshSection(
             modifier = Modifier.padding(bottom = 8.dp),
         )
 
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            presetOptions.forEach { option ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = selectedOption == option.seconds,
-                        onClick = { selectedOption = option.seconds },
-                    )
-                    Text(
-                        text = option.label,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            presetOptions.forEachIndexed { index, option ->
+                SegmentedButton(
+                    selected = selectedOption == option.seconds,
+                    onClick = { selectedOption = option.seconds },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = presetOptions.size,
+                    ),
+                ) {
+                    Text(option.label)
                 }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = selectedOption == CUSTOM_MARKER,
-                    onClick = { selectedOption = CUSTOM_MARKER },
-                )
-                Text(
-                    text = stringResource(Res.string.auto_refresh_custom),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
             }
         }
 
