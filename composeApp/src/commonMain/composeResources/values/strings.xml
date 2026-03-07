@@ -75,5 +75,4 @@
     <string name="confirm_delete_multiple">Are you sure you want to delete %1$d contacts?</string>
     <string name="router_configuration">Router Configuration</string>
     <string name="router_ip">Router IP</string>
-    <string name="not_configured">Not Configured</string>
 </resources>

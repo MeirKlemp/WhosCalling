@@ -17,12 +17,14 @@ class SettingsRepositoryImplTest {
     private fun createRepository(
         defaultCountryIso: () -> String = { "US" },
         defaultTouchMode: () -> Boolean = { true },
+        defaultRouterIp: () -> String = { "" },
         scope: CoroutineScope = CoroutineScope(testDispatcher),
     ) = SettingsRepositoryImpl(
         localDataSource = InMemorySettingsLocalDataSource(),
         scope = scope,
         defaultCountryIso = defaultCountryIso,
         defaultTouchMode = defaultTouchMode,
+        defaultRouterIp = defaultRouterIp,
     )
 
     @Test

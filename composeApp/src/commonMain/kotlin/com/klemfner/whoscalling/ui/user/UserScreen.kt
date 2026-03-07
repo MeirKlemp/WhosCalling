@@ -1,6 +1,5 @@
 package com.klemfner.whoscalling.ui.user
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +30,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -53,8 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
 import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
-import com.klemfner.whoscalling.ui.navigation.LocalNavigator
-import com.klemfner.whoscalling.ui.navigation.NavigationTab
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
@@ -64,7 +59,6 @@ import whoscalling.composeapp.generated.resources.login_error_blank_credentials
 import whoscalling.composeapp.generated.resources.login_error_generic
 import whoscalling.composeapp.generated.resources.login_time
 import whoscalling.composeapp.generated.resources.logout
-import whoscalling.composeapp.generated.resources.not_configured
 import whoscalling.composeapp.generated.resources.password
 import whoscalling.composeapp.generated.resources.remember_me
 import whoscalling.composeapp.generated.resources.show_password
@@ -77,7 +71,6 @@ fun UserScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val navigator = LocalNavigator.current
 
     val blankCredentialsMessage = stringResource(Res.string.login_error_blank_credentials)
     val genericErrorMessage = stringResource(Res.string.login_error_generic)
@@ -105,50 +98,12 @@ fun UserScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            RouterIpBadge(
-                routerIp = uiState.routerIp,
-                onClick = { navigator.navigateTo(NavigationTab.SETTINGS) },
-            )
-
-            Spacer(Modifier.height(16.dp))
-
             if (uiState.loggedInUser != null) {
                 UserProfile(uiState, viewModel)
             } else {
                 LoginForm(uiState, viewModel)
             }
         }
-    }
-}
-
-@Composable
-private fun RouterIpBadge(
-    routerIp: String,
-    onClick: () -> Unit,
-) {
-    val isConfigured = routerIp.isNotBlank()
-    val borderColor = if (isConfigured) {
-        MaterialTheme.colorScheme.outline
-    } else {
-        MaterialTheme.colorScheme.error
-    }
-    val textColor = if (isConfigured) {
-        MaterialTheme.colorScheme.onSurface
-    } else {
-        MaterialTheme.colorScheme.error
-    }
-
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, borderColor),
-        onClick = onClick,
-    ) {
-        Text(
-            text = if (isConfigured) routerIp else stringResource(Res.string.not_configured),
-            style = MaterialTheme.typography.bodyMedium,
-            color = textColor,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        )
     }
 }
 
