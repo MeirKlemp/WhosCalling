@@ -7,4 +7,9 @@ data class UserPreferences(
     val countryIso: String = "",
     val touchMode: Boolean = true,
     val routerIp: String = "",
-)
+    val refreshRateSeconds: Long = DEFAULT_REFRESH_RATE_SECONDS,
+) {
+    companion object {
+        const val DEFAULT_REFRESH_RATE_SECONDS = 5L
+    }
+}

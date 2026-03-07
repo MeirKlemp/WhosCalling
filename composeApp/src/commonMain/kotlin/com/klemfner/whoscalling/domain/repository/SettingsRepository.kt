@@ -8,8 +8,10 @@ interface SettingsRepository {
     val currentCountryIso: String
     val currentTouchMode: Boolean
     val currentRouterIp: String
+    val currentRefreshRateSeconds: Long
     suspend fun setCountryIso(iso: String)
     suspend fun setTouchMode(touchMode: Boolean)
     suspend fun setRouterIp(ip: String)
+    suspend fun setRefreshRateSeconds(seconds: Long)
     suspend fun resetToDefault()
 }

@@ -58,9 +58,9 @@ class ContactsViewModelTest {
             remoteDataSource = callLogRemoteDataSource,
             localDataSource = callLogLocalDataSource,
             authRepository = FakeAuthRepository().apply { setLoggedIn("user", "token") },
+            settingsRepository = FakeSettingsRepository(),
             scope = testScope,
             normalizePhone = { it },
-            refreshIntervalMs = Long.MAX_VALUE,
         )
         viewModel = ContactsViewModel(contactRepository, callLogRepository, FakeSettingsRepository())
     }

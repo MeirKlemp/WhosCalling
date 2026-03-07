@@ -315,4 +315,51 @@ class SettingsViewModelTest {
             cancelAndConsumeRemainingEvents()
         }
     }
+
+    @Test
+    fun refreshRateSeconds_initialValue() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRefreshRateSeconds_updatesUiState() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            viewModel.setRefreshRateSeconds(30L)
+            assertEquals(30L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRefreshRateSeconds_neverDisablesRefresh() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            viewModel.setRefreshRateSeconds(0L)
+            assertEquals(0L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun resetRefreshRateToDefault_restoresDefault() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            viewModel.setRefreshRateSeconds(60L)
+            assertEquals(60L, awaitItem().refreshRateSeconds)
+
+            viewModel.resetToDefault()
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

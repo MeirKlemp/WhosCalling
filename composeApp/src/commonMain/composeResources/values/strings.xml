@@ -75,4 +75,10 @@
     <string name="confirm_delete_multiple">Are you sure you want to delete %1$d contacts?</string>
     <string name="router_configuration">Router Configuration</string>
     <string name="router_ip">Router IP</string>
+    <string name="auto_refresh">Auto Refresh</string>
+    <string name="auto_refresh_label">Auto refresh call logs every:</string>
+    <string name="auto_refresh_never">Never</string>
+    <string name="auto_refresh_custom">Custom</string>
+    <string name="auto_refresh_seconds_input">Seconds</string>
+    <string name="auto_refresh_duration_format">%1$s</string>
 </resources>

@@ -24,6 +24,9 @@ class FakeSettingsRepository(
     override val currentRouterIp: String
         get() = _preferences.value.routerIp
 
+    override val currentRefreshRateSeconds: Long
+        get() = _preferences.value.refreshRateSeconds
+
     override suspend fun setCountryIso(iso: String) {
         _preferences.update { it.copy(countryIso = iso) }
     }
@@ -34,6 +37,10 @@ class FakeSettingsRepository(
 
     override suspend fun setRouterIp(ip: String) {
         _preferences.update { it.copy(routerIp = ip) }
+    }
+
+    override suspend fun setRefreshRateSeconds(seconds: Long) {
+        _preferences.update { it.copy(refreshRateSeconds = seconds) }
     }
 
     override suspend fun resetToDefault() {

@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.klemfner.whoscalling.ui.settings.components.AutoRefreshSection
 import com.klemfner.whoscalling.ui.settings.components.ContactsSection
 import com.klemfner.whoscalling.ui.settings.components.DebugSection
 import com.klemfner.whoscalling.ui.settings.components.PhoneSection
@@ -96,6 +97,11 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             PhoneSection(
                 countryIso = uiState.countryIso,
                 onCountryIsoChange = viewModel::setCountryIso,
+            )
+
+            AutoRefreshSection(
+                refreshRateSeconds = uiState.refreshRateSeconds,
+                onRefreshRateSave = viewModel::setRefreshRateSeconds,
             )
 
             ContactsSection(
