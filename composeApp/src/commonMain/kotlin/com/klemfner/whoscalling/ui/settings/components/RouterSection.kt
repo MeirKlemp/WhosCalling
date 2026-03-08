@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
@@ -41,11 +43,14 @@ fun RouterSection(
     onFocusConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var draft by rememberSaveable(routerIp) { mutableStateOf(routerIp) }
+    var draft by rememberSaveable(routerIp, stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(routerIp))
+    }
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(focusRequested) {
         if (focusRequested) {
+            draft = draft.copy(selection = TextRange(0, draft.text.length))
             focusRequester.requestFocus()
             onFocusConsumed()
         }
@@ -73,8 +78,8 @@ fun RouterSection(
                 modifier = Modifier.weight(1f).focusRequester(focusRequester),
             )
             Button(
-                onClick = { onRouterIpSave(draft) },
-                enabled = draft != routerIp,
+                onClick = { onRouterIpSave(draft.text) },
+                enabled = draft.text != routerIp,
                 modifier = Modifier.padding(start = 8.dp),
             ) {
                 Text(stringResource(Res.string.save))

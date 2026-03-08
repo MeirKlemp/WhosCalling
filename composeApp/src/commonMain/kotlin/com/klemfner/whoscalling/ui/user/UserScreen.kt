@@ -68,7 +68,6 @@ import whoscalling.composeapp.generated.resources.logout
 import whoscalling.composeapp.generated.resources.not_configured
 import whoscalling.composeapp.generated.resources.password
 import whoscalling.composeapp.generated.resources.remember_me
-import whoscalling.composeapp.generated.resources.router_ip
 import whoscalling.composeapp.generated.resources.show_password
 import whoscalling.composeapp.generated.resources.username
 
@@ -293,24 +292,15 @@ private fun RouterIpBadge(
             color = MaterialTheme.colorScheme.outline,
         ),
     ) {
-        Row(
+        Text(
+            text = displayText,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (routerIp.isBlank()) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "${stringResource(Res.string.router_ip)}: ",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = displayText,
-                style = MaterialTheme.typography.labelMedium,
-                color = if (routerIp.isBlank()) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-            )
-        }
+        )
     }
 }
