@@ -75,6 +75,8 @@
     <string name="confirm_delete_multiple">Are you sure you want to delete %1$d contacts?</string>
     <string name="router_configuration">Router Configuration</string>
     <string name="router_ip">Router IP</string>
+    <string name="not_configured">Not configured</string>
+    <string name="router_ip_warning">Router IP is not configured</string>
     <string name="auto_refresh">Auto Refresh</string>
     <string name="auto_refresh_label">Auto refresh call logs every:</string>
     <string name="auto_refresh_never">Never</string>

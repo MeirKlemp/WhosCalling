@@ -22,6 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
+import com.klemfner.whoscalling.ui.navigation.LocalNavigator
+import com.klemfner.whoscalling.ui.navigation.NavAction
 import com.klemfner.whoscalling.ui.settings.components.AutoRefreshSection
 import com.klemfner.whoscalling.ui.settings.components.ContactsSection
 import com.klemfner.whoscalling.ui.settings.components.DebugSection
@@ -60,6 +62,16 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val snackbarHostState = remember { SnackbarHostState() }
     val fileSaver = rememberFileSaver()
     val fileLoader = rememberFileLoader()
+    val navigator = LocalNavigator.current
+
+    var focusRouterIp by remember { mutableStateOf(false) }
+
+    LaunchedEffect(navigator.navState.action) {
+        if (navigator.navState.action is NavAction.FocusRouterIp) {
+            focusRouterIp = true
+            navigator.consumeAction()
+        }
+    }
 
     val importErrorMessage = stringResource(Res.string.import_error)
 
@@ -94,6 +106,8 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             RouterSection(
                 routerIp = uiState.routerIp,
                 onRouterIpSave = viewModel::setRouterIp,
+                focusRequested = focusRouterIp,
+                onFocusConsumed = { focusRouterIp = false },
             )
 
             PhoneSection(
