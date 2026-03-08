@@ -13,3 +13,11 @@
 # JNA
 -dontwarn com.sun.jna.**
 -keep class com.sun.jna.** { *; }
+
+# SQLDelight
+-dontwarn app.cash.sqldelight.**
+-keep class app.cash.sqldelight.** { *; }
+
+# SQLite JDBC Driver
+-dontwarn org.sqlite.**
+-keep class org.sqlite.** { *; }
