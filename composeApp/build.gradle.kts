@@ -114,6 +114,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
             packageName = "com.klemfner.whoscalling"
             packageVersion = "1.0.0"
+            modules("java.sql", "java.naming")
         }
 
         buildTypes.release.proguard {
