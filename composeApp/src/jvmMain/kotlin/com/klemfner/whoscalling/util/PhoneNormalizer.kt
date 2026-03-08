@@ -6,7 +6,7 @@ actual fun normalizePhoneNumber(phoneNumber: String, defaultRegion: String?): St
     val phoneUtil = PhoneNumberUtil.getInstance()
     val parsed = phoneUtil.parse(phoneNumber, defaultRegion)
     if (!phoneUtil.isValidNumber(parsed)) {
-        throw IllegalArgumentException("Invalid phone number: $phoneNumber")
+        throw IllegalArgumentException("Invalid phone number: ${maskPhoneNumber(phoneNumber)}")
     }
     return phoneUtil.format(parsed, PhoneNumberUtil.PhoneNumberFormat.E164)
 }
@@ -24,7 +24,7 @@ actual fun formatPhoneForDisplay(phoneNumber: String, defaultCountryIso: String)
             FormattedPhone(internationalPrefix = "+$countryCode", nationalNumber = national)
         }
     } catch (e: Exception) {
-        Logger.w("PhoneNormalizer", "Failed to format phone for display: $phoneNumber", e)
+        Logger.w("PhoneNormalizer", "Failed to format phone for display: ${maskPhoneNumber(phoneNumber)}", e)
         FormattedPhone(internationalPrefix = null, nationalNumber = phoneNumber)
     }
 }

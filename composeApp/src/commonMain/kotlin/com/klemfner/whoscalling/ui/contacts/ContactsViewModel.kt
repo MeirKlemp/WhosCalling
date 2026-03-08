@@ -8,6 +8,7 @@ import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import com.klemfner.whoscalling.util.getCountryIsoFromPhoneNumber
+import com.klemfner.whoscalling.util.maskPhoneNumber
 import com.klemfner.whoscalling.util.normalizePhoneNumber
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -291,7 +292,7 @@ class ContactsViewModel(
                     }
                 }
             } catch (e: Exception) {
-                Logger.e(TAG, "saveContact failed: name=${form.name}, phone=${form.phoneNumber}, iso=${form.selectedCountryIso}", e)
+                Logger.e(TAG, "saveContact failed: name=${form.name}, phone=${maskPhoneNumber(form.phoneNumber)}, iso=${form.selectedCountryIso}", e)
                 _uiState.update { it.copy(errorMessage = e.message) }
             }
         }

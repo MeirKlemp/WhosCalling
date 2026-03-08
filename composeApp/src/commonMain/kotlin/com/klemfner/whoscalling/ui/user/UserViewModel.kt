@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +15,10 @@ class UserViewModel(
     private val authRepository: AuthRepository,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "UserViewModel"
+    }
 
     private val _uiState = MutableStateFlow(
         UserUiState(routerIp = settingsRepository.currentRouterIp),
@@ -57,9 +62,10 @@ class UserViewModel(
         viewModelScope.launch {
             try {
                 authRepository.login(state.username, state.password, state.rememberMe)
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 _uiState.update { it.copy(loginError = LoginError.BlankCredentials, isLoading = false) }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Logger.e(TAG, "Login failed", e)
                 _uiState.update { it.copy(loginError = LoginError.Generic, isLoading = false) }
             }
         }
