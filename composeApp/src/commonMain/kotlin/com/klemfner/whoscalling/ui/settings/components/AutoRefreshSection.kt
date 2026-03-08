@@ -41,21 +41,26 @@ private const val CUSTOM_MARKER = -1L
 fun AutoRefreshSection(
     refreshRateSeconds: Long,
     onRefreshRateSave: (Long) -> Unit,
+    isExpanded: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    val presetOptions = listOf(
-        RefreshOption(stringResource(Res.string.auto_refresh_never), 0),
-        RefreshOption("5s", 5),
-        RefreshOption("30s", 30),
-        RefreshOption(stringResource(Res.string.auto_refresh_custom), CUSTOM_MARKER),
-    )
+    val presetOptions = buildList {
+        add(RefreshOption(stringResource(Res.string.auto_refresh_never), 0))
+        add(RefreshOption("5s", 5))
+        add(RefreshOption("30s", 30))
+        if (isExpanded) {
+            add(RefreshOption("1m", 60))
+            add(RefreshOption("5m", 300))
+        }
+        add(RefreshOption(stringResource(Res.string.auto_refresh_custom), CUSTOM_MARKER))
+    }
 
     val isPreset = presetOptions.any { it.seconds == refreshRateSeconds }
     val initialSelection = if (isPreset) refreshRateSeconds else CUSTOM_MARKER
     val initialCustom = if (isPreset) "" else refreshRateSeconds.toString()
 
-    var selectedOption by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialSelection) }
-    var customSeconds by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialCustom) }
+    var selectedOption by rememberSaveable(refreshRateSeconds, isExpanded) { mutableStateOf(initialSelection) }
+    var customSeconds by rememberSaveable(refreshRateSeconds, isExpanded) { mutableStateOf(initialCustom) }
 
     val draftSeconds = if (selectedOption == CUSTOM_MARKER) {
         customSeconds.toLongOrNull() ?: 0L

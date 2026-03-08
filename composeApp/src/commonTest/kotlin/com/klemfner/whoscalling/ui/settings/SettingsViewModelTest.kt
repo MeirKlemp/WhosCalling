@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.settings
 import app.cash.turbine.test
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,9 @@ class SettingsViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         contactLocalDataSource = FakeContactLocalDataSource()
-        settingsRepository = FakeSettingsRepository()
+        settingsRepository = FakeSettingsRepository(
+            UserPreferences(countryIso = "US", touchMode = true, refreshRateSeconds = 5),
+        )
         val contactRepository = ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
             normalizePhone = { it },

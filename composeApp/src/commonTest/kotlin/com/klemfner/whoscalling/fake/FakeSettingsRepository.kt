@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class FakeSettingsRepository(
-    initialPreferences: UserPreferences = UserPreferences(countryIso = "US", touchMode = true),
+    initialPreferences: UserPreferences = UserPreferences(countryIso = "US", touchMode = true, refreshRateSeconds = 0),
     private val defaultPreferences: UserPreferences = initialPreferences,
 ) : SettingsRepository {
 
