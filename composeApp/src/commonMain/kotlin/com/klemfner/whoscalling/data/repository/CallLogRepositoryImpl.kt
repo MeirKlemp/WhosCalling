@@ -84,6 +84,7 @@ class CallLogRepositoryImpl(
         return try {
             fetchAndNormalize(token)
         } catch (e: UnauthorizedException) {
+            Logger.w(TAG, "Token expired, retrying login", e)
             authRepository.retryLogin()
             fetchAndNormalize(authRepository.getToken())
         }
@@ -93,7 +94,8 @@ class CallLogRepositoryImpl(
         return remoteDataSource.getCallLogs(token).map { log ->
             val normalized = try {
                 normalizePhone(log.phoneNumber)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Logger.w(TAG, "Failed to normalize phone number: ${log.phoneNumber}", e)
                 log.phoneNumber
             }
             log.copy(

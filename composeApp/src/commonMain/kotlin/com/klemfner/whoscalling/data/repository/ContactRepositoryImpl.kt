@@ -27,6 +27,7 @@ class ContactRepositoryImpl(
         val normalized = try {
             normalizePhone(contact.phoneNumber)
         } catch (e: Exception) {
+            Logger.w(TAG, "Invalid phone number: ${contact.phoneNumber}", e)
             throw InvalidPhoneNumberException(contact.phoneNumber)
         }
         localDataSource.saveContact(contact.copy(id = id, phoneNumber = normalized))

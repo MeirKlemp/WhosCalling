@@ -62,8 +62,7 @@ class UserViewModel(
         viewModelScope.launch {
             try {
                 authRepository.login(state.username, state.password, state.rememberMe)
-            } catch (e: IllegalArgumentException) {
-                Logger.e(TAG, "Login failed: blank credentials", e)
+            } catch (_: IllegalArgumentException) {
                 _uiState.update { it.copy(loginError = LoginError.BlankCredentials, isLoading = false) }
             } catch (e: Exception) {
                 Logger.e(TAG, "Login failed", e)
