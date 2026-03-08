@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.settings
 import app.cash.turbine.test
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.ThemeMode
 import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
@@ -361,6 +362,44 @@ class SettingsViewModelTest {
 
             viewModel.resetToDefault()
             assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun themeMode_initialValue() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(ThemeMode.SYSTEM, awaitItem().themeMode)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setThemeMode_updatesUiState() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(ThemeMode.SYSTEM, awaitItem().themeMode)
+
+            viewModel.setThemeMode(ThemeMode.DARK)
+            assertEquals(ThemeMode.DARK, awaitItem().themeMode)
+
+            viewModel.setThemeMode(ThemeMode.LIGHT)
+            assertEquals(ThemeMode.LIGHT, awaitItem().themeMode)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun resetThemeModeToDefault_restoresDefault() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(ThemeMode.SYSTEM, awaitItem().themeMode)
+
+            viewModel.setThemeMode(ThemeMode.DARK)
+            assertEquals(ThemeMode.DARK, awaitItem().themeMode)
+
+            viewModel.resetToDefault()
+            assertEquals(ThemeMode.SYSTEM, awaitItem().themeMode)
 
             cancelAndConsumeRemainingEvents()
         }

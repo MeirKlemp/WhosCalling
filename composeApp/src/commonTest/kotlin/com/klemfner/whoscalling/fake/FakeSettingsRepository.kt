@@ -1,5 +1,6 @@
 package com.klemfner.whoscalling.fake
 
+import com.klemfner.whoscalling.domain.model.ThemeMode
 import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,9 @@ class FakeSettingsRepository(
     override val currentRefreshRateSeconds: Long
         get() = _preferences.value.refreshRateSeconds
 
+    override val currentThemeMode: ThemeMode
+        get() = _preferences.value.themeMode
+
     override suspend fun setCountryIso(iso: String) {
         _preferences.update { it.copy(countryIso = iso) }
     }
@@ -41,6 +45,10 @@ class FakeSettingsRepository(
 
     override suspend fun setRefreshRateSeconds(seconds: Long) {
         _preferences.update { it.copy(refreshRateSeconds = seconds) }
+    }
+
+    override suspend fun setThemeMode(themeMode: ThemeMode) {
+        _preferences.update { it.copy(themeMode = themeMode) }
     }
 
     override suspend fun resetToDefault() {

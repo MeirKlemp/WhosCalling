@@ -27,6 +27,7 @@ import com.klemfner.whoscalling.ui.navigation.NavAction
 import com.klemfner.whoscalling.ui.settings.components.AutoRefreshSection
 import com.klemfner.whoscalling.ui.settings.components.ContactsSection
 import com.klemfner.whoscalling.ui.settings.components.DebugSection
+import com.klemfner.whoscalling.ui.settings.components.DisplaySection
 import com.klemfner.whoscalling.ui.settings.components.PhoneSection
 import com.klemfner.whoscalling.ui.settings.components.ResetSection
 import com.klemfner.whoscalling.ui.settings.components.RouterSection
@@ -121,6 +122,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 isExpanded = isExpanded,
             )
 
+            DisplaySection(
+                themeMode = uiState.themeMode,
+                onThemeModeChange = viewModel::setThemeMode,
+                isTouchMode = uiState.touchMode,
+                onTouchModeChange = viewModel::setTouchMode,
+            )
+
             ContactsSection(
                 contactCount = uiState.contactCount,
                 onExport = {
@@ -142,8 +150,6 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             )
 
             DebugSection(
-                isTouchMode = uiState.touchMode,
-                onTouchModeChange = viewModel::setTouchMode,
                 onShowDebugLogs = { showDebugLogs = true },
             )
 

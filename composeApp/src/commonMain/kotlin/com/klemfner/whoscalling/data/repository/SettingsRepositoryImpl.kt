@@ -1,6 +1,7 @@
 package com.klemfner.whoscalling.data.repository
 
 import com.klemfner.whoscalling.data.local.SettingsLocalDataSource
+import com.klemfner.whoscalling.domain.model.ThemeMode
 import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.defaultCountryIso
@@ -42,6 +43,9 @@ class SettingsRepositoryImpl(
     override val currentRefreshRateSeconds: Long
         get() = preferences.value.refreshRateSeconds
 
+    override val currentThemeMode: ThemeMode
+        get() = preferences.value.themeMode
+
     override suspend fun setCountryIso(iso: String) {
         localDataSource.updatePreferences { it.copy(countryIso = iso) }
     }
@@ -56,6 +60,10 @@ class SettingsRepositoryImpl(
 
     override suspend fun setRefreshRateSeconds(seconds: Long) {
         localDataSource.updatePreferences { it.copy(refreshRateSeconds = seconds) }
+    }
+
+    override suspend fun setThemeMode(themeMode: ThemeMode) {
+        localDataSource.updatePreferences { it.copy(themeMode = themeMode) }
     }
 
     override suspend fun resetToDefault() {

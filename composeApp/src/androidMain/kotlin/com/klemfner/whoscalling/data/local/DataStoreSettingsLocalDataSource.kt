@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.klemfner.whoscalling.domain.model.ThemeMode
 import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.util.defaultCountryIso
 import com.klemfner.whoscalling.util.defaultRouterIp
@@ -31,6 +32,7 @@ class DataStoreSettingsLocalDataSource(
             prefs[KEY_TOUCH_MODE] = updated.touchMode
             prefs[KEY_ROUTER_IP] = updated.routerIp
             prefs[KEY_REFRESH_RATE_SECONDS] = updated.refreshRateSeconds
+            prefs[KEY_THEME_MODE] = updated.themeMode.name
         }
     }
 
@@ -39,12 +41,14 @@ class DataStoreSettingsLocalDataSource(
         private val KEY_TOUCH_MODE = booleanPreferencesKey("touch_mode")
         private val KEY_ROUTER_IP = stringPreferencesKey("router_ip")
         private val KEY_REFRESH_RATE_SECONDS = longPreferencesKey("refresh_rate_seconds")
+        private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
 
         private fun Preferences.toUserPreferences(context: Context) = UserPreferences(
             countryIso = this[KEY_COUNTRY_ISO] ?: defaultCountryIso(),
             touchMode = this[KEY_TOUCH_MODE] ?: defaultTouchMode(),
             routerIp = this[KEY_ROUTER_IP] ?: defaultRouterIp(context),
             refreshRateSeconds = this[KEY_REFRESH_RATE_SECONDS] ?: UserPreferences.DEFAULT_REFRESH_RATE_SECONDS,
+            themeMode = this[KEY_THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM,
         )
     }
 }
