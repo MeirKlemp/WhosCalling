@@ -42,6 +42,7 @@ class SettingsViewModel(
             countryIso = prefs.countryIso,
             touchMode = prefs.touchMode,
             routerIp = prefs.routerIp,
+            refreshRateSeconds = prefs.refreshRateSeconds,
             importResult = importResult,
         )
     }.stateIn(
@@ -52,6 +53,7 @@ class SettingsViewModel(
                 countryIso = currentCountryIso,
                 touchMode = currentTouchMode,
                 routerIp = currentRouterIp,
+                refreshRateSeconds = currentRefreshRateSeconds,
             )
         },
     )
@@ -96,6 +98,12 @@ class SettingsViewModel(
     fun setRouterIp(ip: String) {
         viewModelScope.launch {
             settingsRepository.setRouterIp(ip)
+        }
+    }
+
+    fun setRefreshRateSeconds(seconds: Long) {
+        viewModelScope.launch {
+            settingsRepository.setRefreshRateSeconds(seconds)
         }
     }
 

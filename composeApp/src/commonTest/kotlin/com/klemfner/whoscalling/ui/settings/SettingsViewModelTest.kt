@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.settings
 import app.cash.turbine.test
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,9 @@ class SettingsViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         contactLocalDataSource = FakeContactLocalDataSource()
-        settingsRepository = FakeSettingsRepository()
+        settingsRepository = FakeSettingsRepository(
+            UserPreferences(countryIso = "US", touchMode = true, refreshRateSeconds = 5),
+        )
         val contactRepository = ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
             normalizePhone = { it },
@@ -311,6 +314,53 @@ class SettingsViewModelTest {
 
             viewModel.resetToDefault()
             assertEquals("", awaitItem().routerIp)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshRateSeconds_initialValue() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRefreshRateSeconds_updatesUiState() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            viewModel.setRefreshRateSeconds(30L)
+            assertEquals(30L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRefreshRateSeconds_neverDisablesRefresh() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            viewModel.setRefreshRateSeconds(0L)
+            assertEquals(0L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun resetRefreshRateToDefault_restoresDefault() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            viewModel.setRefreshRateSeconds(60L)
+            assertEquals(60L, awaitItem().refreshRateSeconds)
+
+            viewModel.resetToDefault()
+            assertEquals(5L, awaitItem().refreshRateSeconds)
 
             cancelAndConsumeRemainingEvents()
         }

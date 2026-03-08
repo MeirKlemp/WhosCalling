@@ -147,4 +147,40 @@ class SettingsRepositoryImplTest {
             cancelAndConsumeRemainingEvents()
         }
     }
+
+    @Test
+    fun setRefreshRateSeconds_updatesPreferences() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.preferences.test {
+            awaitItem() // initial
+
+            repository.setRefreshRateSeconds(30L)
+            assertEquals(30L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRefreshRateSeconds_updatesSyncCurrentRefreshRate() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setRefreshRateSeconds(60L)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(60L, repository.currentRefreshRateSeconds)
+    }
+
+    @Test
+    fun resetToDefault_restoresRefreshRate() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setRefreshRateSeconds(120L)
+        testDispatcher.scheduler.advanceUntilIdle()
+        repository.preferences.test {
+            assertEquals(120L, awaitItem().refreshRateSeconds)
+
+            repository.resetToDefault()
+            assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

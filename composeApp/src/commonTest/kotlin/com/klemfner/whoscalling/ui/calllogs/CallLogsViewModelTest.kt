@@ -62,9 +62,9 @@ class CallLogsViewModelTest {
             remoteDataSource = callLogRemoteDataSource,
             localDataSource = callLogLocalDataSource,
             authRepository = authRepository,
+            settingsRepository = FakeSettingsRepository(),
             scope = testScope,
             normalizePhone = { it },
-            refreshIntervalMs = Long.MAX_VALUE,
         )
         viewModel = CallLogsViewModel(callLogRepository, contactRepository, authRepository, FakeSettingsRepository())
     }
@@ -253,9 +253,9 @@ class CallLogsViewModelTest {
             remoteDataSource = throwingRemote,
             localDataSource = callLogLocalDataSource,
             authRepository = authRepository,
+            settingsRepository = FakeSettingsRepository(),
             scope = testScope,
             normalizePhone = { it },
-            refreshIntervalMs = Long.MAX_VALUE,
         )
         viewModel = CallLogsViewModel(callLogRepository, ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,

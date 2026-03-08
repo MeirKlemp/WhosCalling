@@ -61,6 +61,7 @@ val repositoryModule = module {
             remoteDataSource = get(),
             localDataSource = get(),
             authRepository = get(),
+            settingsRepository = settingsRepo,
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
             normalizePhone = { phone -> normalizePhoneNumber(phone, settingsRepo.currentCountryIso) },
         )

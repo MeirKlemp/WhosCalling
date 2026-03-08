@@ -39,6 +39,9 @@ class SettingsRepositoryImpl(
     override val currentRouterIp: String
         get() = preferences.value.routerIp
 
+    override val currentRefreshRateSeconds: Long
+        get() = preferences.value.refreshRateSeconds
+
     override suspend fun setCountryIso(iso: String) {
         localDataSource.updatePreferences { it.copy(countryIso = iso) }
     }
@@ -49,6 +52,10 @@ class SettingsRepositoryImpl(
 
     override suspend fun setRouterIp(ip: String) {
         localDataSource.updatePreferences { it.copy(routerIp = ip) }
+    }
+
+    override suspend fun setRefreshRateSeconds(seconds: Long) {
+        localDataSource.updatePreferences { it.copy(refreshRateSeconds = seconds) }
     }
 
     override suspend fun resetToDefault() {

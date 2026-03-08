@@ -4,9 +4,11 @@ import app.cash.turbine.test
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.UnauthorizedException
+import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
+import com.klemfner.whoscalling.fake.FakeSettingsRepository
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
@@ -20,6 +22,7 @@ class CallLogRepositoryImplTest {
     private lateinit var remoteDataSource: FakeCallLogRemoteDataSource
     private lateinit var localDataSource: FakeCallLogLocalDataSource
     private lateinit var authRepository: FakeAuthRepository
+    private lateinit var settingsRepository: FakeSettingsRepository
     private lateinit var repository: CallLogRepositoryImpl
 
     private var fakeCurrentTimeMillis = 100_000L
@@ -29,20 +32,24 @@ class CallLogRepositoryImplTest {
         remoteDataSource = FakeCallLogRemoteDataSource()
         localDataSource = FakeCallLogLocalDataSource()
         authRepository = FakeAuthRepository()
+        settingsRepository = FakeSettingsRepository(
+            UserPreferences(countryIso = "US", touchMode = true, refreshRateSeconds = 0),
+        )
         authRepository.setLoggedIn("user", "token")
         repository = createRepository()
     }
 
     private fun createRepository(
-        normalizePhone: (String) -> String = { it }
+        normalizePhone: (String) -> String = { it },
+        settingsRepo: FakeSettingsRepository = settingsRepository,
     ) = CallLogRepositoryImpl(
         remoteDataSource,
         localDataSource,
         authRepository,
+        settingsRepo,
         scope = TestScope(),
         currentTimeMillis = { fakeCurrentTimeMillis },
         normalizePhone = normalizePhone,
-        refreshIntervalMs = Long.MAX_VALUE,
     )
 
     @Test
@@ -240,10 +247,10 @@ class CallLogRepositoryImplTest {
             throwingRemote,
             localDataSource,
             authRepository,
+            settingsRepository,
             scope = TestScope(),
             currentTimeMillis = { fakeCurrentTimeMillis },
             normalizePhone = { it },
-            refreshIntervalMs = Long.MAX_VALUE,
         )
 
         repository.refreshCallLogs()
@@ -267,10 +274,10 @@ class CallLogRepositoryImplTest {
             throwingRemote,
             localDataSource,
             authRepository,
+            settingsRepository,
             scope = TestScope(),
             currentTimeMillis = { fakeCurrentTimeMillis },
             normalizePhone = { it },
-            refreshIntervalMs = Long.MAX_VALUE,
         )
 
         val oldLogs = listOf(CallLog("old", "+1111111111", CallType.INCOMING, false, 500L, 30L))
@@ -283,6 +290,43 @@ class CallLogRepositoryImplTest {
         // Old call logs should still be there
         repository.callLogs.test {
             assertEquals(oldLogs, awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun autoRefresh_stopsWhenRefreshRateSetToZero() = runTest {
+        val zeroRateSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 0)
+        )
+        val noRefreshRepo = createRepository(settingsRepo = zeroRateSettings)
+
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        // With refresh rate 0 (never), auto-refresh should not run
+        // The local data source should remain empty
+        noRefreshRepo.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun autoRefresh_stopsWhenUserIsLoggedOut() = runTest {
+        authRepository.setLoggedOut()
+        repository = createRepository()
+
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        // With no logged in user, auto-refresh should not run
+        repository.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
             cancelAndConsumeRemainingEvents()
         }
     }
