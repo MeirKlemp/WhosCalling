@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +69,7 @@ fun RingingCallBanner(
     val navigator = LocalNavigator.current
     val isExpanded = LocalIsExpanded.current
 
-    var dismissedCallId by rememberSaveable { mutableStateOf<String?>(null) }
+    var dismissedCallId by remember { mutableStateOf<String?>(null) }
 
     val currentRingingCall = ringingCall
     val showBanner = currentRingingCall != null && currentRingingCall.id != dismissedCallId
@@ -78,7 +78,7 @@ fun RingingCallBanner(
         visible = showBanner,
         enter = slideInVertically { it } + fadeIn(),
         exit = slideOutVertically { it } + fadeOut(),
-        modifier = modifier,
+        modifier = modifier.imePadding(),
     ) {
         if (currentRingingCall != null) {
             val contact = remember(contacts, currentRingingCall.phoneNumber) {

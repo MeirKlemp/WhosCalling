@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 class CallLogRepositoryImpl(
@@ -52,13 +53,20 @@ class CallLogRepositoryImpl(
         }
     }
 
-    override val ringingCall: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
-        val lastLog = logs.maxByOrNull { it.timestamp } ?: return@map null
-        val oneMinuteAgo = currentTimeMillis() - 60_000L
-        if (lastLog.type == CallType.INCOMING && lastLog.missed && lastLog.timestamp >= oneMinuteAgo) {
-            lastLog
+    override val ringingCall: Flow<CallLog?> = localDataSource.callLogs.transformLatest { logs ->
+        val lastLog = logs.maxByOrNull { it.timestamp }
+        if (lastLog != null && lastLog.type == CallType.INCOMING && lastLog.missed) {
+            val now = currentTimeMillis()
+            val ageMs = now - lastLog.timestamp
+            if (ageMs < 60_000L) {
+                emit(lastLog)
+                delay(60_000L - ageMs)
+                emit(null)
+            } else {
+                emit(null)
+            }
         } else {
-            null
+            emit(null)
         }
     }
 

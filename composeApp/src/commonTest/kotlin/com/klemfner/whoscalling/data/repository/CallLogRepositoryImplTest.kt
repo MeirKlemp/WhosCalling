@@ -247,6 +247,20 @@ class CallLogRepositoryImplTest {
     }
 
     @Test
+    fun ringingCall_autoExpiresAfterOneMinute() = runTest {
+        fakeCurrentTimeMillis = 100_000L
+        val log = CallLog("1", "+1234567890", CallType.INCOMING, true, 80_000L, 0L)
+        localDataSource.saveCallLogs(listOf(log))
+
+        repository.ringingCall.test {
+            assertEquals(log, awaitItem())
+            // The call is 20s old (100_000 - 80_000), so it should expire after 40s
+            assertNull(awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
     fun refreshCallLogs_retriesLoginOnUnauthorizedException() = runTest {
         val throwingRemote = object : com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource {
             var callCount = 0
