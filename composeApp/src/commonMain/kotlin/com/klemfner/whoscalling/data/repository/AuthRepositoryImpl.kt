@@ -33,33 +33,43 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun login(username: String, password: String, rememberMe: Boolean) {
-        val newToken = remoteDataSource.login(username, password)
-        val loginTime = currentTimeMillis()
-        this.token = newToken
-        this.username = username
-        _loggedInUser.value = LoggedInUser(username, loginTime)
+        try {
+            val newToken = remoteDataSource.login(username, password)
+            val loginTime = currentTimeMillis()
+            this.token = newToken
+            this.username = username
+            _loggedInUser.value = LoggedInUser(username, loginTime)
 
-        if (rememberMe) {
-            this.password = password
-            localDataSource.saveCredentials(
-                SavedCredentials(username, password, loginTime, newToken)
-            )
-        } else {
-            this.password = null
-            localDataSource.clearCredentials()
+            if (rememberMe) {
+                this.password = password
+                localDataSource.saveCredentials(
+                    SavedCredentials(username, password, loginTime, newToken)
+                )
+            } else {
+                this.password = null
+                localDataSource.clearCredentials()
+            }
+        } catch (e: IllegalStateException) {
+            logout()
+            throw e
         }
     }
 
     override suspend fun retryLogin() {
-        val u = username ?: throw IllegalStateException("No credentials to retry")
-        val p = password ?: throw IllegalStateException("No credentials to retry")
-        val newToken = remoteDataSource.login(u, p)
-        this.token = newToken
+        try {
+            val u = username ?: throw IllegalStateException("No credentials to retry")
+            val p = password ?: throw IllegalStateException("No credentials to retry")
+            val newToken = remoteDataSource.login(u, p)
+            this.token = newToken
 
-        localDataSource.savedCredentials.value?.let { saved ->
-            localDataSource.saveCredentials(
-                saved.copy(sessionKey = newToken)
-            )
+            localDataSource.savedCredentials.value?.let { saved ->
+                localDataSource.saveCredentials(
+                    saved.copy(sessionKey = newToken)
+                )
+            }
+        } catch (e: IllegalStateException) {
+            logout()
+            throw e
         }
     }
 
