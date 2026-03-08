@@ -38,6 +38,7 @@ fun RouterSection(
     routerIp: String,
     onRouterIpSave: (String) -> Unit,
     focusRequested: Boolean = false,
+    onFocusConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var draft by rememberSaveable(routerIp) { mutableStateOf(routerIp) }
@@ -46,6 +47,7 @@ fun RouterSection(
     LaunchedEffect(focusRequested) {
         if (focusRequested) {
             focusRequester.requestFocus()
+            onFocusConsumed()
         }
     }
 

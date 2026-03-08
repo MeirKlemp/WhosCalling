@@ -107,6 +107,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 routerIp = uiState.routerIp,
                 onRouterIpSave = viewModel::setRouterIp,
                 focusRequested = focusRouterIp,
+                onFocusConsumed = { focusRouterIp = false },
             )
 
             PhoneSection(
