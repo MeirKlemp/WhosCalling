@@ -67,27 +67,6 @@ fun ContactList(
 ) {
     val isTouchMode = LocalIsTouchMode.current
 
-    if (contacts.isEmpty()) {
-        Scaffold(
-            topBar = {
-                TopAppBar(title = { Text(stringResource(Res.string.contacts)) })
-            },
-            modifier = modifier,
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier.padding(paddingValues).fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    stringResource(Res.string.no_contacts),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-        return
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -122,11 +101,13 @@ fun ContactList(
                                 )
                             }
                         }
-                        IconButton(onClick = onDeleteModeEnter) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = stringResource(Res.string.delete_contact),
-                            )
+                        if (contacts.isNotEmpty()) {
+                            IconButton(onClick = onDeleteModeEnter) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = stringResource(Res.string.delete_contact),
+                                )
+                            }
                         }
                     }
                 },
@@ -153,66 +134,79 @@ fun ContactList(
         },
         modifier = modifier,
     ) { paddingValues ->
-        Column(Modifier.padding(paddingValues)) {
-            Text(
-                text = if (isDeleteMode) {
-                    stringResource(Res.string.selected_count, selectedForDeletion.size)
-                } else {
-                    stringResource(Res.string.contact_count, contacts.size)
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
-
-            val grouped = contacts.groupBy {
-                it.name.firstOrNull()?.uppercaseChar() ?: '#'
+        if (contacts.isEmpty()) {
+            Box(
+                modifier = Modifier.padding(paddingValues).fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    stringResource(Res.string.no_contacts),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
+        } else {
+            Column(Modifier.padding(paddingValues)) {
+                Text(
+                    text = if (isDeleteMode) {
+                        stringResource(Res.string.selected_count, selectedForDeletion.size)
+                    } else {
+                        stringResource(Res.string.contact_count, contacts.size)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
 
-            LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
-                grouped.forEach { (letter, contactsInGroup) ->
-                    stickyHeader(key = "header_$letter") {
-                        Text(
-                            text = letter.toString(),
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                        )
-                    }
-                    items(contactsInGroup, key = { it.id }) { contact ->
-                        ContactListItem(
-                            contact = contact,
-                            callCount = callCounts[contact.phoneNumber] ?: 0,
-                            isSelected = contact.id == selectedContactId,
-                            onClick = {
-                                if (isDeleteMode) {
-                                    onToggleSelection(contact.id)
-                                } else {
-                                    onContactClick(contact)
-                                }
-                            },
-                            defaultCountryIso = defaultCountryIso,
-                            isDeleteMode = isDeleteMode,
-                            isChecked = contact.id in selectedForDeletion,
-                        )
+                val grouped = contacts.groupBy {
+                    it.name.firstOrNull()?.uppercaseChar() ?: '#'
+                }
+
+                LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
+                    grouped.forEach { (letter, contactsInGroup) ->
+                        stickyHeader(key = "header_$letter") {
+                            Text(
+                                text = letter.toString(),
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                        }
+                        items(contactsInGroup, key = { it.id }) { contact ->
+                            ContactListItem(
+                                contact = contact,
+                                callCount = callCounts[contact.phoneNumber] ?: 0,
+                                isSelected = contact.id == selectedContactId,
+                                onClick = {
+                                    if (isDeleteMode) {
+                                        onToggleSelection(contact.id)
+                                    } else {
+                                        onContactClick(contact)
+                                    }
+                                },
+                                defaultCountryIso = defaultCountryIso,
+                                isDeleteMode = isDeleteMode,
+                                isChecked = contact.id in selectedForDeletion,
+                            )
+                        }
                     }
                 }
-            }
 
-            if (!isTouchMode && isDeleteMode) {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(onClick = onDeleteModeExit) {
-                        Text(stringResource(Res.string.cancel))
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Button(onClick = onDeleteClick) {
-                        Text(stringResource(Res.string.delete))
+                if (!isTouchMode && isDeleteMode) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        TextButton(onClick = onDeleteModeExit) {
+                            Text(stringResource(Res.string.cancel))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Button(onClick = onDeleteClick) {
+                            Text(stringResource(Res.string.delete))
+                        }
                     }
                 }
             }
