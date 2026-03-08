@@ -90,6 +90,22 @@ class AuthRepositoryImplTest {
     }
 
     @Test
+    fun loginIllegalStateExceptionLogsOut() = runTest {
+        repository.login("alice", "pass123", rememberMe = true)
+        assertNotNull(repository.loggedInUser.value)
+        assertNotNull(repository.getToken())
+
+        remoteDataSource.setResult(Result.failure(IllegalStateException("Token expired")))
+        assertFailsWith<IllegalStateException> {
+            repository.login("alice", "pass123", rememberMe = true)
+        }
+
+        assertNull(repository.getToken())
+        assertNull(repository.loggedInUser.value)
+        assertNull(localDataSource.savedCredentials.value)
+    }
+
+    @Test
     fun logoutClearsState() = runTest {
         repository.login("alice", "pass123", rememberMe = true)
 
@@ -116,19 +132,25 @@ class AuthRepositoryImplTest {
     }
 
     @Test
-    fun retryLoginWithoutRememberMeThrows() = runTest {
+    fun retryLoginWithoutRememberMeThrowsAndLogsOut() = runTest {
         repository.login("alice", "pass123", rememberMe = false)
 
         assertFailsWith<IllegalStateException> {
             repository.retryLogin()
         }
+
+        assertNull(repository.getToken())
+        assertNull(repository.loggedInUser.value)
     }
 
     @Test
-    fun retryLoginWithoutCredentialsThrows() = runTest {
+    fun retryLoginWithoutCredentialsThrowsAndLogsOut() = runTest {
         assertFailsWith<IllegalStateException> {
             repository.retryLogin()
         }
+
+        assertNull(repository.getToken())
+        assertNull(repository.loggedInUser.value)
     }
 
     @Test
@@ -139,6 +161,22 @@ class AuthRepositoryImplTest {
         repository.retryLogin()
 
         assertEquals("refreshed-token", localDataSource.savedCredentials.value?.sessionKey)
+    }
+
+    @Test
+    fun retryLoginIllegalStateExceptionLogsOut() = runTest {
+        repository.login("alice", "pass123", rememberMe = true)
+        assertNotNull(repository.loggedInUser.value)
+        assertNotNull(repository.getToken())
+
+        remoteDataSource.setResult(Result.failure(IllegalStateException("Token expired")))
+        assertFailsWith<IllegalStateException> {
+            repository.retryLogin()
+        }
+
+        assertNull(repository.getToken())
+        assertNull(repository.loggedInUser.value)
+        assertNull(localDataSource.savedCredentials.value)
     }
 
     @Test
