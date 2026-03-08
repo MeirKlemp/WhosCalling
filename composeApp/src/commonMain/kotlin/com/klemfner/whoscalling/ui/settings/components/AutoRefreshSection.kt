@@ -62,9 +62,12 @@ fun AutoRefreshSection(
 
     val presetOptions = if (isExpanded) expandedOptions else compactOptions
 
-    val isPresetInCurrentView = presetOptions.any { it.seconds == refreshRateSeconds }
-    val initialSelection = if (isPresetInCurrentView) refreshRateSeconds else CUSTOM_MARKER
-    val initialCustom = if (isPresetInCurrentView) "" else refreshRateSeconds.toString()
+    // Use all known preset seconds (from both views) so the initial state is the same
+    // regardless of which view is active when rememberSaveable re-initializes.
+    val allPresetSeconds = expandedOptions.mapTo(mutableSetOf()) { it.seconds }.apply { remove(CUSTOM_MARKER) }
+    val isKnownPreset = refreshRateSeconds in allPresetSeconds
+    val initialSelection = if (isKnownPreset) refreshRateSeconds else CUSTOM_MARKER
+    val initialCustom = if (isKnownPreset) "" else refreshRateSeconds.toString()
 
     var selectedOption by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialSelection) }
     var customSeconds by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialCustom) }
