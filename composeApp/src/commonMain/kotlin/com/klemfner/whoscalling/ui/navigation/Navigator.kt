@@ -17,6 +17,7 @@ sealed interface NavAction {
     data class AddContact(val phoneNumber: String) : NavAction
     data class ShowContact(val contactId: String) : NavAction
     data class ShowCallLog(val callLogId: String) : NavAction
+    data object FocusRouterIp : NavAction
 }
 
 class Navigator(initialTab: NavigationTab) {
