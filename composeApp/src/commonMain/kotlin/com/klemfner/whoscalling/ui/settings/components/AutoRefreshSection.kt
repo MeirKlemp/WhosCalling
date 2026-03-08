@@ -44,20 +44,28 @@ fun AutoRefreshSection(
     isExpanded: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    val presetOptions = buildList {
-        add(RefreshOption(stringResource(Res.string.auto_refresh_never), 0))
-        add(RefreshOption("5s", 5))
-        add(RefreshOption("30s", 30))
-        if (isExpanded) {
-            add(RefreshOption("1m", 60))
-            add(RefreshOption("5m", 300))
-        }
-        add(RefreshOption(stringResource(Res.string.auto_refresh_custom), CUSTOM_MARKER))
-    }
+    val compactOptions = listOf(
+        RefreshOption(stringResource(Res.string.auto_refresh_never), 0),
+        RefreshOption("5s", 5),
+        RefreshOption("30s", 30),
+        RefreshOption(stringResource(Res.string.auto_refresh_custom), CUSTOM_MARKER),
+    )
 
-    val isPreset = presetOptions.any { it.seconds == refreshRateSeconds }
-    val initialSelection = if (isPreset) refreshRateSeconds else CUSTOM_MARKER
-    val initialCustom = if (isPreset) "" else refreshRateSeconds.toString()
+    val expandedOptions = listOf(
+        RefreshOption(stringResource(Res.string.auto_refresh_never), 0),
+        RefreshOption("5s", 5),
+        RefreshOption("30s", 30),
+        RefreshOption("1m", 60),
+        RefreshOption("5m", 300),
+        RefreshOption(stringResource(Res.string.auto_refresh_custom), CUSTOM_MARKER),
+    )
+
+    val presetOptions = if (isExpanded) expandedOptions else compactOptions
+
+    // A value is a preset only if it appears in the current view's options (excluding Custom marker).
+    val isPresetInCurrentView = presetOptions.any { it.seconds == refreshRateSeconds }
+    val initialSelection = if (isPresetInCurrentView) refreshRateSeconds else CUSTOM_MARKER
+    val initialCustom = if (isPresetInCurrentView) "" else refreshRateSeconds.toString()
 
     var selectedOption by rememberSaveable(refreshRateSeconds, isExpanded) { mutableStateOf(initialSelection) }
     var customSeconds by rememberSaveable(refreshRateSeconds, isExpanded) { mutableStateOf(initialCustom) }

@@ -68,18 +68,13 @@ class CallLogRepositoryImpl(
     private fun startAutoRefresh(intervalMs: Long) {
         autoRefreshJob?.cancel()
         autoRefreshJob = scope.launch {
-            Logger.d(TAG, "Auto-refresh loop started with interval ${intervalMs}ms")
-            try {
-                while (true) {
-                    delay(intervalMs)
-                    try {
-                        localDataSource.replaceAllCallLogs(fetchWithAuth())
-                    } catch (e: Exception) {
-                        Logger.e(TAG, "Auto-refresh failed", e)
-                    }
+            while (true) {
+                delay(intervalMs)
+                try {
+                    localDataSource.replaceAllCallLogs(fetchWithAuth())
+                } catch (e: Exception) {
+                    Logger.e(TAG, "Auto-refresh failed", e)
                 }
-            } finally {
-                Logger.d(TAG, "Auto-refresh loop ended")
             }
         }
     }
