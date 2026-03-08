@@ -64,7 +64,7 @@ fun RingingCallBanner(
 ) {
     val ringingCall by callLogRepository.ringingCall.collectAsStateWithLifecycle(null)
     val contacts by contactRepository.contacts.collectAsStateWithLifecycle(emptyList())
-    val preferences by settingsRepository.preferences.collectAsStateWithLifecycle()
+    val countryIso = settingsRepository.preferences.collectAsStateWithLifecycle().value.countryIso
 
     val navigator = LocalNavigator.current
     val isExpanded = LocalIsExpanded.current
@@ -84,9 +84,9 @@ fun RingingCallBanner(
             val contact = remember(contacts, currentRingingCall.phoneNumber) {
                 contacts.find { it.phoneNumber == currentRingingCall.phoneNumber }
             }
-            val displayName = remember(contact, currentRingingCall.phoneNumber, preferences.countryIso) {
+            val displayName = remember(contact, currentRingingCall.phoneNumber, countryIso) {
                 contact?.name
-                    ?: formatPhoneForDisplay(currentRingingCall.phoneNumber, preferences.countryIso).toString()
+                    ?: formatPhoneForDisplay(currentRingingCall.phoneNumber, countryIso).toString()
             }
 
             RingingBannerContent(
