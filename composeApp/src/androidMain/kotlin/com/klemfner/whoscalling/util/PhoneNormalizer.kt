@@ -24,7 +24,7 @@ actual fun formatPhoneForDisplay(phoneNumber: String, defaultCountryIso: String)
             FormattedPhone(internationalPrefix = "+$countryCode", nationalNumber = national)
         }
     } catch (e: Exception) {
-        Logger.w("PhoneNormalizer", "Failed to format phone for display: $phoneNumber", e)
+        Logger.w("PhoneNormalizer", "Failed to format phone for display: ${maskPhoneNumber(phoneNumber)}", e)
         FormattedPhone(internationalPrefix = null, nationalNumber = phoneNumber)
     }
 }

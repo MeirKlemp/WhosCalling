@@ -5,6 +5,7 @@ import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.domain.model.InvalidPhoneNumberException
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.util.Logger
+import com.klemfner.whoscalling.util.maskPhoneNumber
 import com.klemfner.whoscalling.util.normalizePhoneNumber
 import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.ExperimentalUuidApi
@@ -27,7 +28,7 @@ class ContactRepositoryImpl(
         val normalized = try {
             normalizePhone(contact.phoneNumber)
         } catch (e: Exception) {
-            Logger.w(TAG, "Invalid phone number: ${contact.phoneNumber}", e)
+            Logger.w(TAG, "Invalid phone number: ${maskPhoneNumber(contact.phoneNumber)}", e)
             throw InvalidPhoneNumberException(contact.phoneNumber)
         }
         localDataSource.saveContact(contact.copy(id = id, phoneNumber = normalized))

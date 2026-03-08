@@ -9,6 +9,7 @@ import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.currentTimeMillis
+import com.klemfner.whoscalling.util.maskPhoneNumber
 import com.klemfner.whoscalling.util.normalizePhoneNumber
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.CoroutineScope
@@ -95,7 +96,7 @@ class CallLogRepositoryImpl(
             val normalized = try {
                 normalizePhone(log.phoneNumber)
             } catch (e: Exception) {
-                Logger.w(TAG, "Failed to normalize phone number: ${log.phoneNumber}", e)
+                Logger.w(TAG, "Failed to normalize phone number: ${maskPhoneNumber(log.phoneNumber)}", e)
                 log.phoneNumber
             }
             log.copy(
