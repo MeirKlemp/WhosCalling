@@ -2,6 +2,7 @@ package com.klemfner.whoscalling.data.repository
 
 import app.cash.turbine.test
 import com.klemfner.whoscalling.data.local.InMemorySettingsLocalDataSource
+import com.klemfner.whoscalling.domain.model.ThemeMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -179,6 +180,45 @@ class SettingsRepositoryImplTest {
 
             repository.resetToDefault()
             assertEquals(5L, awaitItem().refreshRateSeconds)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setThemeMode_updatesPreferences() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.preferences.test {
+            assertEquals(ThemeMode.SYSTEM, awaitItem().themeMode)
+
+            repository.setThemeMode(ThemeMode.DARK)
+            assertEquals(ThemeMode.DARK, awaitItem().themeMode)
+
+            repository.setThemeMode(ThemeMode.LIGHT)
+            assertEquals(ThemeMode.LIGHT, awaitItem().themeMode)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setThemeMode_updatesSyncCurrentThemeMode() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setThemeMode(ThemeMode.DARK)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(ThemeMode.DARK, repository.currentThemeMode)
+    }
+
+    @Test
+    fun resetToDefault_restoresThemeMode() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setThemeMode(ThemeMode.DARK)
+        testDispatcher.scheduler.advanceUntilIdle()
+        repository.preferences.test {
+            assertEquals(ThemeMode.DARK, awaitItem().themeMode)
+
+            repository.resetToDefault()
+            assertEquals(ThemeMode.SYSTEM, awaitItem().themeMode)
 
             cancelAndConsumeRemainingEvents()
         }

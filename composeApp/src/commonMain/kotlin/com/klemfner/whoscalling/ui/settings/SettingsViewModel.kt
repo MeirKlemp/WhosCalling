@@ -3,6 +3,7 @@ package com.klemfner.whoscalling.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.ThemeMode
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.Logger
@@ -43,6 +44,7 @@ class SettingsViewModel(
             touchMode = prefs.touchMode,
             routerIp = prefs.routerIp,
             refreshRateSeconds = prefs.refreshRateSeconds,
+            themeMode = prefs.themeMode,
             importResult = importResult,
         )
     }.stateIn(
@@ -54,6 +56,7 @@ class SettingsViewModel(
                 touchMode = currentTouchMode,
                 routerIp = currentRouterIp,
                 refreshRateSeconds = currentRefreshRateSeconds,
+                themeMode = currentThemeMode,
             )
         },
     )
@@ -104,6 +107,12 @@ class SettingsViewModel(
     fun setRefreshRateSeconds(seconds: Long) {
         viewModelScope.launch {
             settingsRepository.setRefreshRateSeconds(seconds)
+        }
+    }
+
+    fun setThemeMode(themeMode: ThemeMode) {
+        viewModelScope.launch {
+            settingsRepository.setThemeMode(themeMode)
         }
     }
 

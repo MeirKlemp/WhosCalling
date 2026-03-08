@@ -29,12 +29,13 @@ fun App(additionalModules: List<Module> = emptyList()) {
     KoinApplication(application = {
         modules(additionalModules + appModules + platformModule)
     }) {
-        AppTheme {
+        val settingsRepository: SettingsRepository = koinInject()
+        val preferences by settingsRepository.preferences.collectAsStateWithLifecycle()
+
+        AppTheme(themeMode = preferences.themeMode) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val isExpanded = maxWidth >= 600.dp
-                    val settingsRepository: SettingsRepository = koinInject()
-                    val preferences by settingsRepository.preferences.collectAsStateWithLifecycle()
                     val isTouchMode = preferences.touchMode
                     val scope = rememberCoroutineScope()
 

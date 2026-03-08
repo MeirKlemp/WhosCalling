@@ -8,6 +8,7 @@ data class UserPreferences(
     val touchMode: Boolean = true,
     val routerIp: String = "",
     val refreshRateSeconds: Long = DEFAULT_REFRESH_RATE_SECONDS,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 ) {
     companion object {
         const val DEFAULT_REFRESH_RATE_SECONDS = 5L
