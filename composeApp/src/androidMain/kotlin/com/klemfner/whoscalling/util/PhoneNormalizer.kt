@@ -6,7 +6,7 @@ actual fun normalizePhoneNumber(phoneNumber: String, defaultRegion: String?): St
     val phoneUtil = PhoneNumberUtil.getInstance()
     val parsed = phoneUtil.parse(phoneNumber, defaultRegion)
     if (!phoneUtil.isValidNumber(parsed)) {
-        throw IllegalArgumentException("Invalid phone number: $phoneNumber")
+        throw IllegalArgumentException("Invalid phone number: ${maskPhoneNumber(phoneNumber)}")
     }
     return phoneUtil.format(parsed, PhoneNumberUtil.PhoneNumberFormat.E164)
 }
