@@ -28,3 +28,4 @@ jobs:
         with:
           name: windows-exe
           path: composeApp/build/compose/binaries/main-release/exe/*.exe
+          retention-days: 3
