@@ -18,7 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,15 +62,12 @@ fun AutoRefreshSection(
 
     val presetOptions = if (isExpanded) expandedOptions else compactOptions
 
-    // Use all known preset seconds (from both views) so the initial state is the same
-    // regardless of which view is active when rememberSaveable re-initializes.
-    val allPresetSeconds = expandedOptions.mapTo(mutableSetOf()) { it.seconds }.apply { remove(CUSTOM_MARKER) }
-    val isKnownPreset = refreshRateSeconds in allPresetSeconds
+    val isKnownPreset = presetOptions.any { it.seconds == refreshRateSeconds }
     val initialSelection = if (isKnownPreset) refreshRateSeconds else CUSTOM_MARKER
     val initialCustom = if (isKnownPreset) "" else refreshRateSeconds.toString()
 
-    var selectedOption by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialSelection) }
-    var customSeconds by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialCustom) }
+    var selectedOption by remember(refreshRateSeconds) { mutableStateOf(initialSelection) }
+    var customSeconds by remember(refreshRateSeconds) { mutableStateOf(initialCustom) }
 
     // Whether the selected option is a visible preset button in the current layout.
     val isVisiblePreset = selectedOption != CUSTOM_MARKER && presetOptions.any { it.seconds == selectedOption }
