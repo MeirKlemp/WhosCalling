@@ -1,5 +1,6 @@
 package com.klemfner.whoscalling.ui.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,10 +20,12 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.contacts.ContactsScreen
+import com.klemfner.whoscalling.ui.ringing_banner.RingingCallBanner
 import com.klemfner.whoscalling.ui.settings.SettingsScreen
 import com.klemfner.whoscalling.ui.user.UserScreen
 import org.jetbrains.compose.resources.stringResource
@@ -43,7 +46,12 @@ fun AppNavigation() {
             selectedTab = navigator.navState.tab,
             onTabSelected = { navigator.navigateTo(it) },
         ) { modifier ->
-            NavigationContent(modifier = modifier)
+            Box(modifier) {
+                NavigationContent(modifier = Modifier.fillMaxSize())
+                RingingCallBanner(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
         }
     }
 }

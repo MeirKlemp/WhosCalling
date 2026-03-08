@@ -70,6 +70,12 @@ class CallLogsViewModel(
                 _uiState.update { it.copy(defaultCountryIso = prefs.countryIso) }
             }
         }
+
+        viewModelScope.launch {
+            callLogRepository.ringingCall.collect { ringingCall ->
+                _uiState.update { it.copy(ringingCallId = ringingCall?.id) }
+            }
+        }
     }
 
     fun refresh() {

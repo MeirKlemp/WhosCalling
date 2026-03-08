@@ -5,6 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface CallLogRepository {
     val callLogs: Flow<List<CallLog>>
-    val incomingCallLog: Flow<CallLog?>
+    val ringingCall: Flow<CallLog?>
     suspend fun refreshCallLogs()
 }

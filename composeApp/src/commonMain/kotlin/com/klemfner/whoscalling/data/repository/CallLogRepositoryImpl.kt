@@ -52,10 +52,14 @@ class CallLogRepositoryImpl(
         }
     }
 
-    override val incomingCallLog: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
+    override val ringingCall: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
+        val lastLog = logs.maxByOrNull { it.timestamp } ?: return@map null
         val oneMinuteAgo = currentTimeMillis() - 60_000L
-        logs.filter { it.type == CallType.INCOMING && it.timestamp >= oneMinuteAgo }
-            .minByOrNull { it.timestamp }
+        if (lastLog.type == CallType.INCOMING && lastLog.missed && lastLog.timestamp >= oneMinuteAgo) {
+            lastLog
+        } else {
+            null
+        }
     }
 
     override suspend fun refreshCallLogs() {

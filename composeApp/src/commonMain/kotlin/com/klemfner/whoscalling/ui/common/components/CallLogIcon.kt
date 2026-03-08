@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallMade
 import androidx.compose.material.icons.automirrored.filled.CallReceived
 import androidx.compose.material.icons.automirrored.filled.PhoneMissed
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -19,9 +20,17 @@ import whoscalling.composeapp.generated.resources.outgoing
 @Composable
 fun CallLogIcon(
     callLog: CallLog,
+    isRinging: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    if (callLog.missed) {
+    if (isRinging) {
+        Icon(
+            Icons.Default.Phone,
+            contentDescription = stringResource(Res.string.incoming),
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = modifier,
+        )
+    } else if (callLog.missed) {
         Icon(
             Icons.AutoMirrored.Filled.PhoneMissed,
             contentDescription = stringResource(Res.string.missed),

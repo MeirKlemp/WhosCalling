@@ -90,4 +90,6 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="incoming_ringing_call">Incoming Ringing</string>
+    <string name="dismiss">Dismiss</string>
 </resources>

@@ -56,6 +56,7 @@ import whoscalling.composeapp.generated.resources.call_logs_by_number_count
 import whoscalling.composeapp.generated.resources.details
 import whoscalling.composeapp.generated.resources.duration_label
 import whoscalling.composeapp.generated.resources.incoming_call
+import whoscalling.composeapp.generated.resources.incoming_ringing_call
 import whoscalling.composeapp.generated.resources.long_time_ago
 import whoscalling.composeapp.generated.resources.missed_incoming_call
 import whoscalling.composeapp.generated.resources.missed_outgoing_call
@@ -79,6 +80,7 @@ fun CallLogDetails(
     onShowContactClick: (String) -> Unit,
     onCallLogClick: (CallLog) -> Unit,
     defaultCountryIso: String = "",
+    isRinging: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -115,6 +117,7 @@ fun CallLogDetails(
                     formattedPhone = formattedPhone,
                     onAddContactClick = onAddContactClick,
                     onShowContactClick = onShowContactClick,
+                    isRinging = isRinging,
                 )
                 HorizontalDivider()
             }
@@ -157,6 +160,7 @@ private fun CallLogHeader(
     formattedPhone: FormattedPhone,
     onAddContactClick: (String) -> Unit,
     onShowContactClick: (String) -> Unit,
+    isRinging: Boolean = false,
 ) {
     Column(
         modifier = Modifier.padding(16.dp),
@@ -174,7 +178,7 @@ private fun CallLogHeader(
 
         HorizontalDivider()
 
-        CallTypeRow(callLog)
+        CallTypeRow(callLog, isRinging)
         TimeRow(callLog)
         DurationRow(callLog)
     }
@@ -240,14 +244,16 @@ private fun ShowContactButton(
 }
 
 @Composable
-private fun CallTypeRow(callLog: CallLog) {
+private fun CallTypeRow(callLog: CallLog, isRinging: Boolean = false) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        CallLogIcon(callLog, modifier = Modifier.size(20.dp))
+        CallLogIcon(callLog, isRinging = isRinging, modifier = Modifier.size(20.dp))
 
         val callTypeText = when {
+            isRinging ->
+                stringResource(Res.string.incoming_ringing_call)
             callLog.missed && callLog.type == CallType.INCOMING ->
                 stringResource(Res.string.missed_incoming_call)
             callLog.missed && callLog.type == CallType.OUTGOING ->

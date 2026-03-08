@@ -169,62 +169,76 @@ class CallLogRepositoryImplTest {
     }
 
     @Test
-    fun incomingCallLog_emitsNullWhenNoIncomingCalls() = runTest {
-        repository.incomingCallLog.test {
+    fun ringingCall_emitsNullWhenNoCallLogs() = runTest {
+        repository.ringingCall.test {
             assertNull(awaitItem())
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun incomingCallLog_emitsNullWhenIncomingCallIsOlderThanOneMinute() = runTest {
+    fun ringingCall_emitsNullWhenLastCallIsOlderThanOneMinute() = runTest {
         fakeCurrentTimeMillis = 200_000L
         val logs = listOf(
-            CallLog("1", "+1234567890", CallType.INCOMING, false, 100_000L, 0L)
+            CallLog("1", "+1234567890", CallType.INCOMING, true, 100_000L, 0L)
         )
         localDataSource.saveCallLogs(logs)
 
-        repository.incomingCallLog.test {
+        repository.ringingCall.test {
             assertNull(awaitItem())
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun incomingCallLog_emitsEarliestIncomingCallWithinLastMinute() = runTest {
+    fun ringingCall_emitsLastCallWhenIncomingMissedAndRecent() = runTest {
         fakeCurrentTimeMillis = 100_000L
-        val earlier = CallLog("1", "+1234567890", CallType.INCOMING, false, 50_000L, 0L)
-        val later = CallLog("2", "+0987654321", CallType.INCOMING, false, 80_000L, 0L)
+        val earlier = CallLog("1", "+1234567890", CallType.INCOMING, true, 50_000L, 0L)
+        val later = CallLog("2", "+0987654321", CallType.INCOMING, true, 80_000L, 0L)
         localDataSource.saveCallLogs(listOf(later, earlier))
 
-        repository.incomingCallLog.test {
-            assertEquals(earlier, awaitItem())
+        repository.ringingCall.test {
+            assertEquals(later, awaitItem())
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun incomingCallLog_ignoresOutgoingCalls() = runTest {
+    fun ringingCall_emitsNullWhenLastCallIsOutgoing() = runTest {
         fakeCurrentTimeMillis = 100_000L
         val logs = listOf(
             CallLog("1", "+1234567890", CallType.OUTGOING, false, 80_000L, 60L)
         )
         localDataSource.saveCallLogs(logs)
 
-        repository.incomingCallLog.test {
+        repository.ringingCall.test {
             assertNull(awaitItem())
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun incomingCallLog_updatesWhenCallLogsChange() = runTest {
+    fun ringingCall_emitsNullWhenLastCallIsNotMissed() = runTest {
+        fakeCurrentTimeMillis = 100_000L
+        val logs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 80_000L, 60L)
+        )
+        localDataSource.saveCallLogs(logs)
+
+        repository.ringingCall.test {
+            assertNull(awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun ringingCall_updatesWhenCallLogsChange() = runTest {
         fakeCurrentTimeMillis = 100_000L
 
-        repository.incomingCallLog.test {
+        repository.ringingCall.test {
             assertNull(awaitItem())
 
-            val log = CallLog("1", "+1234567890", CallType.INCOMING, false, 80_000L, 0L)
+            val log = CallLog("1", "+1234567890", CallType.INCOMING, true, 80_000L, 0L)
             localDataSource.saveCallLogs(listOf(log))
             assertEquals(log, awaitItem())
 
