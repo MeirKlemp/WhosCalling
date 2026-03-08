@@ -62,13 +62,23 @@ fun AutoRefreshSection(
 
     val presetOptions = if (isExpanded) expandedOptions else compactOptions
 
-    // A value is a preset only if it appears in the current view's options (excluding Custom marker).
     val isPresetInCurrentView = presetOptions.any { it.seconds == refreshRateSeconds }
     val initialSelection = if (isPresetInCurrentView) refreshRateSeconds else CUSTOM_MARKER
     val initialCustom = if (isPresetInCurrentView) "" else refreshRateSeconds.toString()
 
-    var selectedOption by rememberSaveable(refreshRateSeconds, isExpanded) { mutableStateOf(initialSelection) }
-    var customSeconds by rememberSaveable(refreshRateSeconds, isExpanded) { mutableStateOf(initialCustom) }
+    var selectedOption by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialSelection) }
+    var customSeconds by rememberSaveable(refreshRateSeconds) { mutableStateOf(initialCustom) }
+
+    // Whether the selected option is a visible preset button in the current layout.
+    val isVisiblePreset = selectedOption != CUSTOM_MARKER && presetOptions.any { it.seconds == selectedOption }
+    // Which button to highlight — falls back to Custom for expanded-only presets in compact view.
+    val activeButtonValue = if (isVisiblePreset) selectedOption else CUSTOM_MARKER
+    // Custom text: use the expanded-only preset value when it's not a visible button.
+    val effectiveCustomText = if (!isVisiblePreset && selectedOption != CUSTOM_MARKER) {
+        selectedOption.toString()
+    } else {
+        customSeconds
+    }
 
     val draftSeconds = if (selectedOption == CUSTOM_MARKER) {
         customSeconds.toLongOrNull() ?: 0L
@@ -76,13 +86,13 @@ fun AutoRefreshSection(
         selectedOption
     }
 
-    val isCustomValid = selectedOption != CUSTOM_MARKER || run {
-        val value = customSeconds.toLongOrNull()
+    val isCustomValid = activeButtonValue != CUSTOM_MARKER || run {
+        val value = effectiveCustomText.toLongOrNull()
         value != null && value > 0
     }
 
     val hasChanges = draftSeconds != refreshRateSeconds
-    val canSave = hasChanges && (selectedOption != CUSTOM_MARKER || isCustomValid)
+    val canSave = hasChanges && (activeButtonValue != CUSTOM_MARKER || isCustomValid)
 
     Text(
         text = stringResource(Res.string.auto_refresh),
@@ -103,8 +113,13 @@ fun AutoRefreshSection(
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             presetOptions.forEachIndexed { index, option ->
                 SegmentedButton(
-                    selected = selectedOption == option.seconds,
-                    onClick = { selectedOption = option.seconds },
+                    selected = activeButtonValue == option.seconds,
+                    onClick = {
+                        if (option.seconds == CUSTOM_MARKER && !isVisiblePreset && selectedOption != CUSTOM_MARKER) {
+                            customSeconds = selectedOption.toString()
+                        }
+                        selectedOption = option.seconds
+                    },
                     shape = SegmentedButtonDefaults.itemShape(
                         index = index,
                         count = presetOptions.size,
@@ -115,7 +130,7 @@ fun AutoRefreshSection(
             }
         }
 
-        if (selectedOption == CUSTOM_MARKER) {
+        if (activeButtonValue == CUSTOM_MARKER) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -124,16 +139,19 @@ fun AutoRefreshSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedTextField(
-                    value = customSeconds,
+                    value = effectiveCustomText,
                     onValueChange = { value ->
                         customSeconds = value.filter { it.isDigit() }
+                        if (selectedOption != CUSTOM_MARKER) {
+                            selectedOption = CUSTOM_MARKER
+                        }
                     },
                     label = { Text(stringResource(Res.string.auto_refresh_seconds_input)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.width(120.dp),
                 )
-                val customValue = customSeconds.toLongOrNull()
+                val customValue = effectiveCustomText.toLongOrNull()
                 if (customValue != null && customValue > 0) {
                     Text(
                         text = formatDuration(customValue),
