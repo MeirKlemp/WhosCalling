@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -31,6 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.ui.common.components.CountryCodeDialog
@@ -58,13 +62,14 @@ fun ContactForm(
     onCountryIsoChange: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
     errorMessage: String? = null,
     onErrorDismiss: () -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     val isTouchMode = LocalIsTouchMode.current
     val snackbarHostState = remember { SnackbarHostState() }
     var showCountryDialog by remember { mutableStateOf(false) }
+    val phoneFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(errorMessage) {
         if (errorMessage != null) {
@@ -125,6 +130,15 @@ fun ContactForm(
                 label = { Text(stringResource(Res.string.name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction =
+                        if (formState.phoneNumber.isEmpty()) ImeAction.Next
+                        else ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { phoneFocusRequester.requestFocus() },
+                    onDone = { onSave() }
+                ),
             )
             Spacer(Modifier.height(16.dp))
             Row(
@@ -140,9 +154,13 @@ fun ContactForm(
                     value = formState.phoneNumber,
                     onValueChange = onPhoneChange,
                     label = { Text(stringResource(Res.string.phone_number)) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).focusRequester(phoneFocusRequester),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Phone,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { onSave() }),
                 )
             }
             Spacer(Modifier.height(16.dp))
@@ -152,6 +170,11 @@ fun ContactForm(
                 label = { Text(stringResource(Res.string.email)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = { onSave() }),
             )
 
             if (!isTouchMode) {

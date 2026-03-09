@@ -62,8 +62,8 @@ fun ContactList(
     onDeleteClick: () -> Unit,
     isDeleteMode: Boolean,
     selectedForDeletion: Set<String>,
-    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
+    defaultCountryIso: String = "",
 ) {
     val isTouchMode = LocalIsTouchMode.current
 
@@ -101,13 +101,11 @@ fun ContactList(
                                 )
                             }
                         }
-                        if (contacts.isNotEmpty()) {
-                            IconButton(onClick = onDeleteModeEnter) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = stringResource(Res.string.delete_contact),
-                                )
-                            }
+                        IconButton(onClick = onDeleteModeEnter, enabled = contacts.isNotEmpty()) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(Res.string.delete_contact),
+                            )
                         }
                     }
                 },
