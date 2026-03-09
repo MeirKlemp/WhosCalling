@@ -1,4 +1,4 @@
-CREATE TABLE ContactEntity (
+CREATE TABLE IF NOT EXISTS ContactEntity (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     phoneNumber TEXT NOT NULL,

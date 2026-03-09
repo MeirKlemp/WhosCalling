@@ -1,6 +1,7 @@
 package com.klemfner.whoscalling.data.local
 
 import com.klemfner.whoscalling.domain.model.SavedCredentials
+import com.klemfner.whoscalling.util.configDirPath
 import com.sun.jna.platform.win32.Crypt32Util
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -8,10 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
 class DpapiAuthLocalDataSource(
-    appDataDir: File = File(
-        System.getenv("APPDATA") ?: System.getProperty("user.home"),
-        "WhosCalling",
-    ),
+    appDataDir: File = File(configDirPath),
 ) : AuthLocalDataSource {
 
     private val credFile = File(appDataDir, CRED_FILE_NAME)

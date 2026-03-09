@@ -1,4 +1,4 @@
-CREATE TABLE CallLogEntity (
+CREATE TABLE IF NOT EXISTS CallLogEntity (
     id TEXT NOT NULL PRIMARY KEY,
     phoneNumber TEXT NOT NULL,
     type TEXT NOT NULL,
