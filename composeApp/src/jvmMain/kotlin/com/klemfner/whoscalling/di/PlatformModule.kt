@@ -10,6 +10,8 @@ import com.klemfner.whoscalling.data.local.SecretToolAuthLocalDataSource
 import com.klemfner.whoscalling.data.local.SettingsLocalDataSource
 import com.klemfner.whoscalling.data.repository.SettingsRepositoryImpl
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.util.configDirPath
+import com.klemfner.whoscalling.util.dataDirPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,7 +19,7 @@ import org.koin.dsl.module
 import java.io.File
 
 actual val platformModule = module {
-    single<DatabaseDriverFactory> { JvmDatabaseDriverFactory() }
+    single<DatabaseDriverFactory> { JvmDatabaseDriverFactory(dbPath = desktopDatabasePath()) }
     single<AuthLocalDataSource> { createDesktopAuthLocalDataSource() }
     single<SettingsLocalDataSource> {
         FileSettingsLocalDataSource(settingsFile = desktopSettingsFile())
@@ -39,17 +41,6 @@ private fun createDesktopAuthLocalDataSource(): AuthLocalDataSource {
     }
 }
 
-private fun desktopSettingsFile(): File {
-    val os = System.getProperty("os.name").lowercase()
-    val appDir = when {
-        os.contains("win") -> File(
-            System.getenv("APPDATA") ?: System.getProperty("user.home"),
-            "WhosCalling",
-        )
-        else -> File(
-            System.getenv("XDG_CONFIG_HOME") ?: "${System.getProperty("user.home")}/.config",
-            "WhosCalling",
-        )
-    }
-    return File(appDir, "settings.json")
-}
+private fun desktopDatabasePath() = File(dataDirPath, "whoscalling.db").path
+
+private fun desktopSettingsFile() = File(configDirPath, "settings.json")
