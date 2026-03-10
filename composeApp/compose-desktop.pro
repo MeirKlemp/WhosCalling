@@ -2,7 +2,6 @@
 -keep class org.sqlite.JDBC { *; }
 -keep interface org.sqlite.** { *; }
 -keepclassmembers class org.sqlite.** { *; }
--keepresources  META-INF/services/java.sql.Driver
 
 # kotlinx-datetime
 -dontwarn kotlinx.datetime.**
