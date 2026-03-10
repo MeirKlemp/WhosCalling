@@ -1,3 +1,7 @@
+# Sqldelight & JDBC
+-dontwarn org.sqlite.**
+-keep class org.sqlite.** { *; }
+
 # kotlinx-datetime
 -dontwarn kotlinx.datetime.**
 -keep class kotlinx.datetime.** { *; }
