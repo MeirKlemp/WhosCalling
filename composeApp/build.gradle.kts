@@ -115,9 +115,6 @@ compose.desktop {
             packageName = "com.klemfner.whoscalling"
             packageVersion = "1.0.0"
             modules("java.sql", "java.naming")
-            windows {
-                console = true
-            }
         }
 
         buildTypes.release.proguard {
