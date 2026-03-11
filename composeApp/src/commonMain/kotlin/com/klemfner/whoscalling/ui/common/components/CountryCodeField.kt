@@ -12,14 +12,19 @@ fun CountryCodeField(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    showCountryName: Boolean = false,
 ) {
     val selectedCountry = Country.entries.find { it.isoCode == selectedCountryIso }
         ?: Country.UnitedStates
+    val displayOption =
+        if (showCountryName) CountryDisplayOption.DIAL_CODE_AND_NAME
+        else CountryDisplayOption.DIAL_CODE
+
     CountryPickerField(
         modifier = modifier,
         enabled = enabled,
         selectedCountry = selectedCountry,
-        displayOption = CountryDisplayOption.DIAL_CODE,
+        displayOption = displayOption,
         showIcon = true,
         onClick = onClick,
     )

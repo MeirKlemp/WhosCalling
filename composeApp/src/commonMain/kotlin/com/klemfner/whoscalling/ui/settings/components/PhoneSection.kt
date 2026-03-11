@@ -44,6 +44,7 @@ fun PhoneSection(
     HorizontalDivider()
     CountryCodeField(
         selectedCountryIso = countryIso,
+        showCountryName = true,
         onClick = { showDialog = true },
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
     )
