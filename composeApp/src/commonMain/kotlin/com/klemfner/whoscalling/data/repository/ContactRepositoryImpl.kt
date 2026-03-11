@@ -29,7 +29,7 @@ class ContactRepositoryImpl(
             normalizePhone(contact.phoneNumber)
         } catch (e: Exception) {
             Logger.w(TAG, "Invalid phone number: ${maskPhoneNumber(contact.phoneNumber)}", e)
-            throw InvalidPhoneNumberException(contact.phoneNumber)
+            throw InvalidPhoneNumberException(contact.phoneNumber, e)
         }
         localDataSource.saveContact(contact.copy(id = id, phoneNumber = normalized))
     }

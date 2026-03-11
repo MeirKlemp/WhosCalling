@@ -41,13 +41,18 @@ import com.klemfner.whoscalling.ui.common.components.CountryCodeDialog
 import com.klemfner.whoscalling.ui.common.components.CountryCodeField
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.contacts.ContactFormState
+import com.klemfner.whoscalling.ui.contacts.ContactsError
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 import whoscalling.composeapp.generated.resources.cancel
 import whoscalling.composeapp.generated.resources.close
+import whoscalling.composeapp.generated.resources.contacts_error_generic_form_error
+import whoscalling.composeapp.generated.resources.contacts_error_invalid_phone_number
 import whoscalling.composeapp.generated.resources.edit_contact
 import whoscalling.composeapp.generated.resources.email
+import whoscalling.composeapp.generated.resources.login_error_blank_credentials
+import whoscalling.composeapp.generated.resources.login_error_generic
 import whoscalling.composeapp.generated.resources.name
 import whoscalling.composeapp.generated.resources.phone_number
 import whoscalling.composeapp.generated.resources.save
@@ -63,7 +68,7 @@ fun ContactForm(
     onSave: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
-    errorMessage: String? = null,
+    error: ContactsError.FormError? = null,
     onErrorDismiss: () -> Unit = {},
 ) {
     val isTouchMode = LocalIsTouchMode.current
@@ -71,8 +76,15 @@ fun ContactForm(
     var showCountryDialog by remember { mutableStateOf(false) }
     val phoneFocusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(errorMessage) {
-        if (errorMessage != null) {
+    val invalidPhoneNumberErrorMessage = stringResource(Res.string.contacts_error_invalid_phone_number)
+    val genericErrorMessage = stringResource(Res.string.contacts_error_generic_form_error)
+
+    LaunchedEffect(error) {
+        if (error != null) {
+            val errorMessage = when (error) {
+                is ContactsError.InvalidPhoneNumber -> invalidPhoneNumberErrorMessage
+                is ContactsError.GenericFormError -> genericErrorMessage
+            }
             snackbarHostState.showSnackbar(errorMessage)
             onErrorDismiss()
         }
