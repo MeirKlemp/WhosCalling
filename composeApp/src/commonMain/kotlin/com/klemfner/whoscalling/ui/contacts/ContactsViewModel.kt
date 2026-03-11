@@ -3,13 +3,14 @@ package com.klemfner.whoscalling.ui.contacts
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.InvalidPhoneNumberException
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import com.klemfner.whoscalling.util.getCountryIsoFromPhoneNumber
 import com.klemfner.whoscalling.util.maskPhoneNumber
-import com.klemfner.whoscalling.util.normalizePhoneNumber
+import com.klemfner.whoscalling.util.normalizePhoneNumber as normalizePhoneNumberImpl
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.text.ifEmpty
 
 class ContactsViewModel(
     private val contactRepository: ContactRepository,
@@ -160,7 +162,7 @@ class ContactsViewModel(
     }
 
     fun clearError() {
-        _uiState.update { it.copy(errorMessage = null) }
+        _uiState.update { it.copy(error = null) }
     }
 
     fun enterDeleteMode() {
@@ -252,7 +254,7 @@ class ContactsViewModel(
                     it.copy(
                         showDeleteDialog = false,
                         deleteDialogContactName = null,
-                        errorMessage = e.message,
+                        error = ContactsError.GenericDeleteError,
                     )
                 }
             }
@@ -293,8 +295,19 @@ class ContactsViewModel(
                 }
             } catch (e: Exception) {
                 Logger.e(TAG, "saveContact failed: name=${form.name}, phone=${maskPhoneNumber(form.phoneNumber)}, iso=${form.selectedCountryIso}", e)
-                _uiState.update { it.copy(errorMessage = e.message) }
+                val error =
+                    if (e is InvalidPhoneNumberException) ContactsError.InvalidPhoneNumber
+                    else ContactsError.GenericFormError
+                _uiState.update { it.copy(error = error) }
             }
+        }
+    }
+
+    private fun normalizePhoneNumber(phoneNumber: String, defaultRegion: String? = null): String {
+        return try {
+            normalizePhoneNumberImpl(phoneNumber, defaultRegion)
+        } catch (e: Exception) {
+            throw InvalidPhoneNumberException(phoneNumber, cause = e)
         }
     }
 }

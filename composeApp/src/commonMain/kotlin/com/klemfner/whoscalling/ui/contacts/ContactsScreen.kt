@@ -187,7 +187,7 @@ private fun CompactContactsLayout(
                 onCountryIsoChange = viewModel::updateFormCountryIso,
                 onSave = viewModel::saveContact,
                 onCancel = viewModel::goBack,
-                errorMessage = uiState.errorMessage,
+                error = uiState.error as? ContactsError.FormError,
                 onErrorDismiss = viewModel::clearError,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -276,7 +276,7 @@ private fun ExpandedContactsLayout(
                     onCountryIsoChange = viewModel::updateFormCountryIso,
                     onSave = viewModel::saveContact,
                     onCancel = viewModel::goBack,
-                    errorMessage = uiState.errorMessage,
+                    error = uiState.error as? ContactsError.FormError,
                     onErrorDismiss = viewModel::clearError,
                     modifier = Modifier.fillMaxSize(),
                 )

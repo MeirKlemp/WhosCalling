@@ -73,6 +73,9 @@
     <string name="selected_count">%1$d selected</string>
     <string name="confirm_delete_single">Are you sure you want to delete %1$s?</string>
     <string name="confirm_delete_multiple">Are you sure you want to delete %1$d contacts?</string>
+    <string name="contacts_error_generic_delete_error">Failed deleting selected contact(s)</string>
+    <string name="contacts_error_generic_form_error">Failed saving the contact</string>
+    <string name="contacts_error_invalid_phone_number">Please enter a valid phone number</string>
     <string name="router_configuration">Router Configuration</string>
     <string name="router_ip">Router IP</string>
     <string name="not_configured">Not configured</string>

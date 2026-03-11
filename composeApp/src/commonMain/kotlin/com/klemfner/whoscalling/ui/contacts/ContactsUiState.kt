@@ -10,12 +10,12 @@ data class ContactsUiState(
     val contactCallLogs: List<CallLog> = emptyList(),
     val currentPane: ContactsPane = ContactsPane.LIST,
     val formState: ContactFormState = ContactFormState(),
-    val errorMessage: String? = null,
     val defaultCountryIso: String = "",
     val isDeleteMode: Boolean = false,
     val selectedForDeletion: Set<String> = emptySet(),
     val showDeleteDialog: Boolean = false,
     val deleteDialogContactName: String? = null,
+    val error: ContactsError? = null,
 )
 
 enum class ContactsPane {
