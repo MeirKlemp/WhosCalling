@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
@@ -68,7 +69,7 @@ private fun ExpandedLayout(
     content: @Composable (Modifier) -> Unit,
 ) {
     Row(Modifier.fillMaxSize().safeContentPadding()) {
-        NavigationRail {
+        NavigationRail(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
             NavigationRailItem(
                 selected = selectedTab == NavigationTab.USER,
                 onClick = { onTabSelected(NavigationTab.USER) },

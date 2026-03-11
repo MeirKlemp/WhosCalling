@@ -65,8 +65,8 @@ fun ContactDetails(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onCallLogClick: (CallLog) -> Unit,
-    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
+    defaultCountryIso: String = "",
 ) {
     val isTouchMode = LocalIsTouchMode.current
     Scaffold(

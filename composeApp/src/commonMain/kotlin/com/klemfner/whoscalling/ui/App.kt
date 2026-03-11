@@ -14,6 +14,7 @@ import com.klemfner.whoscalling.di.appModules
 import com.klemfner.whoscalling.di.platformModule
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.ui.common.theme.AppTheme
+import com.klemfner.whoscalling.ui.common.theme.COMPACT_MAX_WIDTH
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.LocalTouchModeState
@@ -35,7 +36,7 @@ fun App(additionalModules: List<Module> = emptyList()) {
         AppTheme(themeMode = preferences.themeMode) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                    val isExpanded = maxWidth >= 600.dp
+                    val isExpanded = maxWidth > COMPACT_MAX_WIDTH
                     val isTouchMode = preferences.touchMode
                     val scope = rememberCoroutineScope()
 
