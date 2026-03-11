@@ -1,8 +1,12 @@
 package com.klemfner.whoscalling.ui.settings
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,8 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.klemfner.whoscalling.ui.common.theme.COMPACT_MAX_WIDTH
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.navigation.LocalNavigator
 import com.klemfner.whoscalling.ui.navigation.NavAction
@@ -91,69 +97,75 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text(stringResource(Res.string.settings)) })
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = modifier,
-    ) { paddingValues ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            RouterSection(
-                routerIp = uiState.routerIp,
-                onRouterIpSave = viewModel::setRouterIp,
-                focusRequested = focusRouterIp,
-                onFocusConsumed = { focusRouterIp = false },
-            )
+    Box(modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(title = { Text(stringResource(Res.string.settings)) })
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            modifier = Modifier
+                .fillMaxHeight()
+                .widthIn(max = COMPACT_MAX_WIDTH)
+                .align(Alignment.Center),
+        ) { paddingValues ->
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                RouterSection(
+                    routerIp = uiState.routerIp,
+                    onRouterIpSave = viewModel::setRouterIp,
+                    focusRequested = focusRouterIp,
+                    onFocusConsumed = { focusRouterIp = false },
+                )
 
-            PhoneSection(
-                countryIso = uiState.countryIso,
-                onCountryIsoChange = viewModel::setCountryIso,
-            )
+                PhoneSection(
+                    countryIso = uiState.countryIso,
+                    onCountryIsoChange = viewModel::setCountryIso,
+                )
 
-            AutoRefreshSection(
-                refreshRateSeconds = uiState.refreshRateSeconds,
-                onRefreshRateSave = viewModel::setRefreshRateSeconds,
-                isExpanded = isExpanded,
-            )
+                AutoRefreshSection(
+                    refreshRateSeconds = uiState.refreshRateSeconds,
+                    onRefreshRateSave = viewModel::setRefreshRateSeconds,
+                    isExpanded = isExpanded,
+                )
 
-            DisplaySection(
-                themeMode = uiState.themeMode,
-                onThemeModeChange = viewModel::setThemeMode,
-                isTouchMode = uiState.touchMode,
-                onTouchModeChange = viewModel::setTouchMode,
-            )
+                DisplaySection(
+                    themeMode = uiState.themeMode,
+                    onThemeModeChange = viewModel::setThemeMode,
+                    isTouchMode = uiState.touchMode,
+                    onTouchModeChange = viewModel::setTouchMode,
+                )
 
-            ContactsSection(
-                contactCount = uiState.contactCount,
-                onExport = {
-                    scope.launch {
-                        val exportData = viewModel.exportContacts()
-                        val saved = fileSaver("contacts.json", exportData.json)
-                        if (saved) {
-                            val message = getString(Res.string.contacts_exported, exportData.count)
-                            snackbarHostState.showSnackbar(message)
+                ContactsSection(
+                    contactCount = uiState.contactCount,
+                    onExport = {
+                        scope.launch {
+                            val exportData = viewModel.exportContacts()
+                            val saved = fileSaver("contacts.json", exportData.json)
+                            if (saved) {
+                                val message =
+                                    getString(Res.string.contacts_exported, exportData.count)
+                                snackbarHostState.showSnackbar(message)
+                            }
                         }
-                    }
-                },
-                onImport = {
-                    scope.launch {
-                        val json = fileLoader() ?: return@launch
-                        viewModel.importContacts(json)
-                    }
-                },
-            )
+                    },
+                    onImport = {
+                        scope.launch {
+                            val json = fileLoader() ?: return@launch
+                            viewModel.importContacts(json)
+                        }
+                    },
+                )
 
-            DebugSection(
-                onShowDebugLogs = { showDebugLogs = true },
-            )
+                DebugSection(
+                    onShowDebugLogs = { showDebugLogs = true },
+                )
 
-            ResetSection(onResetToDefault = viewModel::resetToDefault)
+                ResetSection(onResetToDefault = viewModel::resetToDefault)
+            }
         }
     }
 }
