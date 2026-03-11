@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -41,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
@@ -121,7 +121,7 @@ private fun RingingBannerContent(
         contentAlignment = if (isExpanded) Alignment.CenterEnd else Alignment.Center,
     ) {
         val bannerModifier = if (isExpanded) {
-            Modifier.widthIn(max = maxWidth / 3)
+            Modifier.widthIn(min = maxWidth / 3)
         } else {
             Modifier.fillMaxWidth()
         }
@@ -135,20 +135,23 @@ private fun RingingBannerContent(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
             ) {
-                RingingPhoneIcon()
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RingingPhoneIcon()
 
-                Spacer(Modifier.width(12.dp))
+                    Spacer(Modifier.width(12.dp))
 
-                Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                    Text(
+                        text = displayName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        maxLines = 1,
+                    )
+
+                    Spacer(Modifier.width(12.dp))
+                }
 
                 IconButton(onClick = onDismiss) {
                     Icon(
@@ -175,7 +178,7 @@ private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
         ),
     )
 
-    val wave1Alpha by infiniteTransition.animateFloat(
+    val waveAlpha by infiniteTransition.animateFloat(
         initialValue = 0.6f,
         targetValue = 0f,
         animationSpec = infiniteRepeatable(
@@ -184,29 +187,11 @@ private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
         ),
     )
 
-    val wave1Scale by infiniteTransition.animateFloat(
+    val waveScale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 2f,
         animationSpec = infiniteRepeatable(
             animation = tween(900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-    )
-
-    val wave2Alpha by infiniteTransition.animateFloat(
-        initialValue = 0.6f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(900, easing = FastOutSlowInEasing, delayMillis = 450),
-            repeatMode = RepeatMode.Restart,
-        ),
-    )
-
-    val wave2Scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(900, easing = FastOutSlowInEasing, delayMillis = 450),
             repeatMode = RepeatMode.Restart,
         ),
     )
@@ -219,22 +204,9 @@ private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
             Modifier
                 .size(24.dp)
                 .graphicsLayer(
-                    scaleX = wave1Scale,
-                    scaleY = wave1Scale,
-                    alpha = wave1Alpha,
-                )
-                .background(
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                    CircleShape,
-                )
-        )
-        Box(
-            Modifier
-                .size(24.dp)
-                .graphicsLayer(
-                    scaleX = wave2Scale,
-                    scaleY = wave2Scale,
-                    alpha = wave2Alpha,
+                    scaleX = waveScale,
+                    scaleY = waveScale,
+                    alpha = waveAlpha,
                 )
                 .background(
                     MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),

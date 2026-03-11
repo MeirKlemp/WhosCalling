@@ -13,6 +13,7 @@ import com.klemfner.whoscalling.util.maskPhoneNumber
 import com.klemfner.whoscalling.util.normalizePhoneNumber
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -53,6 +54,7 @@ class CallLogRepositoryImpl(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val ringingCall: Flow<CallLog?> = localDataSource.callLogs.transformLatest { logs ->
         val lastLog = logs.maxByOrNull { it.timestamp }
         if (lastLog != null && lastLog.type == CallType.INCOMING && lastLog.missed) {
