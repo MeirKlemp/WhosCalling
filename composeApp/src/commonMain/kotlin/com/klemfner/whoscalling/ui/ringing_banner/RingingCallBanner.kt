@@ -17,10 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -80,9 +77,7 @@ fun RingingCallBanner(
         visible = showBanner,
         enter = slideInVertically { it } + fadeIn(),
         exit = slideOutVertically { it } + fadeOut(),
-        modifier = modifier.padding(
-            bottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding(),
-        ),
+        modifier = modifier,
     ) {
         if (currentRingingCall != null) {
             val contact = remember(contacts, currentRingingCall.phoneNumber) {
