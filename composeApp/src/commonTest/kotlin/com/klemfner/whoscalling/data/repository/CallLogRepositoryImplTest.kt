@@ -218,6 +218,20 @@ class CallLogRepositoryImplTest {
     }
 
     @Test
+    fun ringingCall_emitsNullWhenLastCallIsUnknown() = runTest {
+        fakeCurrentTimeMillis = 100_000L
+        val logs = listOf(
+            CallLog("1", "+1234567890", CallType.UNKNOWN, false, 80_000L, 60L)
+        )
+        localDataSource.saveCallLogs(logs)
+
+        repository.ringingCall.test {
+            assertNull(awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
     fun ringingCall_emitsNullWhenLastCallIsNotMissed() = runTest {
         fakeCurrentTimeMillis = 100_000L
         val logs = listOf(

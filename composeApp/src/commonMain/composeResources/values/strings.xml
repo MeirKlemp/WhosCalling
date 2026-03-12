@@ -21,6 +21,7 @@
     <string name="long_time_ago">Long Time Ago</string>
     <string name="incoming">Incoming</string>
     <string name="outgoing">Outgoing</string>
+    <string name="unknown">Unknown</string>
     <string name="missed">Missed</string>
     <string name="no_contacts">No contacts</string>
     <string name="no_call_logs">No call logs</string>
@@ -31,6 +32,7 @@
     <string name="refresh">Refresh</string>
     <string name="incoming_call">Incoming</string>
     <string name="outgoing_call">Outgoing</string>
+    <string name="unknown_call">Unknown Incoming/Outgoing</string>
     <string name="missed_incoming_call">Missed Incoming</string>
     <string name="missed_outgoing_call">Missed Outgoing</string>
     <string name="duration_label">Duration</string>

@@ -67,6 +67,7 @@ import whoscalling.composeapp.generated.resources.this_month
 import whoscalling.composeapp.generated.resources.this_week
 import whoscalling.composeapp.generated.resources.time_label
 import whoscalling.composeapp.generated.resources.today
+import whoscalling.composeapp.generated.resources.unknown_call
 import whoscalling.composeapp.generated.resources.yesterday
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -79,9 +80,9 @@ fun CallLogDetails(
     onAddContactClick: (String) -> Unit,
     onShowContactClick: (String) -> Unit,
     onCallLogClick: (CallLog) -> Unit,
+    modifier: Modifier = Modifier,
     defaultCountryIso: String = "",
     isRinging: Boolean = false,
-    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         topBar = {
@@ -167,7 +168,7 @@ private fun CallLogHeader(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         SelectionContainer {
-            ContactInfo(callLog = callLog, contact = contact, formattedPhone = formattedPhone)
+            ContactInfo(contact = contact, formattedPhone = formattedPhone)
         }
 
         if (contact == null) {
@@ -186,7 +187,6 @@ private fun CallLogHeader(
 
 @Composable
 private fun ContactInfo(
-    callLog: CallLog,
     contact: Contact?,
     formattedPhone: FormattedPhone,
 ) {
@@ -260,8 +260,10 @@ private fun CallTypeRow(callLog: CallLog, isRinging: Boolean = false) {
                 stringResource(Res.string.missed_outgoing_call)
             callLog.type == CallType.INCOMING ->
                 stringResource(Res.string.incoming_call)
-            else ->
+            callLog.type == CallType.OUTGOING ->
                 stringResource(Res.string.outgoing_call)
+            else ->
+                stringResource(Res.string.unknown_call)
         }
         Text(callTypeText, style = MaterialTheme.typography.bodyLarge)
     }

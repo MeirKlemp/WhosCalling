@@ -3,6 +3,8 @@ package com.klemfner.whoscalling.ui.common.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallMade
 import androidx.compose.material.icons.automirrored.filled.CallReceived
+import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.PhoneMissed
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Icon
@@ -16,12 +18,13 @@ import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.incoming
 import whoscalling.composeapp.generated.resources.missed
 import whoscalling.composeapp.generated.resources.outgoing
+import whoscalling.composeapp.generated.resources.unknown
 
 @Composable
 fun CallLogIcon(
     callLog: CallLog,
-    isRinging: Boolean = false,
     modifier: Modifier = Modifier,
+    isRinging: Boolean = false,
 ) {
     if (isRinging) {
         Icon(
@@ -48,6 +51,12 @@ fun CallLogIcon(
             CallType.OUTGOING -> Icon(
                 Icons.AutoMirrored.Filled.CallMade,
                 contentDescription = stringResource(Res.string.outgoing),
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = modifier,
+            )
+            CallType.UNKNOWN -> Icon(
+                Icons.AutoMirrored.Filled.HelpOutline,
+                contentDescription = stringResource(Res.string.unknown),
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = modifier,
             )

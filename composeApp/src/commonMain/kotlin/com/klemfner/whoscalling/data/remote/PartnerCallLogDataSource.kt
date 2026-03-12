@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.Ksoup
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.UnauthorizedException
+import com.klemfner.whoscalling.util.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -14,10 +15,14 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 
-class PartnerCallLogsDataSource(
+class PartnerCallLogDataSource(
     private val httpClient: HttpClient,
     private val routerIp: () -> String,
 ) : CallLogRemoteDataSource {
+
+    companion object {
+        private const val TAG = "PartnerCallLogDataSource"
+    }
 
     override suspend fun getCallLogs(token: String?): List<CallLog> = withContext(Dispatchers.Default) {
         val baseUrl = "http://${routerIp()}"
@@ -59,8 +64,11 @@ class PartnerCallLogsDataSource(
             "Incoming Successful" -> CallType.INCOMING to false
             "Incoming Missed" -> CallType.INCOMING to true
             "Outgoing Successful" -> CallType.OUTGOING to false
-            "Outgoing Missed" -> CallType.OUTGOING to true
-            else -> throw IllegalArgumentException("Unknown call type: $callType")
+            "Outgoing Failed" -> CallType.OUTGOING to true
+            else -> {
+                Logger.w(TAG, "Unknown call type: $callType")
+                CallType.UNKNOWN to false
+            }
         }
     }
 
