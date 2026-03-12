@@ -33,70 +33,53 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.klemfner.whoscalling.domain.repository.CallLogRepository
-import com.klemfner.whoscalling.domain.repository.ContactRepository
-import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.navigation.LocalNavigator
 import com.klemfner.whoscalling.ui.navigation.NavAction
 import com.klemfner.whoscalling.ui.navigation.NavigationTab
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.dismiss
 
 @Composable
 fun RingingCallBanner(
     modifier: Modifier = Modifier,
-    callLogRepository: CallLogRepository = koinInject(),
-    contactRepository: ContactRepository = koinInject(),
-    settingsRepository: SettingsRepository = koinInject(),
+    viewModel: RingingCallViewModel = koinViewModel(),
 ) {
-    val ringingCall by callLogRepository.ringingCall.collectAsStateWithLifecycle(null)
-    val contacts by contactRepository.contacts.collectAsStateWithLifecycle(emptyList())
-    val countryIso = settingsRepository.preferences.collectAsStateWithLifecycle().value.countryIso
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val navigator = LocalNavigator.current
     val isExpanded = LocalIsExpanded.current
 
-    var dismissedCallId by remember { mutableStateOf<String?>(null) }
-
-    val currentRingingCall = ringingCall
-    val showBanner = currentRingingCall != null && currentRingingCall.id != dismissedCallId
-
     AnimatedVisibility(
-        visible = showBanner,
+        visible = uiState.showBanner,
         enter = slideInVertically { it } + fadeIn(),
         exit = slideOutVertically { it } + fadeOut(),
         modifier = modifier,
     ) {
-        if (currentRingingCall != null) {
-            val contact = remember(contacts, currentRingingCall.phoneNumber) {
-                contacts.find { it.phoneNumber == currentRingingCall.phoneNumber }
-            }
-            val displayName = remember(contact, currentRingingCall.phoneNumber, countryIso) {
-                contact?.name
-                    ?: formatPhoneForDisplay(currentRingingCall.phoneNumber, countryIso).toString()
+        uiState.ringingCall?.let { ringingCall ->
+            val displayName = remember(uiState.contact, ringingCall.phoneNumber, uiState.defaultCountryIso) {
+                uiState.contact?.name
+                    ?: formatPhoneForDisplay(ringingCall.phoneNumber, uiState.defaultCountryIso).toString()
             }
 
             RingingBannerContent(
                 displayName = displayName,
                 isExpanded = isExpanded,
                 onClick = {
-                    dismissedCallId = currentRingingCall.id
-                    navigator.navigateTo(NavigationTab.CALL_LOGS, NavAction.ShowCallLog(currentRingingCall.id))
+                    viewModel.dismiss()
+                    navigator.navigateTo(NavigationTab.CALL_LOGS, NavAction.ShowCallLog(ringingCall.id))
                 },
                 onDismiss = {
-                    dismissedCallId = currentRingingCall.id
+                    viewModel.dismiss()
                 },
             )
         }
