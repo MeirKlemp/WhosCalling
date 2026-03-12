@@ -1,4 +1,4 @@
-name: Windows Build
+name: Linux Build Debug
 
 on:
   workflow_dispatch:
@@ -21,11 +21,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build Linux AppImage
-        run: .\gradlew.bat packageAppImage
+        run: ./gradlew packageAppImage
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
         with:
           name: WhosCallingDebug
-          path: composeApp/build/compose/binaries/main-debug/appimage/*.AppImage
+          path: composeApp/build/compose/binaries/main/app
           retention-days: 3

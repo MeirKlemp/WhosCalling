@@ -1,4 +1,4 @@
-name: Windows Build
+name: Windows Build Debug
 
 on:
   workflow_dispatch:
@@ -27,5 +27,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: WhosCallingDebug
-          path: composeApp/build/compose/binaries/main-debug/msi/*.msi
+          path: composeApp/build/compose/binaries/main/msi/*.msi
           retention-days: 3
