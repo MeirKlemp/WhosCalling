@@ -13,11 +13,13 @@ import com.klemfner.whoscalling.util.maskPhoneNumber
 import com.klemfner.whoscalling.util.normalizePhoneNumber
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 class CallLogRepositoryImpl(
@@ -52,10 +54,22 @@ class CallLogRepositoryImpl(
         }
     }
 
-    override val incomingCallLog: Flow<CallLog?> = localDataSource.callLogs.map { logs ->
-        val oneMinuteAgo = currentTimeMillis() - 60_000L
-        logs.filter { it.type == CallType.INCOMING && it.timestamp >= oneMinuteAgo }
-            .minByOrNull { it.timestamp }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val ringingCall: Flow<CallLog?> = localDataSource.callLogs.transformLatest { logs ->
+        val lastLog = logs.maxByOrNull { it.timestamp }
+        if (lastLog != null && lastLog.type == CallType.INCOMING && lastLog.missed) {
+            val now = currentTimeMillis()
+            val ageMs = now - lastLog.timestamp
+            if (ageMs < 60_000L) {
+                emit(lastLog)
+                delay(60_000L - ageMs)
+                emit(null)
+            } else {
+                emit(null)
+            }
+        } else {
+            emit(null)
+        }
     }
 
     override suspend fun refreshCallLogs() {

@@ -21,6 +21,7 @@ import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import com.klemfner.whoscalling.ui.ringing_banner.RingingCallViewModel
 import com.klemfner.whoscalling.ui.settings.SettingsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
 import com.klemfner.whoscalling.util.normalizePhoneNumber
@@ -80,6 +81,7 @@ val viewModelModule = module {
     viewModelOf(::CallLogsViewModel)
     viewModelOf(::UserViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::RingingCallViewModel)
 }
 
 val appModules = listOf(databaseModule, dataSourceModule, repositoryModule, viewModelModule)

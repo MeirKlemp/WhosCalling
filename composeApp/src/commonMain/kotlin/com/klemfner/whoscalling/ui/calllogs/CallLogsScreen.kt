@@ -178,6 +178,7 @@ private fun CompactCallLogsLayout(
                         onShowContactClick = onShowContact,
                         onCallLogClick = viewModel::selectCallLog,
                         defaultCountryIso = uiState.defaultCountryIso,
+                        isRinging = callLog.id == uiState.ringingCallId,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -253,6 +254,7 @@ private fun ExpandedCallLogsLayout(
                             onShowContactClick = onShowContact,
                             onCallLogClick = viewModel::selectCallLog,
                             defaultCountryIso = uiState.defaultCountryIso,
+                            isRinging = callLog.id == uiState.ringingCallId,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

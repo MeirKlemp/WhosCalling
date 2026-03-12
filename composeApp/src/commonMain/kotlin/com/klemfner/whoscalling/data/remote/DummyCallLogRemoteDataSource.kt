@@ -2,9 +2,13 @@ package com.klemfner.whoscalling.data.remote
 
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
+import com.klemfner.whoscalling.util.currentTimeMillis
 
 class DummyCallLogRemoteDataSource : CallLogRemoteDataSource {
-    override suspend fun getCallLogs(token: String?): List<CallLog> = dummyCallLogs
+    override suspend fun getCallLogs(token: String?): List<CallLog> =
+        listOf(
+            CallLog("ringing", "+97223456789", CallType.INCOMING, true, currentTimeMillis(), 0L),
+        ) + dummyCallLogs
 }
 
 private val dummyCallLogs = listOf(

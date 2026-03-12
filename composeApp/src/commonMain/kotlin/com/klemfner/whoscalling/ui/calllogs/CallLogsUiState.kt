@@ -13,6 +13,7 @@ data class CallLogsUiState(
     val isLoggedIn: Boolean = false,
     val refreshError: Boolean = false,
     val defaultCountryIso: String = "",
+    val ringingCallId: String? = null,
 )
 
 enum class CallLogsPane {
