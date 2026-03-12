@@ -43,7 +43,7 @@ import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
-import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
+import com.klemfner.whoscalling.ui.common.utils.formatShortTime
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.util.FormattedPhone
@@ -281,7 +281,7 @@ private fun TimeRow(callLog: CallLog) {
             modifier = Modifier.size(20.dp),
         )
         Text(
-            "${formatShortDate(callLog.timestamp)} ${formatTimestamp(callLog.timestamp)}",
+            "${formatShortDate(callLog.timestamp)} ${formatShortTime(callLog.timestamp)}",
             style = MaterialTheme.typography.bodyMedium,
         )
     }

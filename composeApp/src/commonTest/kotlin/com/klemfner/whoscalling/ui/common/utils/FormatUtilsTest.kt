@@ -37,7 +37,7 @@ class FormatUtilsTest {
 
     @Test
     fun formatTimestampFormatsCorrectly() {
-        val result = formatTimestamp(1705328400000L)
+        val result = formatShortTime(1705328400000L)
         assertEquals(5, result.length)
         assertEquals(':', result[2])
     }
