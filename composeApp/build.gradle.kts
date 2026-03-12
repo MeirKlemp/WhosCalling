@@ -111,10 +111,15 @@ compose.desktop {
         mainClass = "com.klemfner.whoscalling.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
-            packageName = "com.klemfner.whoscalling"
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.AppImage)
+            packageName = "WhosCalling"
             packageVersion = "1.0.0"
             modules("java.sql", "java.naming")
+
+            windows {
+                menuGroup = "WhosCalling"
+                shortcut = true
+            }
         }
 
         buildTypes.release.proguard {
