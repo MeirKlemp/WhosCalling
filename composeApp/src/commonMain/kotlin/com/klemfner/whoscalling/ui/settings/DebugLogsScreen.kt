@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
-import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
+import com.klemfner.whoscalling.ui.common.utils.formatShortTime
 import com.klemfner.whoscalling.util.LogEntry
 import com.klemfner.whoscalling.util.LogLevel
 import com.klemfner.whoscalling.util.Logger
@@ -136,7 +136,7 @@ private fun LogEntryCard(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "${formatShortDate(entry.timestamp)} ${formatTimestamp(entry.timestamp)}",
+                        text = "${formatShortDate(entry.timestamp)} ${formatShortTime(entry.timestamp)}",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Black.copy(alpha = 0.7f),
                     )

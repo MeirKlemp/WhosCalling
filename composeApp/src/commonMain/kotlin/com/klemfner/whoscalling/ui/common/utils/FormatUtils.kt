@@ -17,7 +17,7 @@ fun formatDuration(durationSeconds: Long): String {
     }
 }
 
-fun formatTimestamp(timestampMillis: Long): String {
+fun formatShortTime(timestampMillis: Long): String {
     val tz = TimeZone.currentSystemDefault()
     val dateTime = Instant.fromEpochMilliseconds(timestampMillis).toLocalDateTime(tz)
     val hour = dateTime.hour.toString().padStart(2, '0')

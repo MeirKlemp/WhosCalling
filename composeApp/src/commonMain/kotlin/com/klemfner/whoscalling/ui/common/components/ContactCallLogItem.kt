@@ -11,33 +11,26 @@ import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
-import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
+import com.klemfner.whoscalling.ui.common.utils.formatShortTime
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 
 @Composable
 fun ContactCallLogItem(
     callLog: CallLog,
+    modifier: Modifier = Modifier,
     isSelected: Boolean = false,
     onClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
-    val period = getTimePeriod(callLog.timestamp)
-    val displayTime = if (period == TimePeriod.TODAY || period == TimePeriod.YESTERDAY) {
-        formatTimestamp(callLog.timestamp)
-    } else {
-        formatShortDate(callLog.timestamp)
-    }
-
     ListItem(
         leadingContent = {
             CallLogIcon(callLog)
         },
         headlineContent = {
-            Text(formatDuration(callLog.duration))
+            Text(formatShortTime(callLog.timestamp))
         },
         trailingContent = {
             Text(
-                displayTime,
+                formatShortDate(callLog.timestamp),
                 style = MaterialTheme.typography.bodySmall,
             )
         },

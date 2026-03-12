@@ -52,7 +52,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
-import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
+import com.klemfner.whoscalling.ui.common.utils.formatShortTime
 import com.klemfner.whoscalling.ui.navigation.LocalNavigator
 import com.klemfner.whoscalling.ui.navigation.NavAction
 import com.klemfner.whoscalling.ui.navigation.NavigationTab
@@ -254,7 +254,7 @@ private fun UserProfile(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "${formatShortDate(user.loginTime)} ${formatTimestamp(user.loginTime)}",
+                text = "${formatShortDate(user.loginTime)} ${formatShortTime(user.loginTime)}",
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

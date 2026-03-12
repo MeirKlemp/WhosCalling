@@ -20,7 +20,7 @@ import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
-import com.klemfner.whoscalling.ui.common.utils.formatTimestamp
+import com.klemfner.whoscalling.ui.common.utils.formatShortTime
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 
@@ -33,12 +33,6 @@ fun CallLogListItem(
     modifier: Modifier = Modifier,
     defaultCountryIso: String = "",
 ) {
-    val period = getTimePeriod(callLog.timestamp)
-    val displayTime = if (period == TimePeriod.TODAY || period == TimePeriod.YESTERDAY) {
-        formatTimestamp(callLog.timestamp)
-    } else {
-        formatShortDate(callLog.timestamp)
-    }
     val formattedPhone = remember(callLog.phoneNumber, defaultCountryIso) {
         formatPhoneForDisplay(callLog.phoneNumber, defaultCountryIso)
     }
@@ -48,36 +42,23 @@ fun CallLogListItem(
             CallLogIcon(callLog)
         },
         headlineContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                if (contact != null) {
-                    Text(
-                        contact.name,
-                        modifier = Modifier.weight(1f, fill = false),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                } else {
-                    FormattedPhoneText(
-                        formattedPhone = formattedPhone,
-                        modifier = Modifier.weight(1f, fill = false),
-                        style = MaterialTheme.typography.bodyLarge,
-                        overflowWithEllipsis = true,
-                    )
-                }
-
+            if (contact != null) {
                 Text(
-                    "(${formatDuration(callLog.duration)})",
-                    style = MaterialTheme.typography.bodyLarge,
+                    contact.name,
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            } else {
+                FormattedPhoneText(
+                    formattedPhone = formattedPhone,
+                    style = MaterialTheme.typography.bodyLarge,
+                    overflowWithEllipsis = true,
                 )
             }
         },
         trailingContent = {
             Text(
-                displayTime,
+                "${formatShortDate(callLog.timestamp)} ${formatShortTime(callLog.timestamp)}",
                 style = MaterialTheme.typography.bodySmall,
             )
         },
