@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
@@ -29,8 +30,8 @@ fun CallLogListItem(
     contact: Contact?,
     isSelected: Boolean,
     onClick: () -> Unit,
-    defaultCountryIso: String = "",
     modifier: Modifier = Modifier,
+    defaultCountryIso: String = "",
 ) {
     val period = getTimePeriod(callLog.timestamp)
     val displayTime = if (period == TimePeriod.TODAY || period == TimePeriod.YESTERDAY) {
@@ -47,22 +48,31 @@ fun CallLogListItem(
             CallLogIcon(callLog)
         },
         headlineContent = {
-            if (contact != null) {
-                Text("${contact.name} (${formatDuration(callLog.duration)})")
-            } else {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                if (contact != null) {
+                    Text(
+                        contact.name,
+                        modifier = Modifier.weight(1f, fill = false),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } else {
                     FormattedPhoneText(
                         formattedPhone = formattedPhone,
+                        modifier = Modifier.weight(1f, fill = false),
                         style = MaterialTheme.typography.bodyLarge,
-                    )
-                    Text(
-                        "(${formatDuration(callLog.duration)})",
-                        style = MaterialTheme.typography.bodyLarge,
+                        overflowWithEllipsis = true,
                     )
                 }
+
+                Text(
+                    "(${formatDuration(callLog.duration)})",
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                )
             }
         },
         trailingContent = {
