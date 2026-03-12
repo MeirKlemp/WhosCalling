@@ -9,7 +9,7 @@ import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.data.remote.AuthRemoteDataSource
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
 import com.klemfner.whoscalling.data.remote.PartnerAuthenticationDataSource
-import com.klemfner.whoscalling.data.remote.PartnerCallLogsDataSource
+import com.klemfner.whoscalling.data.remote.PartnerCallLogDataSource
 import com.klemfner.whoscalling.data.remote.srp.Srp6aClient
 import com.klemfner.whoscalling.data.remote.srp.Srp6aClientImpl
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
@@ -44,7 +44,7 @@ val dataSourceModule = module {
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
     single<CallLogRemoteDataSource> {
         val settingsRepo: SettingsRepository = get()
-        PartnerCallLogsDataSource(get()) { settingsRepo.currentRouterIp }
+        PartnerCallLogDataSource(get()) { settingsRepo.currentRouterIp }
     }
     single<HttpClient> { HttpClient() }
     single<Srp6aClient> { Srp6aClientImpl() }
