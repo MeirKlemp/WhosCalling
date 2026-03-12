@@ -1,4 +1,4 @@
-name: Windows Build
+name: Linux Build Debug
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build Linux AppImage
-        run: .\gradlew.bat packageAppImage
+        run: ./gradlew packageAppImage
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
