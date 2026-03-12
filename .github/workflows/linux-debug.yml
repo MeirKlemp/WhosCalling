@@ -27,5 +27,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: WhosCallingDebug
-          path: composeApp/build/compose/binaries/main/app/*.AppImage
+          path: composeApp/build/compose/binaries/main/app
           retention-days: 3

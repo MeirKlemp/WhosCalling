@@ -120,6 +120,10 @@ compose.desktop {
                 menuGroup = "WhosCalling"
                 shortcut = true
             }
+            linux {
+                menuGroup = "WhosCalling"
+                shortcut = true
+            }
         }
 
         buildTypes.release.proguard {
