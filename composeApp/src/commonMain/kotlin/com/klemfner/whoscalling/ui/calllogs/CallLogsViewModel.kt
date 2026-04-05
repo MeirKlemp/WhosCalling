@@ -3,6 +3,8 @@ package com.klemfner.whoscalling.ui.calllogs
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.CallLog
+import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
@@ -53,21 +55,12 @@ class CallLogsViewModel(
                 } else {
                     emptyList()
                 }
-                val selectedSpam = if (phone != null) {
-                    _uiState.value.let { state ->
-                        val spamEntry = spams[phone]
-                        // Also check full spam list for non-isSpam entries (like SAFE)
-                        spamEntry
-                    }
-                } else {
-                    null
-                }
-                object {
-                    val sorted = sorted
-                    val contacts = contacts
-                    val filtered = filtered
-                    val spams = spams
-                }
+                CallLogsData(
+                    sorted = sorted,
+                    contacts = contacts,
+                    filtered = filtered,
+                    spams = spams,
+                )
             }.collect { data ->
                 _uiState.update {
                     it.copy(
@@ -226,3 +219,10 @@ class CallLogsViewModel(
         private const val TAG = "CallLogsViewModel"
     }
 }
+
+private data class CallLogsData(
+    val sorted: List<CallLog>,
+    val contacts: Map<String, Contact>,
+    val filtered: List<CallLog>,
+    val spams: Map<String, Spam>,
+)
