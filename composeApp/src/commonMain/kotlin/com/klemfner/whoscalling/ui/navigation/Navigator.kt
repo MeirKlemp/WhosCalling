@@ -38,9 +38,9 @@ val LocalNavigator = compositionLocalOf<Navigator> {
 }
 
 @Composable
-fun rememberNavigator(): Navigator {
+fun rememberNavigator(initialTab: NavigationTab = NavigationTab.USER): Navigator {
     return rememberSaveable(saver = navigatorSaver()) {
-        Navigator(NavigationTab.USER)
+        Navigator(initialTab)
     }
 }
 

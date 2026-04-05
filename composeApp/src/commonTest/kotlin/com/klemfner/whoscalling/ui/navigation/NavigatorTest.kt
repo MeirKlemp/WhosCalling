@@ -8,6 +8,14 @@ import kotlin.test.assertNull
 class NavigatorTest {
 
     @Test
+    fun initialTabIsSetFromConstructor() {
+        val navigator = Navigator(NavigationTab.CALL_LOGS)
+
+        assertEquals(NavigationTab.CALL_LOGS, navigator.navState.tab)
+        assertNull(navigator.navState.action)
+    }
+
+    @Test
     fun navigateToSettingsWithFocusRouterIpAction() {
         val navigator = Navigator(NavigationTab.USER)
 
