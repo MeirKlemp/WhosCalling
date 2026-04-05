@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +42,7 @@ import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
+import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
@@ -75,6 +77,7 @@ fun ContactDetails(
     onReportSpam: () -> Unit = {},
     onReportSafe: () -> Unit = {},
 ) {
+    val isTouchMode = LocalIsTouchMode.current
     val isSpam = spam?.isSpam == true
     Scaffold(
         topBar = {
@@ -90,6 +93,7 @@ fun ContactDetails(
                 },
                 actions = {
                     ContactDetailsActions(
+                        isTouchMode = isTouchMode,
                         isSpam = isSpam,
                         onReportSpam = onReportSpam,
                         onReportSafe = onReportSafe,
@@ -98,6 +102,16 @@ fun ContactDetails(
                     )
                 },
             )
+        },
+        floatingActionButton = {
+            if (isTouchMode) {
+                FloatingActionButton(onClick = onEditClick) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = stringResource(Res.string.edit_contact),
+                    )
+                }
+            }
         },
         modifier = modifier,
     ) { paddingValues ->
@@ -195,6 +209,7 @@ fun ContactDetails(
 
 @Composable
 private fun ContactDetailsActions(
+    isTouchMode: Boolean,
     isSpam: Boolean,
     onReportSpam: () -> Unit,
     onReportSafe: () -> Unit,
@@ -216,11 +231,13 @@ private fun ContactDetailsActions(
             )
         }
     }
-    IconButton(onClick = onEditClick) {
-        Icon(
-            Icons.Default.Edit,
-            contentDescription = stringResource(Res.string.edit_contact),
-        )
+    if (!isTouchMode) {
+        IconButton(onClick = onEditClick) {
+            Icon(
+                Icons.Default.Edit,
+                contentDescription = stringResource(Res.string.edit_contact),
+            )
+        }
     }
     IconButton(onClick = onDeleteClick) {
         Icon(

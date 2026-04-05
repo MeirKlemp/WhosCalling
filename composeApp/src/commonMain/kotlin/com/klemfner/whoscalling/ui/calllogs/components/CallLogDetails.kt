@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +44,7 @@ import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.components.CallLogIcon
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
+import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
@@ -92,6 +94,7 @@ fun CallLogDetails(
     onReportSpam: () -> Unit = {},
     onReportSafe: () -> Unit = {},
 ) {
+    val isTouchMode = LocalIsTouchMode.current
     val isSpam = spam?.isSpam == true
     Scaffold(
         topBar = {
@@ -107,6 +110,7 @@ fun CallLogDetails(
                 },
                 actions = {
                     CallLogDetailsActions(
+                        isTouchMode = isTouchMode,
                         isSpam = isSpam,
                         contact = contact,
                         onReportSpam = onReportSpam,
@@ -116,6 +120,15 @@ fun CallLogDetails(
                     )
                 },
             )
+        },
+        floatingActionButton = {
+            if (isTouchMode) {
+                CallLogDetailsFab(
+                    contact = contact,
+                    onAddContactClick = { onAddContactClick(callLog.phoneNumber) },
+                    onShowContactClick = { onShowContactClick(contact!!.id) },
+                )
+            }
         },
         modifier = modifier,
     ) { paddingValues ->
@@ -174,6 +187,7 @@ fun CallLogDetails(
 
 @Composable
 private fun CallLogDetailsActions(
+    isTouchMode: Boolean,
     isSpam: Boolean,
     contact: Contact?,
     onReportSpam: () -> Unit,
@@ -196,15 +210,40 @@ private fun CallLogDetailsActions(
             )
         }
     }
+    if (!isTouchMode) {
+        if (contact == null) {
+            IconButton(onClick = onAddContactClick) {
+                Icon(
+                    Icons.Default.PersonAdd,
+                    contentDescription = stringResource(Res.string.add_contact),
+                )
+            }
+        } else {
+            IconButton(onClick = onShowContactClick) {
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = stringResource(Res.string.show_contact),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CallLogDetailsFab(
+    contact: Contact?,
+    onAddContactClick: () -> Unit,
+    onShowContactClick: () -> Unit,
+) {
     if (contact == null) {
-        IconButton(onClick = onAddContactClick) {
+        FloatingActionButton(onClick = onAddContactClick) {
             Icon(
                 Icons.Default.PersonAdd,
                 contentDescription = stringResource(Res.string.add_contact),
             )
         }
     } else {
-        IconButton(onClick = onShowContactClick) {
+        FloatingActionButton(onClick = onShowContactClick) {
             Icon(
                 Icons.Default.Person,
                 contentDescription = stringResource(Res.string.show_contact),
