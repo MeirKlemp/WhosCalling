@@ -17,13 +17,25 @@ class FakeCallLogRepository(
     private val _ringingCall = MutableStateFlow(initialRingingCall)
     override val ringingCall: Flow<CallLog?> = _ringingCall.asStateFlow()
 
+    var refreshException: Exception? = null
+    private var pendingRefreshCallLogs: List<CallLog>? = null
+
     override suspend fun refreshCallLogs() {
-        // No-op for fake. If desired, you can update _callLogs value to simulate refresh.
+        refreshException?.let { throw it }
+        pendingRefreshCallLogs?.let { _callLogs.value = it }
     }
 
     // For testing: Mutators
     fun addCallLog(callLog: CallLog) {
         _callLogs.value += callLog
+    }
+
+    fun setCallLogs(callLogs: List<CallLog>) {
+        _callLogs.value = callLogs
+    }
+
+    fun setRefreshCallLogs(callLogs: List<CallLog>) {
+        pendingRefreshCallLogs = callLogs
     }
 
     fun setRingingCall(callLog: CallLog?) {
