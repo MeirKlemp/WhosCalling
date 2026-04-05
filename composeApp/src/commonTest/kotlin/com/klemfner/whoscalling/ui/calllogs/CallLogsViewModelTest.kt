@@ -347,7 +347,7 @@ class CallLogsViewModelTest {
             viewModel.dismissReportDialog()
             val state = awaitItem()
             assertFalse(state.showReportSpamDialog)
-            assertFalse(state.showReportSafeDialog)
+            assertFalse(state.showTrustNumberDialog)
         }
     }
 }

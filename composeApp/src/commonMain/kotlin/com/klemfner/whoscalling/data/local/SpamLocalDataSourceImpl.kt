@@ -15,7 +15,7 @@ class SpamLocalDataSourceImpl(
 ) : SpamLocalDataSource {
 
     override val spams: Flow<List<Spam>> =
-        database.spamEntityQueries
+        database.spamQueries
             .getAllSpams()
             .asFlow()
             .mapToList(Dispatchers.Default)
@@ -33,7 +33,7 @@ class SpamLocalDataSourceImpl(
 
     override suspend fun getSpam(phoneNumber: String): Spam? {
         return withContext(Dispatchers.Default) {
-            database.spamEntityQueries.getSpamByPhoneNumber(phoneNumber).executeAsOneOrNull()?.let { entity ->
+            database.spamQueries.getSpamByPhoneNumber(phoneNumber).executeAsOneOrNull()?.let { entity ->
                 Spam(
                     phoneNumber = entity.phoneNumber,
                     detectedAsSpam = entity.detectedAsSpam != 0L,
@@ -47,7 +47,7 @@ class SpamLocalDataSourceImpl(
 
     override suspend fun saveSpam(spam: Spam) {
         withContext(Dispatchers.Default) {
-            database.spamEntityQueries.insertSpam(
+            database.spamQueries.insertSpam(
                 phoneNumber = spam.phoneNumber,
                 detectedAsSpam = if (spam.detectedAsSpam) 1L else 0L,
                 reportedAs = spam.reportedAs?.name,
@@ -59,13 +59,13 @@ class SpamLocalDataSourceImpl(
 
     override suspend fun deleteSpam(phoneNumber: String) {
         withContext(Dispatchers.Default) {
-            database.spamEntityQueries.deleteSpam(phoneNumber)
+            database.spamQueries.deleteSpam(phoneNumber)
         }
     }
 
     override suspend fun deleteAllSpams() {
         withContext(Dispatchers.Default) {
-            database.spamEntityQueries.deleteAllSpams()
+            database.spamQueries.deleteAllSpams()
         }
     }
 }

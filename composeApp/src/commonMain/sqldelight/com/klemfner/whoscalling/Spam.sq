@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS Spam (
+    phoneNumber TEXT NOT NULL PRIMARY KEY,
+    detectedAsSpam INTEGER NOT NULL DEFAULT 0,
+    reportedAs TEXT,
+    detectionTimestamp INTEGER,
+    reportingTimestamp INTEGER
+);
+
+getAllSpams:
+SELECT * FROM Spam;
+
+getSpamByPhoneNumber:
+SELECT * FROM Spam WHERE phoneNumber = ?;
+
+insertSpam:
+INSERT OR REPLACE INTO Spam (phoneNumber, detectedAsSpam, reportedAs, detectionTimestamp, reportingTimestamp)
+VALUES (?, ?, ?, ?, ?);
+
+deleteSpam:
+DELETE FROM Spam WHERE phoneNumber = ?;
+
+deleteAllSpams:
+DELETE FROM Spam;

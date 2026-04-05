@@ -11,10 +11,10 @@ import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.cancel
-import whoscalling.composeapp.generated.resources.report_safe
-import whoscalling.composeapp.generated.resources.report_safe_confirm
 import whoscalling.composeapp.generated.resources.report_spam
 import whoscalling.composeapp.generated.resources.report_spam_confirm
+import whoscalling.composeapp.generated.resources.trust_number
+import whoscalling.composeapp.generated.resources.trust_number_confirm
 
 @Composable
 fun ReportSpamDialog(
@@ -41,7 +41,7 @@ fun ReportSpamDialog(
 }
 
 @Composable
-fun ReportSafeDialog(
+fun TrustNumberDialog(
     displayName: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
@@ -49,11 +49,11 @@ fun ReportSafeDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
-        title = { Text(stringResource(Res.string.report_safe)) },
-        text = { Text(stringResource(Res.string.report_safe_confirm, displayName)) },
+        title = { Text(stringResource(Res.string.trust_number)) },
+        text = { Text(stringResource(Res.string.trust_number_confirm, displayName)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(Res.string.report_safe))
+                Text(stringResource(Res.string.trust_number))
             }
         },
         dismissButton = {

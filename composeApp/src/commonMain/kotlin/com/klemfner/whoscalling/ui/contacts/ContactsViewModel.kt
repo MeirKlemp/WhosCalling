@@ -346,7 +346,7 @@ class ContactsViewModel(
         val displayName = "${contact.name} (${contact.phoneNumber})"
         _uiState.update {
             it.copy(
-                showReportSafeDialog = true,
+                showTrustNumberDialog = true,
                 reportDialogPhoneNumber = contact.phoneNumber,
                 reportDialogDisplayName = displayName,
             )
@@ -369,7 +369,7 @@ class ContactsViewModel(
             spamRepository.reportAsSafe(phoneNumber)
         }
         _uiState.update {
-            it.copy(showReportSafeDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
+            it.copy(showTrustNumberDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
         }
     }
 
@@ -377,7 +377,7 @@ class ContactsViewModel(
         _uiState.update {
             it.copy(
                 showReportSpamDialog = false,
-                showReportSafeDialog = false,
+                showTrustNumberDialog = false,
                 reportDialogPhoneNumber = "",
                 reportDialogDisplayName = "",
             )

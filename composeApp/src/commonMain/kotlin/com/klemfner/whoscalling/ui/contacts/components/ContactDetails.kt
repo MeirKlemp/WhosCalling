@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +41,6 @@ import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
-import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
@@ -55,11 +53,11 @@ import whoscalling.composeapp.generated.resources.details
 import whoscalling.composeapp.generated.resources.edit_contact
 import whoscalling.composeapp.generated.resources.long_time_ago
 import whoscalling.composeapp.generated.resources.no_call_logs
-import whoscalling.composeapp.generated.resources.report_safe
 import whoscalling.composeapp.generated.resources.report_spam
 import whoscalling.composeapp.generated.resources.this_month
 import whoscalling.composeapp.generated.resources.this_week
 import whoscalling.composeapp.generated.resources.today
+import whoscalling.composeapp.generated.resources.trust_number
 import whoscalling.composeapp.generated.resources.yesterday
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -77,7 +75,6 @@ fun ContactDetails(
     onReportSpam: () -> Unit = {},
     onReportSafe: () -> Unit = {},
 ) {
-    val isTouchMode = LocalIsTouchMode.current
     val isSpam = spam?.isSpam == true
     Scaffold(
         topBar = {
@@ -92,47 +89,15 @@ fun ContactDetails(
                     }
                 },
                 actions = {
-                    if (!isTouchMode) {
-                        if (!isSpam) {
-                            IconButton(onClick = onReportSpam) {
-                                Icon(
-                                    Icons.Default.Report,
-                                    contentDescription = stringResource(Res.string.report_spam),
-                                )
-                            }
-                        } else {
-                            IconButton(onClick = onReportSafe) {
-                                Icon(
-                                    Icons.Default.CheckCircle,
-                                    contentDescription = stringResource(Res.string.report_safe),
-                                )
-                            }
-                        }
-                        IconButton(onClick = onEditClick) {
-                            Icon(
-                                Icons.Default.Edit,
-                                contentDescription = stringResource(Res.string.edit_contact),
-                            )
-                        }
-                    }
-                    IconButton(onClick = onDeleteClick) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = stringResource(Res.string.delete_contact),
-                        )
-                    }
+                    ContactDetailsActions(
+                        isSpam = isSpam,
+                        onReportSpam = onReportSpam,
+                        onReportSafe = onReportSafe,
+                        onEditClick = onEditClick,
+                        onDeleteClick = onDeleteClick,
+                    )
                 },
             )
-        },
-        floatingActionButton = {
-            if (isTouchMode) {
-                FloatingActionButton(onClick = onEditClick) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = stringResource(Res.string.edit_contact),
-                    )
-                }
-            }
         },
         modifier = modifier,
     ) { paddingValues ->
@@ -225,5 +190,42 @@ fun ContactDetails(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ContactDetailsActions(
+    isSpam: Boolean,
+    onReportSpam: () -> Unit,
+    onReportSafe: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+    if (!isSpam) {
+        IconButton(onClick = onReportSpam) {
+            Icon(
+                Icons.Default.Report,
+                contentDescription = stringResource(Res.string.report_spam),
+            )
+        }
+    } else {
+        IconButton(onClick = onReportSafe) {
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = stringResource(Res.string.trust_number),
+            )
+        }
+    }
+    IconButton(onClick = onEditClick) {
+        Icon(
+            Icons.Default.Edit,
+            contentDescription = stringResource(Res.string.edit_contact),
+        )
+    }
+    IconButton(onClick = onDeleteClick) {
+        Icon(
+            Icons.Default.Delete,
+            contentDescription = stringResource(Res.string.delete_contact),
+        )
     }
 }

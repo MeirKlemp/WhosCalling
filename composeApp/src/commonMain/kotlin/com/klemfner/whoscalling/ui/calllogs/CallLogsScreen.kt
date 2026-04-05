@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.calllogs.components.CallLogDetails
 import com.klemfner.whoscalling.ui.calllogs.components.CallLogsList
-import com.klemfner.whoscalling.ui.common.components.ReportSafeDialog
+import com.klemfner.whoscalling.ui.common.components.TrustNumberDialog
 import com.klemfner.whoscalling.ui.common.components.ReportSpamDialog
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
@@ -98,8 +98,8 @@ fun CallLogsScreen(
         )
     }
 
-    if (uiState.showReportSafeDialog) {
-        ReportSafeDialog(
+    if (uiState.showTrustNumberDialog) {
+        TrustNumberDialog(
             displayName = uiState.reportDialogDisplayName,
             onConfirm = viewModel::confirmReportSafe,
             onDismiss = viewModel::dismissReportDialog,

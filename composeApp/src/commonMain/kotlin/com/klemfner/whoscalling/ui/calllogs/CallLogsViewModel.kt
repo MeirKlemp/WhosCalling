@@ -177,7 +177,7 @@ class CallLogsViewModel(
         }
         _uiState.update {
             it.copy(
-                showReportSafeDialog = true,
+                showTrustNumberDialog = true,
                 reportDialogPhoneNumber = phoneNumber,
                 reportDialogDisplayName = displayName,
             )
@@ -200,7 +200,7 @@ class CallLogsViewModel(
             spamRepository.reportAsSafe(phoneNumber)
         }
         _uiState.update {
-            it.copy(showReportSafeDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
+            it.copy(showTrustNumberDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
         }
     }
 
@@ -208,7 +208,7 @@ class CallLogsViewModel(
         _uiState.update {
             it.copy(
                 showReportSpamDialog = false,
-                showReportSafeDialog = false,
+                showTrustNumberDialog = false,
                 reportDialogPhoneNumber = "",
                 reportDialogDisplayName = "",
             )

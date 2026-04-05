@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,7 +43,6 @@ import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.components.CallLogIcon
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
-import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
@@ -67,13 +65,13 @@ import whoscalling.composeapp.generated.resources.missed_incoming_call
 import whoscalling.composeapp.generated.resources.missed_outgoing_call
 import whoscalling.composeapp.generated.resources.no_call_logs
 import whoscalling.composeapp.generated.resources.outgoing_call
-import whoscalling.composeapp.generated.resources.report_safe
 import whoscalling.composeapp.generated.resources.report_spam
 import whoscalling.composeapp.generated.resources.show_contact
 import whoscalling.composeapp.generated.resources.this_month
 import whoscalling.composeapp.generated.resources.this_week
 import whoscalling.composeapp.generated.resources.time_label
 import whoscalling.composeapp.generated.resources.today
+import whoscalling.composeapp.generated.resources.trust_number
 import whoscalling.composeapp.generated.resources.unknown_call
 import whoscalling.composeapp.generated.resources.yesterday
 
@@ -94,7 +92,6 @@ fun CallLogDetails(
     onReportSpam: () -> Unit = {},
     onReportSafe: () -> Unit = {},
 ) {
-    val isTouchMode = LocalIsTouchMode.current
     val isSpam = spam?.isSpam == true
     Scaffold(
         topBar = {
@@ -109,59 +106,16 @@ fun CallLogDetails(
                     }
                 },
                 actions = {
-                    if (!isTouchMode) {
-                        if (!isSpam) {
-                            IconButton(onClick = onReportSpam) {
-                                Icon(
-                                    Icons.Default.Report,
-                                    contentDescription = stringResource(Res.string.report_spam),
-                                )
-                            }
-                        } else {
-                            IconButton(onClick = onReportSafe) {
-                                Icon(
-                                    Icons.Default.CheckCircle,
-                                    contentDescription = stringResource(Res.string.report_safe),
-                                )
-                            }
-                        }
-                        if (contact == null) {
-                            IconButton(onClick = { onAddContactClick(callLog.phoneNumber) }) {
-                                Icon(
-                                    Icons.Default.PersonAdd,
-                                    contentDescription = stringResource(Res.string.add_contact),
-                                )
-                            }
-                        } else {
-                            IconButton(onClick = { onShowContactClick(contact.id) }) {
-                                Icon(
-                                    Icons.Default.Person,
-                                    contentDescription = stringResource(Res.string.show_contact),
-                                )
-                            }
-                        }
-                    }
+                    CallLogDetailsActions(
+                        isSpam = isSpam,
+                        contact = contact,
+                        onReportSpam = onReportSpam,
+                        onReportSafe = onReportSafe,
+                        onAddContactClick = { onAddContactClick(callLog.phoneNumber) },
+                        onShowContactClick = { onShowContactClick(contact!!.id) },
+                    )
                 },
             )
-        },
-        floatingActionButton = {
-            if (isTouchMode) {
-                if (contact == null) {
-                    FloatingActionButton(onClick = { onAddContactClick(callLog.phoneNumber) }) {
-                        Icon(
-                            Icons.Default.PersonAdd,
-                            contentDescription = stringResource(Res.string.add_contact),
-                        )
-                    }
-                } else {
-                    FloatingActionButton(onClick = { onShowContactClick(contact.id) }) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = stringResource(Res.string.show_contact),
-                        )
-                    }
-                }
-            }
         },
         modifier = modifier,
     ) { paddingValues ->
@@ -182,15 +136,9 @@ fun CallLogDetails(
                     formattedPhone = formattedPhone,
                     contact = contact,
                     isRinging = isRinging,
-                )
-            }
-
-            item {
-                SpamStatusBanner(
                     spam = spam,
                     onReportSafe = onReportSafe,
                 )
-                HorizontalDivider()
             }
 
             item {
@@ -225,11 +173,54 @@ fun CallLogDetails(
 }
 
 @Composable
+private fun CallLogDetailsActions(
+    isSpam: Boolean,
+    contact: Contact?,
+    onReportSpam: () -> Unit,
+    onReportSafe: () -> Unit,
+    onAddContactClick: () -> Unit,
+    onShowContactClick: () -> Unit,
+) {
+    if (!isSpam) {
+        IconButton(onClick = onReportSpam) {
+            Icon(
+                Icons.Default.Report,
+                contentDescription = stringResource(Res.string.report_spam),
+            )
+        }
+    } else {
+        IconButton(onClick = onReportSafe) {
+            Icon(
+                Icons.Default.CheckCircle,
+                contentDescription = stringResource(Res.string.trust_number),
+            )
+        }
+    }
+    if (contact == null) {
+        IconButton(onClick = onAddContactClick) {
+            Icon(
+                Icons.Default.PersonAdd,
+                contentDescription = stringResource(Res.string.add_contact),
+            )
+        }
+    } else {
+        IconButton(onClick = onShowContactClick) {
+            Icon(
+                Icons.Default.Person,
+                contentDescription = stringResource(Res.string.show_contact),
+            )
+        }
+    }
+}
+
+@Composable
 private fun CallLogHeader(
     callLog: CallLog,
     formattedPhone: FormattedPhone,
     contact: Contact?,
     isRinging: Boolean = false,
+    spam: Spam? = null,
+    onReportSafe: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier.padding(16.dp),
@@ -238,13 +229,23 @@ private fun CallLogHeader(
         SelectionContainer {
             ContactInfo(contact = contact, formattedPhone = formattedPhone)
         }
+    }
 
+    SpamStatusBanner(
+        spam = spam,
+        onReportSafe = onReportSafe,
+    )
+
+    Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         HorizontalDivider()
-
         CallTypeRow(callLog, isRinging)
         TimeRow(callLog)
         DurationRow(callLog)
     }
+    HorizontalDivider()
 }
 
 @Composable

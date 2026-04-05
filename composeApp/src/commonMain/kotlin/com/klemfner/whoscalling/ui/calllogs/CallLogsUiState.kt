@@ -18,7 +18,7 @@ data class CallLogsUiState(
     val defaultCountryIso: String = "",
     val ringingCallId: String? = null,
     val showReportSpamDialog: Boolean = false,
-    val showReportSafeDialog: Boolean = false,
+    val showTrustNumberDialog: Boolean = false,
     val reportDialogPhoneNumber: String = "",
     val reportDialogDisplayName: String = "",
 )

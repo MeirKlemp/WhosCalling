@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.ui.common.components.ConfirmDeleteDialog
-import com.klemfner.whoscalling.ui.common.components.ReportSafeDialog
+import com.klemfner.whoscalling.ui.common.components.TrustNumberDialog
 import com.klemfner.whoscalling.ui.common.components.ReportSpamDialog
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
@@ -94,8 +94,8 @@ fun ContactsScreen(
         )
     }
 
-    if (uiState.showReportSafeDialog) {
-        ReportSafeDialog(
+    if (uiState.showTrustNumberDialog) {
+        TrustNumberDialog(
             displayName = uiState.reportDialogDisplayName,
             onConfirm = viewModel::confirmReportSafe,
             onDismiss = viewModel::dismissReportDialog,

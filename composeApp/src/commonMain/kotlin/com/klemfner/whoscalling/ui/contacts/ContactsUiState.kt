@@ -20,7 +20,7 @@ data class ContactsUiState(
     val deleteDialogContactName: String? = null,
     val error: ContactsError? = null,
     val showReportSpamDialog: Boolean = false,
-    val showReportSafeDialog: Boolean = false,
+    val showTrustNumberDialog: Boolean = false,
     val reportDialogPhoneNumber: String = "",
     val reportDialogDisplayName: String = "",
 )

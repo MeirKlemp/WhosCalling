@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -132,7 +133,7 @@ private fun RingingBannerContent(
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RingingPhoneIcon()
+                    RingingPhoneIcon(contentColor = contentColor)
 
                     Spacer(Modifier.width(12.dp))
 
@@ -140,7 +141,7 @@ private fun RingingBannerContent(
                         Icon(
                             Icons.Default.Warning,
                             contentDescription = stringResource(Res.string.spam_warning),
-                            tint = MaterialTheme.colorScheme.error,
+                            tint = contentColor,
                             modifier = Modifier.size(18.dp),
                         )
                         Spacer(Modifier.width(4.dp))
@@ -169,7 +170,10 @@ private fun RingingBannerContent(
 }
 
 @Composable
-private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
+private fun RingingPhoneIcon(
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+) {
     val infiniteTransition = rememberInfiniteTransition()
 
     val scale by infiniteTransition.animateFloat(
@@ -212,7 +216,7 @@ private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
                     alpha = waveAlpha,
                 )
                 .background(
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    contentColor.copy(alpha = 0.3f),
                     CircleShape,
                 )
         )
@@ -220,7 +224,7 @@ private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
         Icon(
             Icons.Default.Phone,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            tint = contentColor,
             modifier = Modifier
                 .size(24.dp)
                 .graphicsLayer(
