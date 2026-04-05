@@ -8,6 +8,7 @@ data class RingingCallUiState(
     val contact: Contact? = null,
     val defaultCountryIso: String = "",
     val isDismissed: Boolean = false,
+    val isSpam: Boolean = false,
 ) {
     val showBanner = ringingCall != null && !isDismissed
 }

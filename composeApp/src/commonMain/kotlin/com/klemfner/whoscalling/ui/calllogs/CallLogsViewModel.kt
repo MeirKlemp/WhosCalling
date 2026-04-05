@@ -7,6 +7,7 @@ import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.domain.repository.SpamRepository
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,7 @@ class CallLogsViewModel(
     private val contactRepository: ContactRepository,
     private val authRepository: AuthRepository,
     private val settingsRepository: SettingsRepository,
+    private val spamRepository: SpamRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CallLogsUiState())
@@ -35,27 +37,61 @@ class CallLogsViewModel(
         val contactMap = contactRepository.contacts.map { contacts ->
             contacts.associateBy { it.phoneNumber }
         }
+        val spamMap = spamRepository.spams.map { spams ->
+            spams.filter { it.isSpam }.associateBy { it.phoneNumber }
+        }
 
         viewModelScope.launch {
             combine(
                 sortedCallLogs,
                 contactMap,
                 selectedNumber,
-            ) { sorted, contacts, phone ->
+                spamMap,
+            ) { sorted, contacts, phone, spams ->
                 val filtered = if (phone != null) {
                     sorted.filter { it.phoneNumber == phone }
                 } else {
                     emptyList()
                 }
-                Triple(sorted, contacts, filtered)
-            }.collect { (sorted, contacts, filtered) ->
+                val selectedSpam = if (phone != null) {
+                    _uiState.value.let { state ->
+                        val spamEntry = spams[phone]
+                        // Also check full spam list for non-isSpam entries (like SAFE)
+                        spamEntry
+                    }
+                } else {
+                    null
+                }
+                object {
+                    val sorted = sorted
+                    val contacts = contacts
+                    val filtered = filtered
+                    val spams = spams
+                }
+            }.collect { data ->
                 _uiState.update {
                     it.copy(
-                        callLogs = sorted,
-                        contacts = contacts,
-                        selectedNumberCallLogs = filtered,
+                        callLogs = data.sorted,
+                        contacts = data.contacts,
+                        selectedNumberCallLogs = data.filtered,
+                        spamNumbers = data.spams,
                     )
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            combine(
+                spamRepository.spams,
+                selectedNumber,
+            ) { allSpams, phone ->
+                if (phone != null) {
+                    allSpams.find { it.phoneNumber == phone }
+                } else {
+                    null
+                }
+            }.collect { spam ->
+                _uiState.update { it.copy(selectedSpam = spam) }
             }
         }
 
@@ -112,10 +148,77 @@ class CallLogsViewModel(
             CallLogsPane.DETAILS -> {
                 selectedNumber.value = null
                 _uiState.update {
-                    it.copy(currentPane = CallLogsPane.LIST, selectedCallLog = null)
+                    it.copy(currentPane = CallLogsPane.LIST, selectedCallLog = null, selectedSpam = null)
                 }
             }
             CallLogsPane.LIST -> { /* nothing */ }
+        }
+    }
+
+    fun requestReportSpam() {
+        val state = _uiState.value
+        val phoneNumber = state.selectedCallLog?.phoneNumber ?: return
+        val contact = state.contacts[phoneNumber]
+        val displayName = if (contact != null) {
+            "${contact.name} ($phoneNumber)"
+        } else {
+            phoneNumber
+        }
+        _uiState.update {
+            it.copy(
+                showReportSpamDialog = true,
+                reportDialogPhoneNumber = phoneNumber,
+                reportDialogDisplayName = displayName,
+            )
+        }
+    }
+
+    fun requestReportSafe() {
+        val state = _uiState.value
+        val phoneNumber = state.selectedCallLog?.phoneNumber ?: return
+        val contact = state.contacts[phoneNumber]
+        val displayName = if (contact != null) {
+            "${contact.name} ($phoneNumber)"
+        } else {
+            phoneNumber
+        }
+        _uiState.update {
+            it.copy(
+                showReportSafeDialog = true,
+                reportDialogPhoneNumber = phoneNumber,
+                reportDialogDisplayName = displayName,
+            )
+        }
+    }
+
+    fun confirmReportSpam() {
+        val phoneNumber = _uiState.value.reportDialogPhoneNumber
+        viewModelScope.launch {
+            spamRepository.reportAsSpam(phoneNumber)
+        }
+        _uiState.update {
+            it.copy(showReportSpamDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
+        }
+    }
+
+    fun confirmReportSafe() {
+        val phoneNumber = _uiState.value.reportDialogPhoneNumber
+        viewModelScope.launch {
+            spamRepository.reportAsSafe(phoneNumber)
+        }
+        _uiState.update {
+            it.copy(showReportSafeDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
+        }
+    }
+
+    fun dismissReportDialog() {
+        _uiState.update {
+            it.copy(
+                showReportSpamDialog = false,
+                showReportSafeDialog = false,
+                reportDialogPhoneNumber = "",
+                reportDialogDisplayName = "",
+            )
         }
     }
 

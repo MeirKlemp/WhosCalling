@@ -3,9 +3,11 @@ package com.klemfner.whoscalling.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.domain.model.ThemeMode
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.domain.repository.SpamRepository
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,6 +22,7 @@ import kotlinx.serialization.json.Json
 class SettingsViewModel(
     private val contactRepository: ContactRepository,
     private val settingsRepository: SettingsRepository,
+    private val spamRepository: SpamRepository,
 ) : ViewModel() {
 
     companion object {
@@ -35,11 +38,13 @@ class SettingsViewModel(
 
     val uiState: StateFlow<SettingsUiState> = combine(
         contactRepository.contacts.map { it.size },
+        spamRepository.spams.map { it.size },
         settingsRepository.preferences,
         _importResult,
-    ) { count, prefs, importResult ->
+    ) { contactCount, spamCount, prefs, importResult ->
         SettingsUiState(
-            contactCount = count,
+            contactCount = contactCount,
+            spamCount = spamCount,
             countryIso = prefs.countryIso,
             touchMode = prefs.touchMode,
             routerIp = prefs.routerIp,
@@ -63,20 +68,30 @@ class SettingsViewModel(
 
     suspend fun exportContacts(): ExportData {
         val contacts = contactRepository.contacts.first()
+        val spams = spamRepository.spams.first()
         return ExportData(
-            json = json.encodeToString<List<Contact>>(contacts),
-            count = contacts.size,
+            json = json.encodeToString<ExportPayload>(ExportPayload(contacts, spams)),
+            contactCount = contacts.size,
+            spamCount = spams.size,
         )
     }
 
     fun importContacts(jsonString: String) {
         viewModelScope.launch {
             try {
-                val contacts = json.decodeFromString<List<Contact>>(jsonString)
-                val imported = contactRepository.addContacts(contacts)
-                _importResult.value = ImportResult.Success(imported)
+                // Try new format first
+                val payload = try {
+                    json.decodeFromString<ExportPayload>(jsonString)
+                } catch (_: Exception) {
+                    // Fall back to old format (list of contacts only)
+                    val contacts = json.decodeFromString<List<Contact>>(jsonString)
+                    ExportPayload(contacts, emptyList())
+                }
+                val importedContacts = contactRepository.addContacts(payload.contacts)
+                val importedSpams = spamRepository.addSpams(payload.spams)
+                _importResult.value = ImportResult.Success(importedContacts, importedSpams)
             } catch (e: Exception) {
-                Logger.e(TAG, "Failed to import contacts", e)
+                Logger.e(TAG, "Failed to import data", e)
                 _importResult.value = ImportResult.Error
             }
         }
@@ -123,9 +138,21 @@ class SettingsViewModel(
     }
 }
 
-data class ExportData(val json: String, val count: Int)
+@kotlinx.serialization.Serializable
+data class ExportPayload(
+    val contacts: List<Contact>,
+    val spams: List<Spam> = emptyList(),
+)
+
+data class ExportData(val json: String, val contactCount: Int, val spamCount: Int = 0)
 
 sealed interface ImportResult {
-    data class Success(val count: Int) : ImportResult
+    data class Success(val count: Int, val spamCount: Int = 0) : ImportResult
     data object Error : ImportResult
 }
+
+val ImportResult.count: Int
+    get() = when (this) {
+        is ImportResult.Success -> count
+        is ImportResult.Error -> 0
+    }
