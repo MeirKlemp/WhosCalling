@@ -6,6 +6,7 @@ import com.klemfner.whoscalling.domain.model.SpamReport
 import com.klemfner.whoscalling.domain.repository.SpamRepository
 import com.klemfner.whoscalling.util.Logger
 import com.klemfner.whoscalling.util.currentTimeMillis
+import com.klemfner.whoscalling.util.maskPhoneNumber
 import kotlinx.coroutines.flow.Flow
 
 class SpamRepositoryImpl(
@@ -76,7 +77,7 @@ class SpamRepositoryImpl(
                 localDataSource.saveSpam(spam)
                 imported++
             } catch (e: Exception) {
-                Logger.w(TAG, "Failed to import spam: ${spam.phoneNumber}", e)
+                Logger.w(TAG, "Failed to import spam: ${maskPhoneNumber(spam.phoneNumber)}", e)
             }
         }
         return imported
