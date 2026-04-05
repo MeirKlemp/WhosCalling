@@ -189,7 +189,7 @@ fun ContactList(
                                 defaultCountryIso = defaultCountryIso,
                                 isDeleteMode = isDeleteMode,
                                 isChecked = contact.id in selectedForDeletion,
-                                isSpam = spamNumbers.containsKey(contact.phoneNumber),
+                                isSpam = spamNumbers[contact.phoneNumber]?.isSpam == true,
                             )
                         }
                     }

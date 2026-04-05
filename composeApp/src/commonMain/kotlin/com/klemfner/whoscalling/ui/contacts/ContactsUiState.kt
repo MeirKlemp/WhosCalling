@@ -7,10 +7,9 @@ import com.klemfner.whoscalling.domain.model.Spam
 data class ContactsUiState(
     val contacts: List<Contact> = emptyList(),
     val callCounts: Map<String, Int> = emptyMap(),
-    val spamNumbers: Map<String, Spam> = emptyMap(),
+    val spams: Map<String, Spam> = emptyMap(),
     val selectedContact: Contact? = null,
     val contactCallLogs: List<CallLog> = emptyList(),
-    val selectedSpam: Spam? = null,
     val currentPane: ContactsPane = ContactsPane.LIST,
     val formState: ContactFormState = ContactFormState(),
     val defaultCountryIso: String = "",
@@ -22,7 +21,6 @@ data class ContactsUiState(
     val showReportSpamDialog: Boolean = false,
     val showTrustNumberDialog: Boolean = false,
     val reportDialogPhoneNumber: String = "",
-    val reportDialogDisplayName: String = "",
 )
 
 enum class ContactsPane {

@@ -73,23 +73,9 @@ class ContactsViewModel(
         }
         viewModelScope.launch {
             spamRepository.spams.map { spams ->
-                spams.filter { it.isSpam }.associateBy { it.phoneNumber }
+                spams.associateBy { it.phoneNumber }
             }.collect { spamMap ->
-                _uiState.update { it.copy(spamNumbers = spamMap) }
-            }
-        }
-        viewModelScope.launch {
-            combine(
-                spamRepository.spams,
-                selectedContactPhone,
-            ) { allSpams, phone ->
-                if (phone != null) {
-                    allSpams.find { it.phoneNumber == phone }
-                } else {
-                    null
-                }
-            }.collect { spam ->
-                _uiState.update { it.copy(selectedSpam = spam) }
+                _uiState.update { it.copy(spams = spamMap) }
             }
         }
     }
@@ -162,7 +148,7 @@ class ContactsViewModel(
             ContactsPane.DETAILS -> {
                 selectedContactPhone.value = null
                 _uiState.update {
-                    it.copy(currentPane = ContactsPane.LIST, selectedContact = null, selectedSpam = null)
+                    it.copy(currentPane = ContactsPane.LIST, selectedContact = null)
                 }
             }
             ContactsPane.LIST -> { /* nothing */ }
@@ -328,27 +314,21 @@ class ContactsViewModel(
     }
 
     fun requestReportSpam() {
-        val state = _uiState.value
-        val contact = state.selectedContact ?: return
-        val displayName = "${contact.name} (${contact.phoneNumber})"
+        val contact = _uiState.value.selectedContact ?: return
         _uiState.update {
             it.copy(
                 showReportSpamDialog = true,
                 reportDialogPhoneNumber = contact.phoneNumber,
-                reportDialogDisplayName = displayName,
             )
         }
     }
 
     fun requestReportSafe() {
-        val state = _uiState.value
-        val contact = state.selectedContact ?: return
-        val displayName = "${contact.name} (${contact.phoneNumber})"
+        val contact = _uiState.value.selectedContact ?: return
         _uiState.update {
             it.copy(
                 showTrustNumberDialog = true,
                 reportDialogPhoneNumber = contact.phoneNumber,
-                reportDialogDisplayName = displayName,
             )
         }
     }
@@ -359,7 +339,7 @@ class ContactsViewModel(
             spamRepository.reportAsSpam(phoneNumber)
         }
         _uiState.update {
-            it.copy(showReportSpamDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
+            it.copy(showReportSpamDialog = false, reportDialogPhoneNumber = "")
         }
     }
 
@@ -369,7 +349,7 @@ class ContactsViewModel(
             spamRepository.reportAsSafe(phoneNumber)
         }
         _uiState.update {
-            it.copy(showTrustNumberDialog = false, reportDialogPhoneNumber = "", reportDialogDisplayName = "")
+            it.copy(showTrustNumberDialog = false, reportDialogPhoneNumber = "")
         }
     }
 
@@ -379,7 +359,6 @@ class ContactsViewModel(
                 showReportSpamDialog = false,
                 showTrustNumberDialog = false,
                 reportDialogPhoneNumber = "",
-                reportDialogDisplayName = "",
             )
         }
     }

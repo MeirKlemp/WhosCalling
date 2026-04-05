@@ -88,7 +88,9 @@ fun ContactsScreen(
 
     if (uiState.showReportSpamDialog) {
         ReportSpamDialog(
-            displayName = uiState.reportDialogDisplayName,
+            phoneNumber = uiState.reportDialogPhoneNumber,
+            contactName = uiState.selectedContact?.name,
+            defaultCountryIso = uiState.defaultCountryIso,
             onConfirm = viewModel::confirmReportSpam,
             onDismiss = viewModel::dismissReportDialog,
         )
@@ -96,7 +98,9 @@ fun ContactsScreen(
 
     if (uiState.showTrustNumberDialog) {
         TrustNumberDialog(
-            displayName = uiState.reportDialogDisplayName,
+            phoneNumber = uiState.reportDialogPhoneNumber,
+            contactName = uiState.selectedContact?.name,
+            defaultCountryIso = uiState.defaultCountryIso,
             onConfirm = viewModel::confirmReportSafe,
             onDismiss = viewModel::dismissReportDialog,
         )
@@ -180,7 +184,7 @@ private fun CompactContactsLayout(
                 isDeleteMode = uiState.isDeleteMode,
                 selectedForDeletion = uiState.selectedForDeletion,
                 defaultCountryIso = uiState.defaultCountryIso,
-                spamNumbers = uiState.spamNumbers,
+                spamNumbers = uiState.spams,
                 modifier = Modifier.fillMaxSize(),
             )
             ContactsPane.DETAILS -> {
@@ -194,7 +198,7 @@ private fun CompactContactsLayout(
                         onDeleteClick = { viewModel.requestDeleteContact(contact) },
                         onCallLogClick = onCallLogClick,
                         defaultCountryIso = uiState.defaultCountryIso,
-                        spam = uiState.selectedSpam,
+                        spam = uiState.spams[contact.phoneNumber],
                         onReportSpam = viewModel::requestReportSpam,
                         onReportSafe = viewModel::requestReportSafe,
                         modifier = Modifier.fillMaxSize(),
@@ -239,7 +243,7 @@ private fun ExpandedContactsLayout(
             isDeleteMode = uiState.isDeleteMode,
             selectedForDeletion = uiState.selectedForDeletion,
             defaultCountryIso = uiState.defaultCountryIso,
-            spamNumbers = uiState.spamNumbers,
+            spamNumbers = uiState.spams,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 
@@ -287,7 +291,7 @@ private fun ExpandedContactsLayout(
                             onDeleteClick = { viewModel.requestDeleteContact(contact) },
                             onCallLogClick = onCallLogClick,
                             defaultCountryIso = uiState.defaultCountryIso,
-                            spam = uiState.selectedSpam,
+                            spam = uiState.spams[contact.phoneNumber],
                             onReportSpam = viewModel::requestReportSpam,
                             onReportSafe = viewModel::requestReportSafe,
                             modifier = Modifier.fillMaxSize(),

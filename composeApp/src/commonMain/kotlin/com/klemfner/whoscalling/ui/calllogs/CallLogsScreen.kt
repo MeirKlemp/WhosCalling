@@ -92,7 +92,9 @@ fun CallLogsScreen(
 
     if (uiState.showReportSpamDialog) {
         ReportSpamDialog(
-            displayName = uiState.reportDialogDisplayName,
+            phoneNumber = uiState.reportDialogPhoneNumber,
+            contactName = uiState.contacts[uiState.reportDialogPhoneNumber]?.name,
+            defaultCountryIso = uiState.defaultCountryIso,
             onConfirm = viewModel::confirmReportSpam,
             onDismiss = viewModel::dismissReportDialog,
         )
@@ -100,7 +102,9 @@ fun CallLogsScreen(
 
     if (uiState.showTrustNumberDialog) {
         TrustNumberDialog(
-            displayName = uiState.reportDialogDisplayName,
+            phoneNumber = uiState.reportDialogPhoneNumber,
+            contactName = uiState.contacts[uiState.reportDialogPhoneNumber]?.name,
+            defaultCountryIso = uiState.defaultCountryIso,
             onConfirm = viewModel::confirmReportSafe,
             onDismiss = viewModel::dismissReportDialog,
         )
@@ -182,7 +186,7 @@ private fun CompactCallLogsLayout(
                 onRefresh = viewModel::refresh,
                 onLoginClick = onLoginClick,
                 defaultCountryIso = uiState.defaultCountryIso,
-                spamNumbers = uiState.spamNumbers,
+                spamNumbers = uiState.spams,
                 modifier = Modifier.fillMaxSize(),
             )
             CallLogsPane.DETAILS -> {
@@ -198,7 +202,7 @@ private fun CompactCallLogsLayout(
                         onCallLogClick = viewModel::selectCallLog,
                         defaultCountryIso = uiState.defaultCountryIso,
                         isRinging = callLog.id == uiState.ringingCallId,
-                        spam = uiState.selectedSpam,
+                        spam = uiState.spams[callLog.phoneNumber],
                         onReportSpam = viewModel::requestReportSpam,
                         onReportSafe = viewModel::requestReportSafe,
                         modifier = Modifier.fillMaxSize(),
@@ -228,7 +232,7 @@ private fun ExpandedCallLogsLayout(
             onRefresh = viewModel::refresh,
             onLoginClick = onLoginClick,
             defaultCountryIso = uiState.defaultCountryIso,
-            spamNumbers = uiState.spamNumbers,
+            spamNumbers = uiState.spams,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 
@@ -278,7 +282,7 @@ private fun ExpandedCallLogsLayout(
                             onCallLogClick = viewModel::selectCallLog,
                             defaultCountryIso = uiState.defaultCountryIso,
                             isRinging = callLog.id == uiState.ringingCallId,
-                            spam = uiState.selectedSpam,
+                            spam = uiState.spams[callLog.phoneNumber],
                             onReportSpam = viewModel::requestReportSpam,
                             onReportSafe = viewModel::requestReportSafe,
                             modifier = Modifier.fillMaxSize(),

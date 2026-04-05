@@ -155,7 +155,7 @@ fun CallLogsList(
                                 isSelected = log.id == selectedCallLogId,
                                 onClick = { onCallLogClick(log) },
                                 defaultCountryIso = defaultCountryIso,
-                                isSpam = spamNumbers.containsKey(log.phoneNumber),
+                                isSpam = spamNumbers[log.phoneNumber]?.isSpam == true,
                             )
                         }
                     }

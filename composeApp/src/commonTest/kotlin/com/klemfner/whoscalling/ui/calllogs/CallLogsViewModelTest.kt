@@ -282,7 +282,7 @@ class CallLogsViewModelTest {
         viewModel.uiState.test {
             skipItems(1)
             val state = awaitItem()
-            assertTrue(state.spamNumbers.containsKey("+1234567890"))
+            assertTrue(state.spams["+1234567890"]?.isSpam == true)
         }
     }
 
@@ -323,10 +323,10 @@ class CallLogsViewModelTest {
             assertFalse(state.showReportSpamDialog)
 
             // Wait for spam list to update
-            while (!state.spamNumbers.containsKey("+1234567890")) {
+            while (state.spams["+1234567890"]?.isSpam != true) {
                 state = awaitItem()
             }
-            assertTrue(state.spamNumbers.containsKey("+1234567890"))
+            assertTrue(state.spams["+1234567890"]?.isSpam == true)
         }
     }
 

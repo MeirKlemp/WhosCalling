@@ -8,6 +8,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.cancel
@@ -18,10 +20,13 @@ import whoscalling.composeapp.generated.resources.trust_number_confirm
 
 @Composable
 fun ReportSpamDialog(
-    displayName: String,
+    phoneNumber: String,
+    contactName: String?,
+    defaultCountryIso: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val displayName = rememberDisplayName(phoneNumber, contactName, defaultCountryIso)
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.Warning, contentDescription = null) },
@@ -42,10 +47,13 @@ fun ReportSpamDialog(
 
 @Composable
 fun TrustNumberDialog(
-    displayName: String,
+    phoneNumber: String,
+    contactName: String?,
+    defaultCountryIso: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val displayName = rememberDisplayName(phoneNumber, contactName, defaultCountryIso)
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
@@ -62,4 +70,14 @@ fun TrustNumberDialog(
             }
         },
     )
+}
+
+@Composable
+private fun rememberDisplayName(
+    phoneNumber: String,
+    contactName: String?,
+    defaultCountryIso: String,
+): String = remember(phoneNumber, contactName, defaultCountryIso) {
+    val formattedPhone = formatPhoneForDisplay(phoneNumber, defaultCountryIso).toString()
+    if (contactName != null) "$contactName ($formattedPhone)" else formattedPhone
 }

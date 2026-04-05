@@ -10,8 +10,10 @@ import com.klemfner.whoscalling.data.local.SpamLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.data.remote.AuthRemoteDataSource
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
-import com.klemfner.whoscalling.data.remote.DummyAuthRemoteDataSource
-import com.klemfner.whoscalling.data.remote.DummyCallLogRemoteDataSource
+import com.klemfner.whoscalling.data.remote.PartnerAuthenticationDataSource
+import com.klemfner.whoscalling.data.remote.PartnerCallLogDataSource
+import com.klemfner.whoscalling.data.remote.srp.Srp6aClient
+import com.klemfner.whoscalling.data.remote.srp.Srp6aClientImpl
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
@@ -45,9 +47,16 @@ val dataSourceModule = module {
     single<CallLogLocalDataSource> { CallLogLocalDataSourceImpl(get()) }
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
     single<SpamLocalDataSource> { SpamLocalDataSourceImpl(get()) }
-    single<CallLogRemoteDataSource> { DummyCallLogRemoteDataSource() }
+    single<CallLogRemoteDataSource> {
+        val settingsRepo: SettingsRepository = get()
+        PartnerCallLogDataSource(get()) { settingsRepo.currentRouterIp }
+    }
     single<HttpClient> { HttpClient() }
-    single<AuthRemoteDataSource> { DummyAuthRemoteDataSource() }
+    single<Srp6aClient> { Srp6aClientImpl() }
+    single<AuthRemoteDataSource> {
+        val settingsRepo: SettingsRepository = get()
+        PartnerAuthenticationDataSource(get(), get()) { settingsRepo.currentRouterIp }
+    }
 }
 
 val repositoryModule = module {
