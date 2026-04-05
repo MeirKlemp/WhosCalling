@@ -44,8 +44,8 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
-import whoscalling.composeapp.generated.resources.contacts_exported
-import whoscalling.composeapp.generated.resources.contacts_imported
+import whoscalling.composeapp.generated.resources.data_exported
+import whoscalling.composeapp.generated.resources.data_imported
 import whoscalling.composeapp.generated.resources.import_error
 import whoscalling.composeapp.generated.resources.settings
 
@@ -85,7 +85,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     LaunchedEffect(uiState.importResult) {
         when (val result = uiState.importResult) {
             is ImportResult.Success -> {
-                val message = getString(Res.string.contacts_imported, result.count)
+                val message = getString(Res.string.data_imported, result.count, result.spamCount)
                 snackbarHostState.showSnackbar(message)
                 viewModel.clearImportResult()
             }
@@ -141,13 +141,14 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
                 ContactsSection(
                     contactCount = uiState.contactCount,
+                    spamCount = uiState.spamCount,
                     onExport = {
                         scope.launch {
                             val exportData = viewModel.exportContacts()
-                            val saved = fileSaver("contacts.json", exportData.json)
+                            val saved = fileSaver("data.json", exportData.json)
                             if (saved) {
                                 val message =
-                                    getString(Res.string.contacts_exported, exportData.count)
+                                    getString(Res.string.data_exported, exportData.contactCount, exportData.spamCount)
                                 snackbarHostState.showSnackbar(message)
                             }
                         }

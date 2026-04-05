@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,6 +50,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.dismiss
+import whoscalling.composeapp.generated.resources.spam_warning
 
 @Composable
 fun RingingCallBanner(
@@ -74,6 +77,7 @@ fun RingingCallBanner(
             RingingBannerContent(
                 displayName = displayName,
                 isExpanded = isExpanded,
+                isSpam = uiState.isSpam,
                 onClick = {
                     viewModel.dismiss()
                     navigator.navigateTo(NavigationTab.CALL_LOGS, NavAction.ShowCallLog(ringingCall.id))
@@ -90,10 +94,22 @@ fun RingingCallBanner(
 private fun RingingBannerContent(
     displayName: String,
     isExpanded: Boolean,
+    isSpam: Boolean,
     onClick: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val containerColor = if (isSpam) {
+        MaterialTheme.colorScheme.errorContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val contentColor = if (isSpam) {
+        MaterialTheme.colorScheme.onErrorContainer
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    }
+
     BoxWithConstraints(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = if (isExpanded) Alignment.CenterEnd else Alignment.Center,
@@ -109,7 +125,7 @@ private fun RingingBannerContent(
             modifier = bannerModifier,
             shape = MaterialTheme.shapes.medium,
             shadowElevation = 6.dp,
-            color = MaterialTheme.colorScheme.primaryContainer,
+            color = containerColor,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -117,14 +133,24 @@ private fun RingingBannerContent(
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RingingPhoneIcon()
+                    RingingPhoneIcon(contentColor = contentColor)
 
                     Spacer(Modifier.width(12.dp))
+
+                    if (isSpam) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = stringResource(Res.string.spam_warning),
+                            tint = contentColor,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                    }
 
                     Text(
                         text = displayName,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = contentColor,
                         maxLines = 1,
                     )
 
@@ -135,7 +161,7 @@ private fun RingingBannerContent(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = stringResource(Res.string.dismiss),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = contentColor,
                     )
                 }
             }
@@ -144,7 +170,10 @@ private fun RingingBannerContent(
 }
 
 @Composable
-private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
+private fun RingingPhoneIcon(
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+) {
     val infiniteTransition = rememberInfiniteTransition()
 
     val scale by infiniteTransition.animateFloat(
@@ -187,7 +216,7 @@ private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
                     alpha = waveAlpha,
                 )
                 .background(
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    contentColor.copy(alpha = 0.3f),
                     CircleShape,
                 )
         )
@@ -195,7 +224,7 @@ private fun RingingPhoneIcon(modifier: Modifier = Modifier) {
         Icon(
             Icons.Default.Phone,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            tint = contentColor,
             modifier = Modifier
                 .size(24.dp)
                 .graphicsLayer(

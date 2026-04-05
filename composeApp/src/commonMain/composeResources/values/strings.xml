@@ -56,11 +56,7 @@
     <string name="time_label">Time</string>
     <string name="call_logs_by_number_count">Call logs with this number (%1$d)</string>
     <string name="contact_count">%1$d contact(s)</string>
-    <string name="export_contacts">Export Contacts</string>
-    <string name="import_contacts">Import Contacts</string>
-    <string name="contacts_exported">Exported %1$d contact(s)</string>
-    <string name="contacts_imported">Imported %1$d contact(s)</string>
-    <string name="import_error">Failed to import contacts</string>
+    <string name="import_error">Failed to import data</string>
     <string name="phone_country_code">Phone Country Code</string>
     <string name="reset_to_default">Reset to Default</string>
     <string name="general">General</string>
@@ -94,4 +90,19 @@
     <string name="theme_dark">Dark</string>
     <string name="incoming_ringing_call">Incoming Ringing</string>
     <string name="dismiss">Dismiss</string>
+    <string name="report_spam">Report as Spam</string>
+    <string name="trust_number">Trust this number</string>
+    <string name="detected_as_spam">Detected as spam</string>
+    <string name="reported_as_spam">You reported this number as spam</string>
+    <string name="trusted_number">You trusted this number</string>
+    <string name="report_spam_confirm">Are you sure you want to report %1$s as spam?</string>
+    <string name="trust_number_confirm">Are you sure you want to trust %1$s?</string>
+    <string name="spam_warning">Spam</string>
+    <string name="data">Data</string>
+    <string name="spam_count">%1$d spam number(s)</string>
+    <string name="no_spam_numbers">No spam numbers</string>
+    <string name="export_data">Export Data</string>
+    <string name="import_data">Import Data</string>
+    <string name="data_exported">Exported %1$d contact(s) and %2$d spam number(s)</string>
+    <string name="data_imported">Imported %1$d contact(s) and %2$d spam number(s)</string>
 </resources>

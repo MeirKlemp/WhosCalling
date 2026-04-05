@@ -2,10 +2,12 @@ package com.klemfner.whoscalling.ui.contacts
 
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 
 data class ContactsUiState(
     val contacts: List<Contact> = emptyList(),
     val callCounts: Map<String, Int> = emptyMap(),
+    val spams: Map<String, Spam> = emptyMap(),
     val selectedContact: Contact? = null,
     val contactCallLogs: List<CallLog> = emptyList(),
     val currentPane: ContactsPane = ContactsPane.LIST,
@@ -16,6 +18,9 @@ data class ContactsUiState(
     val showDeleteDialog: Boolean = false,
     val deleteDialogContactName: String? = null,
     val error: ContactsError? = null,
+    val showReportSpamDialog: Boolean = false,
+    val showTrustNumberDialog: Boolean = false,
+    val reportDialogPhoneNumber: String = "",
 )
 
 enum class ContactsPane {

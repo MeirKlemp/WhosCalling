@@ -5,6 +5,8 @@ import com.klemfner.whoscalling.data.local.CallLogLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.ContactLocalDataSource
 import com.klemfner.whoscalling.data.local.ContactLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.DatabaseDriverFactory
+import com.klemfner.whoscalling.data.local.SpamLocalDataSource
+import com.klemfner.whoscalling.data.local.SpamLocalDataSourceImpl
 import com.klemfner.whoscalling.data.local.db.WhosCallingDatabase
 import com.klemfner.whoscalling.data.remote.AuthRemoteDataSource
 import com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource
@@ -15,10 +17,12 @@ import com.klemfner.whoscalling.data.remote.srp.Srp6aClientImpl
 import com.klemfner.whoscalling.data.repository.AuthRepositoryImpl
 import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
 import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
+import com.klemfner.whoscalling.data.repository.SpamRepositoryImpl
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.domain.repository.SpamRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.ringing_banner.RingingCallViewModel
@@ -42,6 +46,7 @@ val databaseModule = module {
 val dataSourceModule = module {
     single<CallLogLocalDataSource> { CallLogLocalDataSourceImpl(get()) }
     single<ContactLocalDataSource> { ContactLocalDataSourceImpl(get()) }
+    single<SpamLocalDataSource> { SpamLocalDataSourceImpl(get()) }
     single<CallLogRemoteDataSource> {
         val settingsRepo: SettingsRepository = get()
         PartnerCallLogDataSource(get()) { settingsRepo.currentRouterIp }
@@ -74,6 +79,7 @@ val repositoryModule = module {
             normalizePhone = { phone -> normalizePhoneNumber(phone, settingsRepo.currentCountryIso) },
         )
     }
+    single<SpamRepository> { SpamRepositoryImpl(get()) }
 }
 
 val viewModelModule = module {

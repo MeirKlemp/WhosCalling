@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.ui.common.components.ConfirmDeleteDialog
+import com.klemfner.whoscalling.ui.common.components.TrustNumberDialog
+import com.klemfner.whoscalling.ui.common.components.ReportSpamDialog
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
 import com.klemfner.whoscalling.ui.contacts.components.ContactDetails
@@ -81,6 +83,26 @@ fun ContactsScreen(
             deleteCount = uiState.selectedForDeletion.size,
             onConfirm = viewModel::confirmDelete,
             onDismiss = viewModel::dismissDeleteDialog,
+        )
+    }
+
+    if (uiState.showReportSpamDialog) {
+        ReportSpamDialog(
+            phoneNumber = uiState.reportDialogPhoneNumber,
+            contactName = uiState.selectedContact?.name,
+            defaultCountryIso = uiState.defaultCountryIso,
+            onConfirm = viewModel::confirmReportSpam,
+            onDismiss = viewModel::dismissReportDialog,
+        )
+    }
+
+    if (uiState.showTrustNumberDialog) {
+        TrustNumberDialog(
+            phoneNumber = uiState.reportDialogPhoneNumber,
+            contactName = uiState.selectedContact?.name,
+            defaultCountryIso = uiState.defaultCountryIso,
+            onConfirm = viewModel::confirmReportSafe,
+            onDismiss = viewModel::dismissReportDialog,
         )
     }
 
@@ -162,6 +184,7 @@ private fun CompactContactsLayout(
                 isDeleteMode = uiState.isDeleteMode,
                 selectedForDeletion = uiState.selectedForDeletion,
                 defaultCountryIso = uiState.defaultCountryIso,
+                spamNumbers = uiState.spams,
                 modifier = Modifier.fillMaxSize(),
             )
             ContactsPane.DETAILS -> {
@@ -175,6 +198,9 @@ private fun CompactContactsLayout(
                         onDeleteClick = { viewModel.requestDeleteContact(contact) },
                         onCallLogClick = onCallLogClick,
                         defaultCountryIso = uiState.defaultCountryIso,
+                        spam = uiState.spams[contact.phoneNumber],
+                        onReportSpam = viewModel::requestReportSpam,
+                        onReportSafe = viewModel::requestReportSafe,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -217,6 +243,7 @@ private fun ExpandedContactsLayout(
             isDeleteMode = uiState.isDeleteMode,
             selectedForDeletion = uiState.selectedForDeletion,
             defaultCountryIso = uiState.defaultCountryIso,
+            spamNumbers = uiState.spams,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 
@@ -264,6 +291,9 @@ private fun ExpandedContactsLayout(
                             onDeleteClick = { viewModel.requestDeleteContact(contact) },
                             onCallLogClick = onCallLogClick,
                             defaultCountryIso = uiState.defaultCountryIso,
+                            spam = uiState.spams[contact.phoneNumber],
+                            onReportSpam = viewModel::requestReportSpam,
+                            onReportSafe = viewModel::requestReportSafe,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

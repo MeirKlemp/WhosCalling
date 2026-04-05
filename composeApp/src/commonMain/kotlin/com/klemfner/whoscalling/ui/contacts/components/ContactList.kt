@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import org.jetbrains.compose.resources.stringResource
 import whoscalling.composeapp.generated.resources.Res
@@ -64,6 +65,7 @@ fun ContactList(
     selectedForDeletion: Set<String>,
     modifier: Modifier = Modifier,
     defaultCountryIso: String = "",
+    spamNumbers: Map<String, Spam> = emptyMap(),
 ) {
     val isTouchMode = LocalIsTouchMode.current
 
@@ -187,6 +189,7 @@ fun ContactList(
                                 defaultCountryIso = defaultCountryIso,
                                 isDeleteMode = isDeleteMode,
                                 isChecked = contact.id in selectedForDeletion,
+                                isSpam = spamNumbers[contact.phoneNumber]?.isSpam == true,
                             )
                         }
                     }

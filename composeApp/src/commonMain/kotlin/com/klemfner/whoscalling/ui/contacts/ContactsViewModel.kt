@@ -7,6 +7,7 @@ import com.klemfner.whoscalling.domain.model.InvalidPhoneNumberException
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.domain.repository.SpamRepository
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import com.klemfner.whoscalling.util.getCountryIsoFromPhoneNumber
 import com.klemfner.whoscalling.util.maskPhoneNumber
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.text.ifEmpty
@@ -24,6 +26,7 @@ class ContactsViewModel(
     private val contactRepository: ContactRepository,
     private val callLogRepository: CallLogRepository,
     private val settingsRepository: SettingsRepository,
+    private val spamRepository: SpamRepository,
 ) : ViewModel() {
 
     companion object {
@@ -66,6 +69,13 @@ class ContactsViewModel(
         viewModelScope.launch {
             settingsRepository.preferences.collect { prefs ->
                 _uiState.update { it.copy(defaultCountryIso = prefs.countryIso) }
+            }
+        }
+        viewModelScope.launch {
+            spamRepository.spams.map { spams ->
+                spams.associateBy { it.phoneNumber }
+            }.collect { spamMap ->
+                _uiState.update { it.copy(spams = spamMap) }
             }
         }
     }
@@ -300,6 +310,56 @@ class ContactsViewModel(
                     else ContactsError.GenericFormError
                 _uiState.update { it.copy(error = error) }
             }
+        }
+    }
+
+    fun requestReportSpam() {
+        val contact = _uiState.value.selectedContact ?: return
+        _uiState.update {
+            it.copy(
+                showReportSpamDialog = true,
+                reportDialogPhoneNumber = contact.phoneNumber,
+            )
+        }
+    }
+
+    fun requestReportSafe() {
+        val contact = _uiState.value.selectedContact ?: return
+        _uiState.update {
+            it.copy(
+                showTrustNumberDialog = true,
+                reportDialogPhoneNumber = contact.phoneNumber,
+            )
+        }
+    }
+
+    fun confirmReportSpam() {
+        val phoneNumber = _uiState.value.reportDialogPhoneNumber
+        viewModelScope.launch {
+            spamRepository.reportAsSpam(phoneNumber)
+        }
+        _uiState.update {
+            it.copy(showReportSpamDialog = false, reportDialogPhoneNumber = "")
+        }
+    }
+
+    fun confirmReportSafe() {
+        val phoneNumber = _uiState.value.reportDialogPhoneNumber
+        viewModelScope.launch {
+            spamRepository.reportAsSafe(phoneNumber)
+        }
+        _uiState.update {
+            it.copy(showTrustNumberDialog = false, reportDialogPhoneNumber = "")
+        }
+    }
+
+    fun dismissReportDialog() {
+        _uiState.update {
+            it.copy(
+                showReportSpamDialog = false,
+                showTrustNumberDialog = false,
+                reportDialogPhoneNumber = "",
+            )
         }
     }
 

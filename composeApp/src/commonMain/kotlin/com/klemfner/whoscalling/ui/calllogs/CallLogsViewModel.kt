@@ -3,10 +3,13 @@ package com.klemfner.whoscalling.ui.calllogs
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.klemfner.whoscalling.domain.model.CallLog
+import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.domain.repository.SettingsRepository
+import com.klemfner.whoscalling.domain.repository.SpamRepository
 import com.klemfner.whoscalling.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +24,7 @@ class CallLogsViewModel(
     private val contactRepository: ContactRepository,
     private val authRepository: AuthRepository,
     private val settingsRepository: SettingsRepository,
+    private val spamRepository: SpamRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CallLogsUiState())
@@ -35,25 +39,35 @@ class CallLogsViewModel(
         val contactMap = contactRepository.contacts.map { contacts ->
             contacts.associateBy { it.phoneNumber }
         }
+        val spamMap = spamRepository.spams.map { spams ->
+            spams.associateBy { it.phoneNumber }
+        }
 
         viewModelScope.launch {
             combine(
                 sortedCallLogs,
                 contactMap,
                 selectedNumber,
-            ) { sorted, contacts, phone ->
+                spamMap,
+            ) { sorted, contacts, phone, spams ->
                 val filtered = if (phone != null) {
                     sorted.filter { it.phoneNumber == phone }
                 } else {
                     emptyList()
                 }
-                Triple(sorted, contacts, filtered)
-            }.collect { (sorted, contacts, filtered) ->
+                CallLogsData(
+                    sorted = sorted,
+                    contacts = contacts,
+                    filtered = filtered,
+                    spams = spams,
+                )
+            }.collect { data ->
                 _uiState.update {
                     it.copy(
-                        callLogs = sorted,
-                        contacts = contacts,
-                        selectedNumberCallLogs = filtered,
+                        callLogs = data.sorted,
+                        contacts = data.contacts,
+                        selectedNumberCallLogs = data.filtered,
+                        spams = data.spams,
                     )
                 }
             }
@@ -119,7 +133,64 @@ class CallLogsViewModel(
         }
     }
 
+    fun requestReportSpam() {
+        val phoneNumber = _uiState.value.selectedCallLog?.phoneNumber ?: return
+        _uiState.update {
+            it.copy(
+                showReportSpamDialog = true,
+                reportDialogPhoneNumber = phoneNumber,
+            )
+        }
+    }
+
+    fun requestReportSafe() {
+        val phoneNumber = _uiState.value.selectedCallLog?.phoneNumber ?: return
+        _uiState.update {
+            it.copy(
+                showTrustNumberDialog = true,
+                reportDialogPhoneNumber = phoneNumber,
+            )
+        }
+    }
+
+    fun confirmReportSpam() {
+        val phoneNumber = _uiState.value.reportDialogPhoneNumber
+        viewModelScope.launch {
+            spamRepository.reportAsSpam(phoneNumber)
+        }
+        _uiState.update {
+            it.copy(showReportSpamDialog = false, reportDialogPhoneNumber = "")
+        }
+    }
+
+    fun confirmReportSafe() {
+        val phoneNumber = _uiState.value.reportDialogPhoneNumber
+        viewModelScope.launch {
+            spamRepository.reportAsSafe(phoneNumber)
+        }
+        _uiState.update {
+            it.copy(showTrustNumberDialog = false, reportDialogPhoneNumber = "")
+        }
+    }
+
+    fun dismissReportDialog() {
+        _uiState.update {
+            it.copy(
+                showReportSpamDialog = false,
+                showTrustNumberDialog = false,
+                reportDialogPhoneNumber = "",
+            )
+        }
+    }
+
     companion object {
         private const val TAG = "CallLogsViewModel"
     }
 }
+
+private data class CallLogsData(
+    val sorted: List<CallLog>,
+    val contacts: Map<String, Contact>,
+    val filtered: List<CallLog>,
+    val spams: Map<String, Spam>,
+)

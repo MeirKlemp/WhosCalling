@@ -8,6 +8,7 @@ import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.fake.FakeCallLogRepository
 import com.klemfner.whoscalling.fake.FakeContactRepository
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
+import com.klemfner.whoscalling.fake.FakeSpamRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -29,6 +30,7 @@ class RingingCallViewModelTest {
     private lateinit var callLogRepository: FakeCallLogRepository
     private lateinit var contactRepository: FakeContactRepository
     private lateinit var settingsRepository: FakeSettingsRepository
+    private lateinit var spamRepository: FakeSpamRepository
     private lateinit var viewModel: RingingCallViewModel
 
     private val contact1 = Contact(id = "1", name = "Alice", phoneNumber = "+1234567890", email = "alice@test.com")
@@ -42,7 +44,8 @@ class RingingCallViewModelTest {
         callLogRepository = FakeCallLogRepository()
         contactRepository = FakeContactRepository()
         settingsRepository = FakeSettingsRepository(UserPreferences(countryIso = "US"))
-        viewModel = RingingCallViewModel(callLogRepository, contactRepository, settingsRepository)
+        spamRepository = FakeSpamRepository()
+        viewModel = RingingCallViewModel(callLogRepository, contactRepository, settingsRepository, spamRepository)
     }
 
     @AfterTest
@@ -189,6 +192,30 @@ class RingingCallViewModelTest {
             val state = awaitItem()
             assertTrue(state.isDismissed)
             assertFalse(state.showBanner)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun isSpam_whenRingingCallIsSpam() = runTest(testDispatcher) {
+        spamRepository.reportAsSpam("+1234567890")
+        callLogRepository.setRingingCall(callLog1)
+        viewModel.uiState.test {
+            awaitItem() // initial
+            val state = awaitItem()
+            assertTrue(state.isSpam)
+            assertTrue(state.showBanner)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun isSpam_falseWhenNotSpam() = runTest(testDispatcher) {
+        callLogRepository.setRingingCall(callLog1)
+        viewModel.uiState.test {
+            awaitItem() // initial
+            val state = awaitItem()
+            assertFalse(state.isSpam)
             cancelAndConsumeRemainingEvents()
         }
     }
