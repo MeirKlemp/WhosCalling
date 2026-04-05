@@ -9,7 +9,9 @@ import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -42,12 +44,13 @@ class CallLogRepositoryImplTest {
     private fun createRepository(
         normalizePhone: (String) -> String = { it },
         settingsRepo: FakeSettingsRepository = settingsRepository,
+        scope: CoroutineScope = TestScope(),
     ) = CallLogRepositoryImpl(
         remoteDataSource,
         localDataSource,
         authRepository,
         settingsRepo,
-        scope = TestScope(),
+        scope = scope,
         currentTimeMillis = { fakeCurrentTimeMillis },
         normalizePhone = normalizePhone,
     )
@@ -383,7 +386,10 @@ class CallLogRepositoryImplTest {
         )
         remoteDataSource.emit(remoteLogs)
 
-        val repo = createRepository(settingsRepo = startupSettings)
+        val repo = createRepository(
+            settingsRepo = startupSettings,
+            scope = TestScope(UnconfinedTestDispatcher()),
+        )
 
         repo.callLogs.test {
             val result = awaitItem()
@@ -402,10 +408,12 @@ class CallLogRepositoryImplTest {
         )
         remoteDataSource.emit(remoteLogs)
 
-        val repo = createRepository(settingsRepo = startupSettings)
+        val repo = createRepository(
+            settingsRepo = startupSettings,
+            scope = TestScope(UnconfinedTestDispatcher()),
+        )
 
-        // With auto-refresh on, the startup refresh should NOT trigger immediately
-        // (auto-refresh delays before first fetch)
+        // With auto-refresh on, the startup refresh should NOT trigger
         repo.callLogs.test {
             assertEquals(emptyList(), awaitItem())
             cancelAndConsumeRemainingEvents()
@@ -422,7 +430,10 @@ class CallLogRepositoryImplTest {
         )
         remoteDataSource.emit(remoteLogs)
 
-        val repo = createRepository(settingsRepo = startupSettings)
+        val repo = createRepository(
+            settingsRepo = startupSettings,
+            scope = TestScope(UnconfinedTestDispatcher()),
+        )
 
         repo.callLogs.test {
             assertEquals(emptyList(), awaitItem())

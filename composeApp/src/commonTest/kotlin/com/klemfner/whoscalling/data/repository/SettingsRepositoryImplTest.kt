@@ -179,7 +179,7 @@ class SettingsRepositoryImplTest {
             assertEquals(120L, awaitItem().refreshRateSeconds)
 
             repository.resetToDefault()
-            assertEquals(5L, awaitItem().refreshRateSeconds)
+            assertEquals(0L, awaitItem().refreshRateSeconds)
 
             cancelAndConsumeRemainingEvents()
         }

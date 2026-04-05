@@ -12,6 +12,6 @@ data class UserPreferences(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
 ) {
     companion object {
-        const val DEFAULT_REFRESH_RATE_SECONDS = 5L
+        const val DEFAULT_REFRESH_RATE_SECONDS = 0L
     }
 }

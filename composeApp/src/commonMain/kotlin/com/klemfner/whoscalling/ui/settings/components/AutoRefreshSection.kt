@@ -165,7 +165,7 @@ fun AutoRefreshSection(
             }
         }
 
-        if (draftSeconds == 0L) {
+        if (selectedOption == 0L) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
