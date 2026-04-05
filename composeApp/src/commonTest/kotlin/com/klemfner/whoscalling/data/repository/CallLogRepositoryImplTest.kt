@@ -9,7 +9,9 @@ import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
 import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -42,12 +44,13 @@ class CallLogRepositoryImplTest {
     private fun createRepository(
         normalizePhone: (String) -> String = { it },
         settingsRepo: FakeSettingsRepository = settingsRepository,
+        scope: CoroutineScope = TestScope(),
     ) = CallLogRepositoryImpl(
         remoteDataSource,
         localDataSource,
         authRepository,
         settingsRepo,
-        scope = TestScope(),
+        scope = scope,
         currentTimeMillis = { fakeCurrentTimeMillis },
         normalizePhone = normalizePhone,
     )
@@ -368,6 +371,90 @@ class CallLogRepositoryImplTest {
 
         // With no logged in user, auto-refresh should not run
         repository.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshOnStartup_refreshesWhenAutoRefreshIsOff() = runTest {
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 0, refreshOnStartup = true)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(
+            settingsRepo = startupSettings,
+            scope = TestScope(UnconfinedTestDispatcher()),
+        )
+
+        repo.callLogs.test {
+            val result = awaitItem()
+            assertEquals(1, result.size)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshOnStartup_doesNotRefreshWhenAutoRefreshIsOn() = runTest {
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 5, refreshOnStartup = true)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(
+            settingsRepo = startupSettings,
+            scope = TestScope(UnconfinedTestDispatcher()),
+        )
+
+        // With auto-refresh on, the startup refresh should NOT trigger
+        repo.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshOnStartup_doesNotRefreshWhenDisabled() = runTest {
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 0, refreshOnStartup = false)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(
+            settingsRepo = startupSettings,
+            scope = TestScope(UnconfinedTestDispatcher()),
+        )
+
+        repo.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshOnStartup_doesNotRefreshWhenUserIsLoggedOut() = runTest {
+        authRepository.setLoggedOut()
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 0, refreshOnStartup = true)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(settingsRepo = startupSettings)
+
+        repo.callLogs.test {
             assertEquals(emptyList(), awaitItem())
             cancelAndConsumeRemainingEvents()
         }

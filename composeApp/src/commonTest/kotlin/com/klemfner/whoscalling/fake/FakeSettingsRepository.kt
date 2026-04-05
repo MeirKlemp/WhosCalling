@@ -28,6 +28,9 @@ class FakeSettingsRepository(
     override val currentRefreshRateSeconds: Long
         get() = _preferences.value.refreshRateSeconds
 
+    override val currentRefreshOnStartup: Boolean
+        get() = _preferences.value.refreshOnStartup
+
     override val currentThemeMode: ThemeMode
         get() = _preferences.value.themeMode
 
@@ -45,6 +48,10 @@ class FakeSettingsRepository(
 
     override suspend fun setRefreshRateSeconds(seconds: Long) {
         _preferences.update { it.copy(refreshRateSeconds = seconds) }
+    }
+
+    override suspend fun setRefreshOnStartup(refreshOnStartup: Boolean) {
+        _preferences.update { it.copy(refreshOnStartup = refreshOnStartup) }
     }
 
     override suspend fun setThemeMode(themeMode: ThemeMode) {

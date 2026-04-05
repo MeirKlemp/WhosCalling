@@ -128,7 +128,9 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
                 AutoRefreshSection(
                     refreshRateSeconds = uiState.refreshRateSeconds,
+                    refreshOnStartup = uiState.refreshOnStartup,
                     onRefreshRateSave = viewModel::setRefreshRateSeconds,
+                    onRefreshOnStartupChange = viewModel::setRefreshOnStartup,
                     isExpanded = isExpanded,
                 )
 

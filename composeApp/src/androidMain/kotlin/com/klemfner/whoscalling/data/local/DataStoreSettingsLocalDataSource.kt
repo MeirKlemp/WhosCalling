@@ -32,6 +32,7 @@ class DataStoreSettingsLocalDataSource(
             prefs[KEY_TOUCH_MODE] = updated.touchMode
             prefs[KEY_ROUTER_IP] = updated.routerIp
             prefs[KEY_REFRESH_RATE_SECONDS] = updated.refreshRateSeconds
+            prefs[KEY_REFRESH_ON_STARTUP] = updated.refreshOnStartup
             prefs[KEY_THEME_MODE] = updated.themeMode.name
         }
     }
@@ -41,6 +42,7 @@ class DataStoreSettingsLocalDataSource(
         private val KEY_TOUCH_MODE = booleanPreferencesKey("touch_mode")
         private val KEY_ROUTER_IP = stringPreferencesKey("router_ip")
         private val KEY_REFRESH_RATE_SECONDS = longPreferencesKey("refresh_rate_seconds")
+        private val KEY_REFRESH_ON_STARTUP = booleanPreferencesKey("refresh_on_startup")
         private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
 
         private fun Preferences.toUserPreferences(context: Context) = UserPreferences(
@@ -48,6 +50,7 @@ class DataStoreSettingsLocalDataSource(
             touchMode = this[KEY_TOUCH_MODE] ?: defaultTouchMode(),
             routerIp = this[KEY_ROUTER_IP] ?: defaultRouterIp(context),
             refreshRateSeconds = this[KEY_REFRESH_RATE_SECONDS] ?: UserPreferences.DEFAULT_REFRESH_RATE_SECONDS,
+            refreshOnStartup = this[KEY_REFRESH_ON_STARTUP] ?: false,
             themeMode = this[KEY_THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM,
         )
     }

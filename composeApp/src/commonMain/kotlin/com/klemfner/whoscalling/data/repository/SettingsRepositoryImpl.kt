@@ -43,6 +43,9 @@ class SettingsRepositoryImpl(
     override val currentRefreshRateSeconds: Long
         get() = preferences.value.refreshRateSeconds
 
+    override val currentRefreshOnStartup: Boolean
+        get() = preferences.value.refreshOnStartup
+
     override val currentThemeMode: ThemeMode
         get() = preferences.value.themeMode
 
@@ -60,6 +63,10 @@ class SettingsRepositoryImpl(
 
     override suspend fun setRefreshRateSeconds(seconds: Long) {
         localDataSource.updatePreferences { it.copy(refreshRateSeconds = seconds) }
+    }
+
+    override suspend fun setRefreshOnStartup(refreshOnStartup: Boolean) {
+        localDataSource.updatePreferences { it.copy(refreshOnStartup = refreshOnStartup) }
     }
 
     override suspend fun setThemeMode(themeMode: ThemeMode) {

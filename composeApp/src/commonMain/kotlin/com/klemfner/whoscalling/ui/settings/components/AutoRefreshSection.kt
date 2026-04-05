@@ -1,5 +1,6 @@
 package com.klemfner.whoscalling.ui.settings.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +32,7 @@ import whoscalling.composeapp.generated.resources.auto_refresh
 import whoscalling.composeapp.generated.resources.auto_refresh_custom
 import whoscalling.composeapp.generated.resources.auto_refresh_label
 import whoscalling.composeapp.generated.resources.auto_refresh_never
+import whoscalling.composeapp.generated.resources.auto_refresh_on_startup
 import whoscalling.composeapp.generated.resources.auto_refresh_seconds_input
 import whoscalling.composeapp.generated.resources.save
 
@@ -40,7 +43,9 @@ private const val CUSTOM_MARKER = -1L
 @Composable
 fun AutoRefreshSection(
     refreshRateSeconds: Long,
+    refreshOnStartup: Boolean,
     onRefreshRateSave: (Long) -> Unit,
+    onRefreshOnStartupChange: (Boolean) -> Unit,
     isExpanded: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -68,6 +73,7 @@ fun AutoRefreshSection(
 
     var selectedOption by remember(refreshRateSeconds) { mutableStateOf(initialSelection) }
     var customSeconds by remember(refreshRateSeconds) { mutableStateOf(initialCustom) }
+    var draftRefreshOnStartup by remember(refreshOnStartup) { mutableStateOf(refreshOnStartup) }
 
     // Whether the selected option is a visible preset button in the current layout.
     val isVisiblePreset = selectedOption != CUSTOM_MARKER && presetOptions.any { it.seconds == selectedOption }
@@ -91,7 +97,7 @@ fun AutoRefreshSection(
         value != null && value > 0
     }
 
-    val hasChanges = draftSeconds != refreshRateSeconds
+    val hasChanges = draftSeconds != refreshRateSeconds || draftRefreshOnStartup != refreshOnStartup
     val canSave = hasChanges && (activeButtonValue != CUSTOM_MARKER || isCustomValid)
 
     Text(
@@ -161,8 +167,30 @@ fun AutoRefreshSection(
             }
         }
 
+        if (selectedOption == 0L) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .clickable { draftRefreshOnStartup = !draftRefreshOnStartup },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = draftRefreshOnStartup,
+                    onCheckedChange = { draftRefreshOnStartup = it },
+                )
+                Text(
+                    text = stringResource(Res.string.auto_refresh_on_startup),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+
         Button(
-            onClick = { onRefreshRateSave(draftSeconds) },
+            onClick = {
+                onRefreshRateSave(draftSeconds)
+                onRefreshOnStartupChange(draftRefreshOnStartup)
+            },
             enabled = canSave,
             modifier = Modifier.padding(top = 8.dp),
         ) {
