@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.dismiss
+import whoscalling.composeapp.generated.resources.spam_warning
 
 @Composable
 fun RingingCallBanner(
@@ -74,6 +76,7 @@ fun RingingCallBanner(
             RingingBannerContent(
                 displayName = displayName,
                 isExpanded = isExpanded,
+                isSpam = uiState.isSpam,
                 onClick = {
                     viewModel.dismiss()
                     navigator.navigateTo(NavigationTab.CALL_LOGS, NavAction.ShowCallLog(ringingCall.id))
@@ -90,10 +93,22 @@ fun RingingCallBanner(
 private fun RingingBannerContent(
     displayName: String,
     isExpanded: Boolean,
+    isSpam: Boolean,
     onClick: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val containerColor = if (isSpam) {
+        MaterialTheme.colorScheme.errorContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val contentColor = if (isSpam) {
+        MaterialTheme.colorScheme.onErrorContainer
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    }
+
     BoxWithConstraints(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = if (isExpanded) Alignment.CenterEnd else Alignment.Center,
@@ -109,7 +124,7 @@ private fun RingingBannerContent(
             modifier = bannerModifier,
             shape = MaterialTheme.shapes.medium,
             shadowElevation = 6.dp,
-            color = MaterialTheme.colorScheme.primaryContainer,
+            color = containerColor,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -121,10 +136,20 @@ private fun RingingBannerContent(
 
                     Spacer(Modifier.width(12.dp))
 
+                    if (isSpam) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = stringResource(Res.string.spam_warning),
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                    }
+
                     Text(
                         text = displayName,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = contentColor,
                         maxLines = 1,
                     )
 
@@ -135,7 +160,7 @@ private fun RingingBannerContent(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = stringResource(Res.string.dismiss),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = contentColor,
                     )
                 }
             }

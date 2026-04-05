@@ -16,10 +16,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -36,8 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
+import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
@@ -51,6 +55,8 @@ import whoscalling.composeapp.generated.resources.details
 import whoscalling.composeapp.generated.resources.edit_contact
 import whoscalling.composeapp.generated.resources.long_time_ago
 import whoscalling.composeapp.generated.resources.no_call_logs
+import whoscalling.composeapp.generated.resources.report_safe
+import whoscalling.composeapp.generated.resources.report_spam
 import whoscalling.composeapp.generated.resources.this_month
 import whoscalling.composeapp.generated.resources.this_week
 import whoscalling.composeapp.generated.resources.today
@@ -67,8 +73,12 @@ fun ContactDetails(
     onCallLogClick: (CallLog) -> Unit,
     modifier: Modifier = Modifier,
     defaultCountryIso: String = "",
+    spam: Spam? = null,
+    onReportSpam: () -> Unit = {},
+    onReportSafe: () -> Unit = {},
 ) {
     val isTouchMode = LocalIsTouchMode.current
+    val isSpam = spam?.isSpam == true
     Scaffold(
         topBar = {
             TopAppBar(
@@ -83,6 +93,21 @@ fun ContactDetails(
                 },
                 actions = {
                     if (!isTouchMode) {
+                        if (!isSpam) {
+                            IconButton(onClick = onReportSpam) {
+                                Icon(
+                                    Icons.Default.Report,
+                                    contentDescription = stringResource(Res.string.report_spam),
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = onReportSafe) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = stringResource(Res.string.report_safe),
+                                )
+                            }
+                        }
                         IconButton(onClick = onEditClick) {
                             Icon(
                                 Icons.Default.Edit,
@@ -151,6 +176,10 @@ fun ContactDetails(
                         }
                     }
                 }
+                SpamStatusBanner(
+                    spam = spam,
+                    onReportSafe = onReportSafe,
+                )
                 HorizontalDivider()
             }
 

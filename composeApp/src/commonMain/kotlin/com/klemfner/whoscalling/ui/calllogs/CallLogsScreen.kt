@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.calllogs.components.CallLogDetails
 import com.klemfner.whoscalling.ui.calllogs.components.CallLogsList
+import com.klemfner.whoscalling.ui.common.components.ReportSafeDialog
+import com.klemfner.whoscalling.ui.common.components.ReportSpamDialog
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.common.utils.PlatformBackHandler
 import com.klemfner.whoscalling.ui.navigation.LocalNavigator
@@ -86,6 +88,22 @@ fun CallLogsScreen(
             snackbarHostState.showSnackbar(failedToRefreshMessage)
             viewModel.clearRefreshError()
         }
+    }
+
+    if (uiState.showReportSpamDialog) {
+        ReportSpamDialog(
+            displayName = uiState.reportDialogDisplayName,
+            onConfirm = viewModel::confirmReportSpam,
+            onDismiss = viewModel::dismissReportDialog,
+        )
+    }
+
+    if (uiState.showReportSafeDialog) {
+        ReportSafeDialog(
+            displayName = uiState.reportDialogDisplayName,
+            onConfirm = viewModel::confirmReportSafe,
+            onDismiss = viewModel::dismissReportDialog,
+        )
     }
 
     Box(
@@ -164,6 +182,7 @@ private fun CompactCallLogsLayout(
                 onRefresh = viewModel::refresh,
                 onLoginClick = onLoginClick,
                 defaultCountryIso = uiState.defaultCountryIso,
+                spamNumbers = uiState.spamNumbers,
                 modifier = Modifier.fillMaxSize(),
             )
             CallLogsPane.DETAILS -> {
@@ -179,6 +198,9 @@ private fun CompactCallLogsLayout(
                         onCallLogClick = viewModel::selectCallLog,
                         defaultCountryIso = uiState.defaultCountryIso,
                         isRinging = callLog.id == uiState.ringingCallId,
+                        spam = uiState.selectedSpam,
+                        onReportSpam = viewModel::requestReportSpam,
+                        onReportSafe = viewModel::requestReportSafe,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -206,6 +228,7 @@ private fun ExpandedCallLogsLayout(
             onRefresh = viewModel::refresh,
             onLoginClick = onLoginClick,
             defaultCountryIso = uiState.defaultCountryIso,
+            spamNumbers = uiState.spamNumbers,
             modifier = Modifier.weight(1f).fillMaxHeight(),
         )
 
@@ -255,6 +278,9 @@ private fun ExpandedCallLogsLayout(
                             onCallLogClick = viewModel::selectCallLog,
                             defaultCountryIso = uiState.defaultCountryIso,
                             isRinging = callLog.id == uiState.ringingCallId,
+                            spam = uiState.selectedSpam,
+                            onReportSpam = viewModel::requestReportSpam,
+                            onReportSafe = viewModel::requestReportSafe,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

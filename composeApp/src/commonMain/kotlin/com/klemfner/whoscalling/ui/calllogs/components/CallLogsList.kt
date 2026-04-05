@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
@@ -63,6 +64,7 @@ fun CallLogsList(
     onRefresh: () -> Unit,
     onLoginClick: () -> Unit,
     defaultCountryIso: String = "",
+    spamNumbers: Map<String, Spam> = emptyMap(),
     modifier: Modifier = Modifier,
 ) {
     val isTouchMode = LocalIsTouchMode.current
@@ -153,6 +155,7 @@ fun CallLogsList(
                                 isSelected = log.id == selectedCallLogId,
                                 onClick = { onCallLogClick(log) },
                                 defaultCountryIso = defaultCountryIso,
+                                isSpam = spamNumbers.containsKey(log.phoneNumber),
                             )
                         }
                     }

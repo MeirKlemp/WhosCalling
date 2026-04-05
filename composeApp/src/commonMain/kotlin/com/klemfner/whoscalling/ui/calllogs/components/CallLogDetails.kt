@@ -16,9 +16,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,8 +40,10 @@ import androidx.compose.ui.unit.dp
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.components.CallLogIcon
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
+import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
@@ -63,6 +67,8 @@ import whoscalling.composeapp.generated.resources.missed_incoming_call
 import whoscalling.composeapp.generated.resources.missed_outgoing_call
 import whoscalling.composeapp.generated.resources.no_call_logs
 import whoscalling.composeapp.generated.resources.outgoing_call
+import whoscalling.composeapp.generated.resources.report_safe
+import whoscalling.composeapp.generated.resources.report_spam
 import whoscalling.composeapp.generated.resources.show_contact
 import whoscalling.composeapp.generated.resources.this_month
 import whoscalling.composeapp.generated.resources.this_week
@@ -84,8 +90,12 @@ fun CallLogDetails(
     modifier: Modifier = Modifier,
     defaultCountryIso: String = "",
     isRinging: Boolean = false,
+    spam: Spam? = null,
+    onReportSpam: () -> Unit = {},
+    onReportSafe: () -> Unit = {},
 ) {
     val isTouchMode = LocalIsTouchMode.current
+    val isSpam = spam?.isSpam == true
     Scaffold(
         topBar = {
             TopAppBar(
@@ -100,6 +110,21 @@ fun CallLogDetails(
                 },
                 actions = {
                     if (!isTouchMode) {
+                        if (!isSpam) {
+                            IconButton(onClick = onReportSpam) {
+                                Icon(
+                                    Icons.Default.Report,
+                                    contentDescription = stringResource(Res.string.report_spam),
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = onReportSafe) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = stringResource(Res.string.report_safe),
+                                )
+                            }
+                        }
                         if (contact == null) {
                             IconButton(onClick = { onAddContactClick(callLog.phoneNumber) }) {
                                 Icon(
@@ -157,6 +182,13 @@ fun CallLogDetails(
                     formattedPhone = formattedPhone,
                     contact = contact,
                     isRinging = isRinging,
+                )
+            }
+
+            item {
+                SpamStatusBanner(
+                    spam = spam,
+                    onReportSafe = onReportSafe,
                 )
                 HorizontalDivider()
             }
