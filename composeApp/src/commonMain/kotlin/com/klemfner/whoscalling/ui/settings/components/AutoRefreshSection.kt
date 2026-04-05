@@ -1,5 +1,6 @@
 package com.klemfner.whoscalling.ui.settings.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -72,6 +73,7 @@ fun AutoRefreshSection(
 
     var selectedOption by remember(refreshRateSeconds) { mutableStateOf(initialSelection) }
     var customSeconds by remember(refreshRateSeconds) { mutableStateOf(initialCustom) }
+    var draftRefreshOnStartup by remember(refreshOnStartup) { mutableStateOf(refreshOnStartup) }
 
     // Whether the selected option is a visible preset button in the current layout.
     val isVisiblePreset = selectedOption != CUSTOM_MARKER && presetOptions.any { it.seconds == selectedOption }
@@ -95,7 +97,7 @@ fun AutoRefreshSection(
         value != null && value > 0
     }
 
-    val hasChanges = draftSeconds != refreshRateSeconds
+    val hasChanges = draftSeconds != refreshRateSeconds || draftRefreshOnStartup != refreshOnStartup
     val canSave = hasChanges && (activeButtonValue != CUSTOM_MARKER || isCustomValid)
 
     Text(
@@ -169,12 +171,13 @@ fun AutoRefreshSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 8.dp)
+                    .clickable { draftRefreshOnStartup = !draftRefreshOnStartup },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
-                    checked = refreshOnStartup,
-                    onCheckedChange = onRefreshOnStartupChange,
+                    checked = draftRefreshOnStartup,
+                    onCheckedChange = { draftRefreshOnStartup = it },
                 )
                 Text(
                     text = stringResource(Res.string.auto_refresh_on_startup),
@@ -184,7 +187,10 @@ fun AutoRefreshSection(
         }
 
         Button(
-            onClick = { onRefreshRateSave(draftSeconds) },
+            onClick = {
+                onRefreshRateSave(draftSeconds)
+                onRefreshOnStartupChange(draftRefreshOnStartup)
+            },
             enabled = canSave,
             modifier = Modifier.padding(top = 8.dp),
         ) {
