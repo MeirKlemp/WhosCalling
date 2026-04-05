@@ -22,13 +22,13 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -40,6 +40,7 @@ import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.ui.common.components.CallLogIcon
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
+import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
@@ -84,6 +85,7 @@ fun CallLogDetails(
     defaultCountryIso: String = "",
     isRinging: Boolean = false,
 ) {
+    val isTouchMode = LocalIsTouchMode.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -96,7 +98,45 @@ fun CallLogDetails(
                         )
                     }
                 },
+                actions = {
+                    if (!isTouchMode) {
+                        if (contact == null) {
+                            IconButton(onClick = { onAddContactClick(callLog.phoneNumber) }) {
+                                Icon(
+                                    Icons.Default.PersonAdd,
+                                    contentDescription = stringResource(Res.string.add_contact),
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = { onShowContactClick(contact.id) }) {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = stringResource(Res.string.show_contact),
+                                )
+                            }
+                        }
+                    }
+                },
             )
+        },
+        floatingActionButton = {
+            if (isTouchMode) {
+                if (contact == null) {
+                    FloatingActionButton(onClick = { onAddContactClick(callLog.phoneNumber) }) {
+                        Icon(
+                            Icons.Default.PersonAdd,
+                            contentDescription = stringResource(Res.string.add_contact),
+                        )
+                    }
+                } else {
+                    FloatingActionButton(onClick = { onShowContactClick(contact.id) }) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = stringResource(Res.string.show_contact),
+                        )
+                    }
+                }
+            }
         },
         modifier = modifier,
     ) { paddingValues ->
@@ -114,10 +154,8 @@ fun CallLogDetails(
             item {
                 CallLogHeader(
                     callLog = callLog,
-                    contact = contact,
                     formattedPhone = formattedPhone,
-                    onAddContactClick = onAddContactClick,
-                    onShowContactClick = onShowContactClick,
+                    contact = contact,
                     isRinging = isRinging,
                 )
                 HorizontalDivider()
@@ -157,10 +195,8 @@ fun CallLogDetails(
 @Composable
 private fun CallLogHeader(
     callLog: CallLog,
-    contact: Contact?,
     formattedPhone: FormattedPhone,
-    onAddContactClick: (String) -> Unit,
-    onShowContactClick: (String) -> Unit,
+    contact: Contact?,
     isRinging: Boolean = false,
 ) {
     Column(
@@ -169,12 +205,6 @@ private fun CallLogHeader(
     ) {
         SelectionContainer {
             ContactInfo(contact = contact, formattedPhone = formattedPhone)
-        }
-
-        if (contact == null) {
-            AddContactButton(phoneNumber = callLog.phoneNumber, onClick = onAddContactClick)
-        } else {
-            ShowContactButton(contactId = contact.id, onClick = onShowContactClick)
         }
 
         HorizontalDivider()
@@ -208,38 +238,6 @@ private fun ContactInfo(
                 style = MaterialTheme.typography.headlineMedium,
             )
         }
-    }
-}
-
-@Composable
-private fun AddContactButton(
-    phoneNumber: String,
-    onClick: (String) -> Unit,
-) {
-    TextButton(onClick = { onClick(phoneNumber) }) {
-        Icon(
-            Icons.Default.PersonAdd,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(stringResource(Res.string.add_contact))
-    }
-}
-
-@Composable
-private fun ShowContactButton(
-    contactId: String,
-    onClick: (String) -> Unit,
-) {
-    TextButton(onClick = { onClick(contactId) }) {
-        Icon(
-            Icons.Default.Person,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(stringResource(Res.string.show_contact))
     }
 }
 
