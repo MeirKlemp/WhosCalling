@@ -129,7 +129,12 @@ private fun SpamWarningRow(text: String) {
 private fun TrustNumberRow(onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = Modifier
+            .clickable(
+                onClick = onClick,
+                role = androidx.compose.ui.semantics.Role.Button,
+            )
+            .padding(vertical = 4.dp),
     ) {
         Icon(
             Icons.Default.CheckCircle,
