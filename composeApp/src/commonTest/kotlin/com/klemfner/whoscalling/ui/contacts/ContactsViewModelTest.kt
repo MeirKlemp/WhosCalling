@@ -7,6 +7,7 @@ import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.fake.FakeCallLogRepository
 import com.klemfner.whoscalling.fake.FakeContactRepository
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
+import com.klemfner.whoscalling.fake.FakeSpamRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -42,7 +43,7 @@ class ContactsViewModelTest {
         contactRepository = FakeContactRepository()
         callLogRepository = FakeCallLogRepository()
 
-        viewModel = ContactsViewModel(contactRepository, callLogRepository, FakeSettingsRepository())
+        viewModel = ContactsViewModel(contactRepository, callLogRepository, FakeSettingsRepository(), FakeSpamRepository())
     }
 
     @AfterTest

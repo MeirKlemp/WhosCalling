@@ -8,6 +8,7 @@ import com.klemfner.whoscalling.fake.FakeAuthRepository
 import com.klemfner.whoscalling.fake.FakeCallLogRepository
 import com.klemfner.whoscalling.fake.FakeContactRepository
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
+import com.klemfner.whoscalling.fake.FakeSpamRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withTimeout
@@ -30,6 +31,7 @@ class CallLogsViewModelTest {
     private lateinit var callLogRepository: FakeCallLogRepository
     private lateinit var contactRepository: FakeContactRepository
     private lateinit var authRepository: FakeAuthRepository
+    private lateinit var spamRepository: FakeSpamRepository
     private lateinit var viewModel: CallLogsViewModel
 
     private val contact1 = Contact("1", "Alice", "+1234567890", "alice@test.com")
@@ -46,8 +48,9 @@ class CallLogsViewModelTest {
         contactRepository = FakeContactRepository()
         authRepository = FakeAuthRepository()
         authRepository.setLoggedIn("user", "token")
+        spamRepository = FakeSpamRepository()
 
-        viewModel = CallLogsViewModel(callLogRepository, contactRepository, authRepository, FakeSettingsRepository())
+        viewModel = CallLogsViewModel(callLogRepository, contactRepository, authRepository, FakeSettingsRepository(), spamRepository)
     }
 
     @AfterTest
@@ -268,6 +271,83 @@ class CallLogsViewModelTest {
 
             viewModel.selectCallLogById("unknown-id")
             expectNoEvents()
+        }
+    }
+
+    @Test
+    fun spamNumbersAppearInState() = runTest {
+        callLogRepository.setCallLogs(listOf(callLog1))
+        spamRepository.reportAsSpam("+1234567890")
+
+        viewModel.uiState.test {
+            skipItems(1)
+            val state = awaitItem()
+            assertTrue(state.spamNumbers.containsKey("+1234567890"))
+        }
+    }
+
+    @Test
+    fun requestReportSpamShowsDialog() = runTest {
+        callLogRepository.setCallLogs(listOf(callLog1))
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.selectCallLog(callLog1)
+            awaitItem()
+
+            viewModel.requestReportSpam()
+            val state = awaitItem()
+            assertTrue(state.showReportSpamDialog)
+            assertEquals("+1234567890", state.reportDialogPhoneNumber)
+        }
+    }
+
+    @Test
+    fun confirmReportSpamAddsToSpam() = runTest {
+        callLogRepository.setCallLogs(listOf(callLog1))
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.selectCallLog(callLog1)
+            awaitItem()
+
+            viewModel.requestReportSpam()
+            awaitItem()
+
+            viewModel.confirmReportSpam()
+            var state = awaitItem()
+            assertFalse(state.showReportSpamDialog)
+
+            // Wait for spam list to update
+            while (!state.spamNumbers.containsKey("+1234567890")) {
+                state = awaitItem()
+            }
+            assertTrue(state.spamNumbers.containsKey("+1234567890"))
+        }
+    }
+
+    @Test
+    fun dismissReportDialogClosesDialog() = runTest {
+        callLogRepository.setCallLogs(listOf(callLog1))
+
+        viewModel.uiState.test {
+            skipItems(1)
+            awaitItem()
+
+            viewModel.selectCallLog(callLog1)
+            awaitItem()
+
+            viewModel.requestReportSpam()
+            awaitItem()
+
+            viewModel.dismissReportDialog()
+            val state = awaitItem()
+            assertFalse(state.showReportSpamDialog)
+            assertFalse(state.showReportSafeDialog)
         }
     }
 }

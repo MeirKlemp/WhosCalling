@@ -7,13 +7,13 @@ import com.klemfner.whoscalling.domain.model.ThemeMode
 import com.klemfner.whoscalling.domain.model.UserPreferences
 import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
+import com.klemfner.whoscalling.fake.FakeSpamRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -27,6 +27,7 @@ class SettingsViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var contactLocalDataSource: FakeContactLocalDataSource
     private lateinit var settingsRepository: FakeSettingsRepository
+    private lateinit var spamRepository: FakeSpamRepository
     private lateinit var viewModel: SettingsViewModel
 
     private val contact1 = Contact("1", "Alice", "+1234567890", "alice@test.com")
@@ -39,11 +40,12 @@ class SettingsViewModelTest {
         settingsRepository = FakeSettingsRepository(
             UserPreferences(countryIso = "US", touchMode = true, refreshRateSeconds = 5),
         )
+        spamRepository = FakeSpamRepository()
         val contactRepository = ContactRepositoryImpl(
             localDataSource = contactLocalDataSource,
             normalizePhone = { it },
         )
-        viewModel = SettingsViewModel(contactRepository, settingsRepository)
+        viewModel = SettingsViewModel(contactRepository, settingsRepository, spamRepository)
     }
 
     @AfterTest
@@ -54,9 +56,8 @@ class SettingsViewModelTest {
     @Test
     fun exportContacts_emptyList() = runTest(testDispatcher) {
         val result = viewModel.exportContacts()
-        assertEquals(0, result.count)
-        val contacts = Json.decodeFromString<List<Contact>>(result.json)
-        assertEquals(emptyList(), contacts)
+        assertEquals(0, result.contactCount)
+        assertEquals(0, result.spamCount)
     }
 
     @Test
@@ -65,13 +66,12 @@ class SettingsViewModelTest {
         contactLocalDataSource.saveContact(contact2)
 
         val result = viewModel.exportContacts()
-        assertEquals(2, result.count)
+        assertEquals(2, result.contactCount)
         assertTrue(result.json.contains("\"Alice\""))
         assertTrue(result.json.contains("\"+1234567890\""))
         assertTrue(result.json.contains("\"alice@test.com\""))
         assertTrue(result.json.contains("\"Bob\""))
         assertTrue(result.json.contains("\"+0987654321\""))
-        assertFalse(result.json.contains("\"id\""))
     }
 
     @Test
@@ -143,7 +143,7 @@ class SettingsViewModelTest {
                 phone
             },
         )
-        viewModel = SettingsViewModel(contactRepository, settingsRepository)
+        viewModel = SettingsViewModel(contactRepository, settingsRepository, spamRepository)
 
         val json = """
             [

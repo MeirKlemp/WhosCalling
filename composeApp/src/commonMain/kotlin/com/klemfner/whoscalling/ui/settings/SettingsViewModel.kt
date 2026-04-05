@@ -151,8 +151,8 @@ sealed interface ImportResult {
     data object Error : ImportResult
 }
 
-val ImportResult.count: Int
+val ImportResult?.count: Int
     get() = when (this) {
         is ImportResult.Success -> count
-        is ImportResult.Error -> 0
+        else -> 0
     }
