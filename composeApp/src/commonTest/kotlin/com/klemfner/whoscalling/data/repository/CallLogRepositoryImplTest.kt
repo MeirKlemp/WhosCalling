@@ -372,4 +372,80 @@ class CallLogRepositoryImplTest {
             cancelAndConsumeRemainingEvents()
         }
     }
+
+    @Test
+    fun refreshOnStartup_refreshesWhenAutoRefreshIsOff() = runTest {
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 0, refreshOnStartup = true)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(settingsRepo = startupSettings)
+
+        repo.callLogs.test {
+            val result = awaitItem()
+            assertEquals(1, result.size)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshOnStartup_doesNotRefreshWhenAutoRefreshIsOn() = runTest {
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 5, refreshOnStartup = true)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(settingsRepo = startupSettings)
+
+        // With auto-refresh on, the startup refresh should NOT trigger immediately
+        // (auto-refresh delays before first fetch)
+        repo.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshOnStartup_doesNotRefreshWhenDisabled() = runTest {
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 0, refreshOnStartup = false)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(settingsRepo = startupSettings)
+
+        repo.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun refreshOnStartup_doesNotRefreshWhenUserIsLoggedOut() = runTest {
+        authRepository.setLoggedOut()
+        val startupSettings = FakeSettingsRepository(
+            UserPreferences(refreshRateSeconds = 0, refreshOnStartup = true)
+        )
+        val remoteLogs = listOf(
+            CallLog("1", "+1234567890", CallType.INCOMING, false, 1000L, 60L),
+        )
+        remoteDataSource.emit(remoteLogs)
+
+        val repo = createRepository(settingsRepo = startupSettings)
+
+        repo.callLogs.test {
+            assertEquals(emptyList(), awaitItem())
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

@@ -404,4 +404,42 @@ class SettingsViewModelTest {
             cancelAndConsumeRemainingEvents()
         }
     }
+
+    @Test
+    fun refreshOnStartup_initialValue() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertFalse(awaitItem().refreshOnStartup)
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRefreshOnStartup_updatesUiState() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertFalse(awaitItem().refreshOnStartup)
+
+            viewModel.setRefreshOnStartup(true)
+            assertTrue(awaitItem().refreshOnStartup)
+
+            viewModel.setRefreshOnStartup(false)
+            assertFalse(awaitItem().refreshOnStartup)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun resetRefreshOnStartupToDefault_restoresDefault() = runTest(testDispatcher) {
+        viewModel.uiState.test {
+            assertFalse(awaitItem().refreshOnStartup)
+
+            viewModel.setRefreshOnStartup(true)
+            assertTrue(awaitItem().refreshOnStartup)
+
+            viewModel.resetToDefault()
+            assertFalse(awaitItem().refreshOnStartup)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

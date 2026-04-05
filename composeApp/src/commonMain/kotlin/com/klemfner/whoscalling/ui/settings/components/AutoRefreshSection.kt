@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,6 +31,7 @@ import whoscalling.composeapp.generated.resources.auto_refresh
 import whoscalling.composeapp.generated.resources.auto_refresh_custom
 import whoscalling.composeapp.generated.resources.auto_refresh_label
 import whoscalling.composeapp.generated.resources.auto_refresh_never
+import whoscalling.composeapp.generated.resources.auto_refresh_on_startup
 import whoscalling.composeapp.generated.resources.auto_refresh_seconds_input
 import whoscalling.composeapp.generated.resources.save
 
@@ -40,7 +42,9 @@ private const val CUSTOM_MARKER = -1L
 @Composable
 fun AutoRefreshSection(
     refreshRateSeconds: Long,
+    refreshOnStartup: Boolean,
     onRefreshRateSave: (Long) -> Unit,
+    onRefreshOnStartupChange: (Boolean) -> Unit,
     isExpanded: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -158,6 +162,24 @@ fun AutoRefreshSection(
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
+            }
+        }
+
+        if (draftSeconds == 0L) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = refreshOnStartup,
+                    onCheckedChange = onRefreshOnStartupChange,
+                )
+                Text(
+                    text = stringResource(Res.string.auto_refresh_on_startup),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         }
 

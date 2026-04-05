@@ -18,6 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
@@ -49,6 +50,20 @@ class CallLogRepositoryImpl(
                 } else {
                     autoRefreshJob?.cancel()
                     autoRefreshJob = null
+                }
+            }
+        }
+
+        scope.launch {
+            // Wait until user is logged in and refresh-on-startup is requested
+            // with auto-refresh disabled
+            authRepository.loggedInUser.first { it != null }
+            val prefs = settingsRepository.preferences.value
+            if (prefs.refreshRateSeconds == 0L && prefs.refreshOnStartup) {
+                try {
+                    localDataSource.replaceAllCallLogs(fetchWithAuth())
+                } catch (e: Exception) {
+                    Logger.e(TAG, "Refresh on startup failed", e)
                 }
             }
         }

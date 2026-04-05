@@ -223,4 +223,43 @@ class SettingsRepositoryImplTest {
             cancelAndConsumeRemainingEvents()
         }
     }
+
+    @Test
+    fun setRefreshOnStartup_updatesPreferences() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.preferences.test {
+            assertEquals(false, awaitItem().refreshOnStartup)
+
+            repository.setRefreshOnStartup(true)
+            assertEquals(true, awaitItem().refreshOnStartup)
+
+            repository.setRefreshOnStartup(false)
+            assertEquals(false, awaitItem().refreshOnStartup)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
+
+    @Test
+    fun setRefreshOnStartup_updatesSyncCurrentRefreshOnStartup() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setRefreshOnStartup(true)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(true, repository.currentRefreshOnStartup)
+    }
+
+    @Test
+    fun resetToDefault_restoresRefreshOnStartup() = runTest(testDispatcher) {
+        val repository = createRepository()
+        repository.setRefreshOnStartup(true)
+        testDispatcher.scheduler.advanceUntilIdle()
+        repository.preferences.test {
+            assertEquals(true, awaitItem().refreshOnStartup)
+
+            repository.resetToDefault()
+            assertEquals(false, awaitItem().refreshOnStartup)
+
+            cancelAndConsumeRemainingEvents()
+        }
+    }
 }

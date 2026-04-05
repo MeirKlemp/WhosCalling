@@ -49,6 +49,7 @@ class SettingsViewModel(
             touchMode = prefs.touchMode,
             routerIp = prefs.routerIp,
             refreshRateSeconds = prefs.refreshRateSeconds,
+            refreshOnStartup = prefs.refreshOnStartup,
             themeMode = prefs.themeMode,
             importResult = importResult,
         )
@@ -61,6 +62,7 @@ class SettingsViewModel(
                 touchMode = currentTouchMode,
                 routerIp = currentRouterIp,
                 refreshRateSeconds = currentRefreshRateSeconds,
+                refreshOnStartup = currentRefreshOnStartup,
                 themeMode = currentThemeMode,
             )
         },
@@ -122,6 +124,12 @@ class SettingsViewModel(
     fun setRefreshRateSeconds(seconds: Long) {
         viewModelScope.launch {
             settingsRepository.setRefreshRateSeconds(seconds)
+        }
+    }
+
+    fun setRefreshOnStartup(refreshOnStartup: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setRefreshOnStartup(refreshOnStartup)
         }
     }
 
