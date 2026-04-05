@@ -4,17 +4,12 @@ import app.cash.turbine.test
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
-import com.klemfner.whoscalling.fake.FakeAuthRepository
-import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
-import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
-import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
+import com.klemfner.whoscalling.fake.FakeCallLogRepository
+import com.klemfner.whoscalling.fake.FakeContactRepository
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
-import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
-import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -30,10 +25,8 @@ import kotlin.test.assertTrue
 class ContactsViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
-    private lateinit var contactLocalDataSource: FakeContactLocalDataSource
-    private lateinit var callLogLocalDataSource: FakeCallLogLocalDataSource
-    private lateinit var callLogRemoteDataSource: FakeCallLogRemoteDataSource
+    private lateinit var contactRepository: FakeContactRepository
+    private lateinit var callLogRepository: FakeCallLogRepository
     private lateinit var viewModel: ContactsViewModel
 
     private val contact1 = Contact("1", "Alice", "+1234567890", "alice@test.com")
@@ -46,22 +39,9 @@ class ContactsViewModelTest {
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        contactLocalDataSource = FakeContactLocalDataSource()
-        callLogLocalDataSource = FakeCallLogLocalDataSource()
-        callLogRemoteDataSource = FakeCallLogRemoteDataSource()
+        contactRepository = FakeContactRepository()
+        callLogRepository = FakeCallLogRepository()
 
-        val contactRepository = ContactRepositoryImpl(
-            localDataSource = contactLocalDataSource,
-            normalizePhone = { it },
-        )
-        val callLogRepository = CallLogRepositoryImpl(
-            remoteDataSource = callLogRemoteDataSource,
-            localDataSource = callLogLocalDataSource,
-            authRepository = FakeAuthRepository().apply { setLoggedIn("user", "token") },
-            settingsRepository = FakeSettingsRepository(),
-            scope = testScope,
-            normalizePhone = { it },
-        )
         viewModel = ContactsViewModel(contactRepository, callLogRepository, FakeSettingsRepository())
     }
 
@@ -82,8 +62,7 @@ class ContactsViewModelTest {
 
     @Test
     fun contactsAreSortedByName() = runTest {
-        contactLocalDataSource.saveContact(contact2)
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact2, contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -96,7 +75,7 @@ class ContactsViewModelTest {
 
     @Test
     fun selectContactNavigatesToDetails() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -124,7 +103,7 @@ class ContactsViewModelTest {
 
     @Test
     fun openEditContactPopulatesForm() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -145,7 +124,7 @@ class ContactsViewModelTest {
 
     @Test
     fun goBackFromDetailsReturnsToList() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -163,7 +142,7 @@ class ContactsViewModelTest {
 
     @Test
     fun goBackFromEditFormReturnsToDetails() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -198,7 +177,7 @@ class ContactsViewModelTest {
 
     @Test
     fun goBackFromAddFormReturnsToDetailsWhenContactSelected() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -240,7 +219,7 @@ class ContactsViewModelTest {
 
     @Test
     fun callCountsAreComputedFromCallLogs() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1, callLog2, callLog3))
+        callLogRepository.setCallLogs(listOf(callLog1, callLog2, callLog3))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -252,8 +231,8 @@ class ContactsViewModelTest {
 
     @Test
     fun selectingContactFiltersCallLogs() = runTest {
-        contactLocalDataSource.saveContact(contact1)
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1, callLog2, callLog3))
+        contactRepository.setContacts(listOf(contact1))
+        callLogRepository.setCallLogs(listOf(callLog1, callLog2, callLog3))
 
         viewModel.uiState.test {
             skipItems(2)
@@ -319,8 +298,7 @@ class ContactsViewModelTest {
 
     @Test
     fun toggleContactSelectionAddsAndRemoves() = runTest {
-        contactLocalDataSource.saveContact(contact1)
-        contactLocalDataSource.saveContact(contact2)
+        contactRepository.setContacts(listOf(contact1, contact2))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -345,8 +323,7 @@ class ContactsViewModelTest {
 
     @Test
     fun selectAllContactsSelectsAll() = runTest {
-        contactLocalDataSource.saveContact(contact1)
-        contactLocalDataSource.saveContact(contact2)
+        contactRepository.setContacts(listOf(contact1, contact2))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -363,8 +340,7 @@ class ContactsViewModelTest {
 
     @Test
     fun unselectAllContactsClearsSelection() = runTest {
-        contactLocalDataSource.saveContact(contact1)
-        contactLocalDataSource.saveContact(contact2)
+        contactRepository.setContacts(listOf(contact1, contact2))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -384,8 +360,7 @@ class ContactsViewModelTest {
 
     @Test
     fun requestDeleteSelectedContactsShowsDialogWithCount() = runTest {
-        contactLocalDataSource.saveContact(contact1)
-        contactLocalDataSource.saveContact(contact2)
+        contactRepository.setContacts(listOf(contact1, contact2))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -408,7 +383,7 @@ class ContactsViewModelTest {
 
     @Test
     fun requestDeleteSelectedContactsShowsDialogWithName() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -442,7 +417,7 @@ class ContactsViewModelTest {
 
     @Test
     fun requestDeleteContactShowsDialogWithName() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -458,7 +433,7 @@ class ContactsViewModelTest {
 
     @Test
     fun dismissDeleteDialogClearsDialog() = runTest {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -476,8 +451,7 @@ class ContactsViewModelTest {
 
     @Test
     fun confirmDeleteRemovesContactsAndExitsDeleteMode() = runTest(testDispatcher) {
-        contactLocalDataSource.saveContact(contact1)
-        contactLocalDataSource.saveContact(contact2)
+        contactRepository.setContacts(listOf(contact1, contact2))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -506,7 +480,7 @@ class ContactsViewModelTest {
 
     @Test
     fun confirmDeleteFromDetailsNavigatesToList() = runTest(testDispatcher) {
-        contactLocalDataSource.saveContact(contact1)
+        contactRepository.setContacts(listOf(contact1))
 
         viewModel.uiState.test {
             skipItems(1)

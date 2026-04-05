@@ -1,21 +1,17 @@
 package com.klemfner.whoscalling.ui.calllogs
 
 import app.cash.turbine.test
-import com.klemfner.whoscalling.data.repository.CallLogRepositoryImpl
-import com.klemfner.whoscalling.data.repository.ContactRepositoryImpl
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.fake.FakeAuthRepository
-import com.klemfner.whoscalling.fake.FakeCallLogLocalDataSource
-import com.klemfner.whoscalling.fake.FakeCallLogRemoteDataSource
-import com.klemfner.whoscalling.fake.FakeContactLocalDataSource
+import com.klemfner.whoscalling.fake.FakeCallLogRepository
+import com.klemfner.whoscalling.fake.FakeContactRepository
 import com.klemfner.whoscalling.fake.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -31,10 +27,8 @@ import kotlin.test.assertTrue
 class CallLogsViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
-    private lateinit var contactLocalDataSource: FakeContactLocalDataSource
-    private lateinit var callLogLocalDataSource: FakeCallLogLocalDataSource
-    private lateinit var callLogRemoteDataSource: FakeCallLogRemoteDataSource
+    private lateinit var callLogRepository: FakeCallLogRepository
+    private lateinit var contactRepository: FakeContactRepository
     private lateinit var authRepository: FakeAuthRepository
     private lateinit var viewModel: CallLogsViewModel
 
@@ -48,24 +42,11 @@ class CallLogsViewModelTest {
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        contactLocalDataSource = FakeContactLocalDataSource()
-        callLogLocalDataSource = FakeCallLogLocalDataSource()
-        callLogRemoteDataSource = FakeCallLogRemoteDataSource()
+        callLogRepository = FakeCallLogRepository()
+        contactRepository = FakeContactRepository()
         authRepository = FakeAuthRepository()
         authRepository.setLoggedIn("user", "token")
 
-        val contactRepository = ContactRepositoryImpl(
-            localDataSource = contactLocalDataSource,
-            normalizePhone = { it },
-        )
-        val callLogRepository = CallLogRepositoryImpl(
-            remoteDataSource = callLogRemoteDataSource,
-            localDataSource = callLogLocalDataSource,
-            authRepository = authRepository,
-            settingsRepository = FakeSettingsRepository(),
-            scope = testScope,
-            normalizePhone = { it },
-        )
         viewModel = CallLogsViewModel(callLogRepository, contactRepository, authRepository, FakeSettingsRepository())
     }
 
@@ -86,7 +67,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun callLogsAreSortedByTimestampDescending() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1, callLog2, callLog3))
+        callLogRepository.setCallLogs(listOf(callLog1, callLog2, callLog3))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -100,8 +81,8 @@ class CallLogsViewModelTest {
 
     @Test
     fun contactsAreResolvedByPhoneNumber() = runTest {
-        contactLocalDataSource.saveContact(contact1)
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1))
+        contactRepository.setContacts(listOf(contact1))
+        callLogRepository.setCallLogs(listOf(callLog1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -112,7 +93,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun selectCallLogNavigatesToDetails() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1))
+        callLogRepository.setCallLogs(listOf(callLog1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -127,7 +108,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun selectCallLogFiltersNumberCallLogs() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1, callLog2, callLog3))
+        callLogRepository.setCallLogs(listOf(callLog1, callLog2, callLog3))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -144,7 +125,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun goBackFromDetailsReturnsToList() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1))
+        callLogRepository.setCallLogs(listOf(callLog1))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -184,7 +165,7 @@ class CallLogsViewModelTest {
     @Test
     fun refreshLoadsRemoteCallLogs() = runTest {
         val remoteLogs = listOf(callLog1, callLog2)
-        callLogRemoteDataSource.emit(remoteLogs)
+        callLogRepository.setRefreshCallLogs(remoteLogs)
 
         viewModel.uiState.test {
             awaitItem()
@@ -207,7 +188,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun unsavedContactShowsPhoneNumber() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog3))
+        callLogRepository.setCallLogs(listOf(callLog3))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -218,8 +199,8 @@ class CallLogsViewModelTest {
 
     @Test
     fun savedContactShowsInContactsMap() = runTest {
-        contactLocalDataSource.saveContact(contact2)
-        callLogLocalDataSource.saveCallLogs(listOf(callLog3))
+        contactRepository.setContacts(listOf(contact2))
+        callLogRepository.setCallLogs(listOf(callLog3))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -243,24 +224,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun refreshErrorIsSetOnFailure() = runTest(testDispatcher) {
-        val throwingRemote = object : com.klemfner.whoscalling.data.remote.CallLogRemoteDataSource {
-            override suspend fun getCallLogs(token: String?): List<CallLog> {
-                throw RuntimeException("Network error")
-            }
-        }
-
-        val callLogRepository = CallLogRepositoryImpl(
-            remoteDataSource = throwingRemote,
-            localDataSource = callLogLocalDataSource,
-            authRepository = authRepository,
-            settingsRepository = FakeSettingsRepository(),
-            scope = testScope,
-            normalizePhone = { it },
-        )
-        viewModel = CallLogsViewModel(callLogRepository, ContactRepositoryImpl(
-            localDataSource = contactLocalDataSource,
-            normalizePhone = { it },
-        ), authRepository, FakeSettingsRepository())
+        callLogRepository.refreshException = RuntimeException("Network error")
 
         viewModel.uiState.test {
             awaitItem()
@@ -280,7 +244,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun selectCallLogByIdNavigatesToDetails() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1, callLog2))
+        callLogRepository.setCallLogs(listOf(callLog1, callLog2))
 
         viewModel.uiState.test {
             skipItems(1)
@@ -296,7 +260,7 @@ class CallLogsViewModelTest {
 
     @Test
     fun selectCallLogByIdWithUnknownIdDoesNothing() = runTest {
-        callLogLocalDataSource.saveCallLogs(listOf(callLog1))
+        callLogRepository.setCallLogs(listOf(callLog1))
 
         viewModel.uiState.test {
             skipItems(1)
