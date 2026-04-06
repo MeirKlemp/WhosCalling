@@ -1,10 +1,10 @@
 package com.klemfner.whoscalling.domain.repository
 
 import com.klemfner.whoscalling.domain.model.LoggedInUser
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {
-    val loggedInUser: Flow<LoggedInUser?>
+    val loggedInUser: StateFlow<LoggedInUser?>
     suspend fun login(username: String, password: String, rememberMe: Boolean)
     suspend fun retryLogin()
     suspend fun logout()

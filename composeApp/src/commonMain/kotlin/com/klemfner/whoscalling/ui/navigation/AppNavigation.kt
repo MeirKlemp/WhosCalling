@@ -20,8 +20,10 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsScreen
 import com.klemfner.whoscalling.ui.common.utils.LocalIsExpanded
 import com.klemfner.whoscalling.ui.contacts.ContactsScreen
@@ -29,6 +31,7 @@ import com.klemfner.whoscalling.ui.ringing_banner.RingingCallBanner
 import com.klemfner.whoscalling.ui.settings.SettingsScreen
 import com.klemfner.whoscalling.ui.user.UserScreen
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.call_logs
 import whoscalling.composeapp.generated.resources.contacts
@@ -38,7 +41,9 @@ import whoscalling.composeapp.generated.resources.user
 @Composable
 fun AppNavigation() {
     val isExpanded = LocalIsExpanded.current
-    val navigator = rememberNavigator()
+    val authRepository: AuthRepository = koinInject()
+    val initialTab = remember { if (authRepository.loggedInUser.value != null) NavigationTab.CALL_LOGS else NavigationTab.USER }
+    val navigator = rememberNavigator(initialTab)
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
         AppLayout(

@@ -13,6 +13,7 @@ import com.klemfner.whoscalling.ui.settings.SettingsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.koin.compose.KoinApplication
 import org.koin.core.module.dsl.viewModelOf
@@ -32,7 +33,7 @@ private class PreviewCallLogRepository : CallLogRepository {
 }
 
 private class PreviewAuthRepository : AuthRepository {
-    override val loggedInUser: Flow<LoggedInUser?> = flowOf(null)
+    override val loggedInUser: StateFlow<LoggedInUser?> = MutableStateFlow(null)
     override suspend fun login(username: String, password: String, rememberMe: Boolean) {}
     override suspend fun retryLogin() {}
     override suspend fun logout() {}
