@@ -42,7 +42,7 @@ import whoscalling.composeapp.generated.resources.user
 fun AppNavigation() {
     val isExpanded = LocalIsExpanded.current
     val authRepository: AuthRepository = koinInject()
-    val initialTab = remember { if (authRepository.getToken() != null) NavigationTab.CALL_LOGS else NavigationTab.USER }
+    val initialTab = remember { if (authRepository.loggedInUser.value != null) NavigationTab.CALL_LOGS else NavigationTab.USER }
     val navigator = rememberNavigator(initialTab)
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
