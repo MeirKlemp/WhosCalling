@@ -103,7 +103,9 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 .widthIn(max = COMPACT_MAX_WIDTH)
                 .align(Alignment.Center),
         ) {
-            TopAppBar(title = { Text(stringResource(Res.string.settings)) })
+            TopAppBar(
+                title = { Text(stringResource(Res.string.settings)) },
+            )
             Column(
                 modifier = Modifier
                     .weight(1f)

@@ -126,7 +126,7 @@ class ContactFormViewModel(
                 } else {
                     ContactsError.GenericFormError
                 }
-                _uiState.update { it.copy(error = error as ContactsError.FormError) }
+                _uiState.update { it.copy(error = error) }
             }
         }
     }
