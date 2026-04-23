@@ -8,7 +8,12 @@ import com.klemfner.whoscalling.domain.repository.AuthRepository
 import com.klemfner.whoscalling.domain.repository.CallLogRepository
 import com.klemfner.whoscalling.domain.repository.ContactRepository
 import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
+import com.klemfner.whoscalling.ui.calllogs.calllog_details.CallLogDetailsViewModel
+import com.klemfner.whoscalling.ui.calllogs.calllogs_list.CallLogsListViewModel
 import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import com.klemfner.whoscalling.ui.contacts.contact_details.ContactDetailsViewModel
+import com.klemfner.whoscalling.ui.contacts.contact_form.ContactFormViewModel
+import com.klemfner.whoscalling.ui.contacts.contacts_list.ContactsListViewModel
 import com.klemfner.whoscalling.ui.settings.SettingsViewModel
 import com.klemfner.whoscalling.ui.user.UserViewModel
 import kotlinx.coroutines.flow.Flow
@@ -49,7 +54,12 @@ fun PreviewKoinApplication(content: @Composable () -> Unit) {
                 single<CallLogRepository> { PreviewCallLogRepository() }
                 single<AuthRepository> { PreviewAuthRepository() }
                 viewModelOf(::ContactsViewModel)
+                viewModelOf(::ContactsListViewModel)
+                viewModelOf(::ContactDetailsViewModel)
+                viewModelOf(::ContactFormViewModel)
                 viewModelOf(::CallLogsViewModel)
+                viewModelOf(::CallLogsListViewModel)
+                viewModelOf(::CallLogDetailsViewModel)
                 viewModelOf(::UserViewModel)
                 viewModelOf(::SettingsViewModel)
             },

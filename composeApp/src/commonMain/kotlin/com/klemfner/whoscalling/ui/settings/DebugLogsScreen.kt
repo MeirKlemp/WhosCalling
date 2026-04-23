@@ -20,7 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -65,30 +64,28 @@ fun DebugLogsScreen(
 
     PlatformBackHandler(enabled = true, onBack = onBack)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.debug_logs)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.back),
-                        )
-                    }
-                },
-            )
-        },
-        modifier = modifier.onPreviewKeyEvent { event ->
+    Column(
+        modifier = modifier.fillMaxSize().onPreviewKeyEvent { event ->
             if (event.type == KeyEventType.KeyDown && event.key == Key.Escape) {
                 onBack()
                 true
             } else false
         },
-    ) { paddingValues ->
+    ) {
+        TopAppBar(
+            title = { Text(stringResource(Res.string.debug_logs)) },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(Res.string.back),
+                    )
+                }
+            },
+        )
         SelectionContainer {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {

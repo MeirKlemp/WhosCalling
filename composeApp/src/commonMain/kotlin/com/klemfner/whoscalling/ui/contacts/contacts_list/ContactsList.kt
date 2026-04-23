@@ -1,8 +1,7 @@
-package com.klemfner.whoscalling.ui.contacts.components
+package com.klemfner.whoscalling.ui.contacts.contacts_list
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,7 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.domain.model.Contact
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
-import com.klemfner.whoscalling.ui.contacts.contacts_list.ContactsListViewModel
+import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
+import com.klemfner.whoscalling.ui.contacts.components.ContactListItem
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
@@ -46,15 +46,14 @@ import whoscalling.composeapp.generated.resources.unselect_all
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ContactList(
-    selectedContactId: String?,
-    onContactClick: (Contact) -> Unit,
-    onAddClick: () -> Unit,
-    onRequestDelete: () -> Unit,
+fun ContactsList(
+    screenVM: ContactsViewModel,
     modifier: Modifier = Modifier,
     viewModel: ContactsListViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val screenState by screenVM.uiState.collectAsStateWithLifecycle()
+    val selectedContactId = screenState.selectedContact?.id
     val isTouchMode = LocalIsTouchMode.current
 
     Column(modifier = modifier) {
@@ -83,7 +82,7 @@ fun ContactList(
                     }
                     if (!isTouchMode) {
                         IconButton(
-                            onClick = onRequestDelete,
+                            onClick = { screenVM.requestDeleteSelectedContacts(uiState.selectedForDeletion, uiState.contacts) },
                             enabled = uiState.selectedForDeletion.isNotEmpty(),
                         ) {
                             Icon(
@@ -94,7 +93,7 @@ fun ContactList(
                     }
                 } else {
                     if (!isTouchMode) {
-                        IconButton(onClick = onAddClick) {
+                        IconButton(onClick = { screenVM.openAddContact() }) {
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = stringResource(Res.string.add_contact),
@@ -159,7 +158,7 @@ fun ContactList(
                                 if (uiState.isDeleteMode) {
                                     viewModel.toggleContactSelection(contact.id)
                                 } else {
-                                    onContactClick(contact)
+                                    screenVM.selectContact(contact)
                                 }
                             },
                             defaultCountryIso = uiState.defaultCountryIso,
@@ -173,4 +172,3 @@ fun ContactList(
         }
     }
 }
-

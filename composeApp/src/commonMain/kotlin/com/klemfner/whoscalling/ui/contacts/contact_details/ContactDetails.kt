@@ -1,4 +1,4 @@
-package com.klemfner.whoscalling.ui.contacts.components
+package com.klemfner.whoscalling.ui.contacts.contact_details
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -17,8 +17,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Report
@@ -39,13 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.Contact
+import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
-import com.klemfner.whoscalling.ui.contacts.contact_details.ContactDetailsViewModel
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -67,18 +67,15 @@ import whoscalling.composeapp.generated.resources.yesterday
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ContactDetails(
-    contact: Contact,
-    defaultCountryIso: String,
-    onBackClick: () -> Unit,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    onReportSpam: () -> Unit,
-    onReportSafe: () -> Unit,
+    screenVM: ContactsViewModel,
     onCallLogClick: (CallLog) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ContactDetailsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val screenState by screenVM.uiState.collectAsStateWithLifecycle()
+    val contact = screenState.selectedContact ?: return
+    val defaultCountryIso = screenState.defaultCountryIso
     val isTouchMode = LocalIsTouchMode.current
     val spam = uiState.spams[contact.phoneNumber]
     val isSpam = spam?.isSpam == true
@@ -91,7 +88,7 @@ fun ContactDetails(
         TopAppBar(
             title = { Text(stringResource(Res.string.details)) },
             navigationIcon = {
-                IconButton(onClick = onBackClick) {
+                IconButton(onClick = screenVM::goBack) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(Res.string.back),
@@ -102,10 +99,10 @@ fun ContactDetails(
                 ContactDetailsActions(
                     isTouchMode = isTouchMode,
                     isSpam = isSpam,
-                    onReportSpam = onReportSpam,
-                    onReportSafe = onReportSafe,
-                    onEditClick = onEditClick,
-                    onDeleteClick = onDeleteClick,
+                    onReportSpam = { screenVM.requestReportSpam(contact.phoneNumber) },
+                    onReportSafe = { screenVM.requestReportSafe(contact.phoneNumber) },
+                    onEditClick = screenVM::openEditContact,
+                    onDeleteClick = { screenVM.requestDeleteContact(contact) },
                 )
             },
         )
@@ -150,7 +147,7 @@ fun ContactDetails(
                 }
                 SpamStatusBanner(
                     spam = spam,
-                    onReportSafe = onReportSafe,
+                    onReportSafe = { screenVM.requestReportSafe(contact.phoneNumber) },
                 )
                 HorizontalDivider()
             }

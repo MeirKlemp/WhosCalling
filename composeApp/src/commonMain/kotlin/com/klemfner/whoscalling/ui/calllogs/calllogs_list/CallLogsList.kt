@@ -1,0 +1,204 @@
+package com.klemfner.whoscalling.ui.calllogs.calllogs_list
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.klemfner.whoscalling.domain.model.CallLog
+import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
+import com.klemfner.whoscalling.ui.calllogs.components.CallLogListItem
+import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
+import com.klemfner.whoscalling.ui.common.utils.TimePeriod
+import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
+import whoscalling.composeapp.generated.resources.Res
+import whoscalling.composeapp.generated.resources.call_log_count
+import whoscalling.composeapp.generated.resources.call_logs
+import whoscalling.composeapp.generated.resources.login
+import whoscalling.composeapp.generated.resources.long_time_ago
+import whoscalling.composeapp.generated.resources.no_call_logs
+import whoscalling.composeapp.generated.resources.not_logged_in_warning
+import whoscalling.composeapp.generated.resources.refresh
+import whoscalling.composeapp.generated.resources.this_month
+import whoscalling.composeapp.generated.resources.this_week
+import whoscalling.composeapp.generated.resources.today
+import whoscalling.composeapp.generated.resources.yesterday
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun CallLogsList(
+    screenVM: CallLogsViewModel,
+    onLoginClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: CallLogsListViewModel = koinViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val screenState by screenVM.uiState.collectAsStateWithLifecycle()
+    val selectedCallLogId = screenState.selectedCallLog?.id
+    val isTouchMode = LocalIsTouchMode.current
+
+    Column(modifier = modifier) {
+        TopAppBar(
+            title = { Text(stringResource(Res.string.call_logs)) },
+            actions = {
+                if (!isTouchMode) {
+                    IconButton(
+                        onClick = viewModel::refresh,
+                        enabled = uiState.isLoggedIn && !uiState.isRefreshing,
+                    ) {
+                        if (uiState.isRefreshing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = stringResource(Res.string.refresh),
+                            )
+                        }
+                    }
+                }
+            },
+        )
+
+        if (!uiState.isLoggedIn) {
+            NotLoggedInBanner(onLoginClick)
+        }
+
+        Text(
+            text = stringResource(Res.string.call_log_count, uiState.callLogs.size),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+
+        val content: @Composable () -> Unit = {
+            val timePeriodGroups = remember(uiState.callLogs) {
+                uiState.callLogs.groupBy { getTimePeriod(it.timestamp) }
+                    .toSortedMap(compareBy { it.ordinal })
+            }
+
+            LazyColumn(Modifier.fillMaxSize()) {
+                if (uiState.callLogs.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                stringResource(Res.string.no_call_logs),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+
+                timePeriodGroups.forEach { (period, logs) ->
+                    stickyHeader(key = "period_${period.name}") {
+                        val periodText = when (period) {
+                            TimePeriod.TODAY -> stringResource(Res.string.today)
+                            TimePeriod.YESTERDAY -> stringResource(Res.string.yesterday)
+                            TimePeriod.THIS_WEEK -> stringResource(Res.string.this_week)
+                            TimePeriod.THIS_MONTH -> stringResource(Res.string.this_month)
+                            TimePeriod.LONG_TIME_AGO -> stringResource(Res.string.long_time_ago)
+                        }
+                        Text(
+                            text = periodText,
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                        )
+                    }
+                    items(logs, key = { it.id }) { log ->
+                        CallLogListItem(
+                            callLog = log,
+                            contact = uiState.contacts[log.phoneNumber],
+                            isSelected = log.id == selectedCallLogId,
+                            onClick = { screenVM.selectCallLog(log) },
+                            defaultCountryIso = uiState.defaultCountryIso,
+                            isSpam = uiState.spams[log.phoneNumber]?.isSpam == true,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (isTouchMode && uiState.isLoggedIn) {
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            ) {
+                content()
+            }
+        } else {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotLoggedInBanner(onLoginClick: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = stringResource(Res.string.not_logged_in_warning),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onLoginClick) {
+                Text(stringResource(Res.string.login))
+            }
+        }
+    }
+}

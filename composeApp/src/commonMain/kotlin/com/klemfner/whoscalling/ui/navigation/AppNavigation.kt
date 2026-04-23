@@ -1,22 +1,24 @@
 package com.klemfner.whoscalling.ui.navigation
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -38,6 +40,7 @@ import whoscalling.composeapp.generated.resources.contacts
 import whoscalling.composeapp.generated.resources.settings
 import whoscalling.composeapp.generated.resources.user
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val isExpanded = LocalIsExpanded.current
@@ -46,109 +49,101 @@ fun AppNavigation() {
     val navigator = rememberNavigator(initialTab)
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
-        AppLayout(
-            isExpanded = isExpanded,
-            selectedTab = navigator.navState.tab,
-            onTabSelected = { navigator.navigateTo(it) },
-        ) { modifier ->
-            Box(modifier) {
-                NavigationContent(modifier = Modifier.fillMaxSize())
-                RingingCallBanner(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
+        Scaffold(
+            bottomBar = {
+                if (!isExpanded) {
+                    AppNavigationBar(
+                        selectedTab = navigator.navState.tab,
+                        onTabSelected = { navigator.navigateTo(it) },
+                    )
+                }
+            },
+        ) { paddingValues ->
+            if (isExpanded) {
+                Row(Modifier.fillMaxSize().padding(paddingValues)) {
+                    AppNavigationRail(
+                        selectedTab = navigator.navState.tab,
+                        onTabSelected = { navigator.navigateTo(it) },
+                    )
+                    Box(Modifier.weight(1f).fillMaxHeight()) {
+                        NavigationContent(modifier = Modifier.fillMaxSize())
+                        RingingCallBanner(modifier = Modifier.align(Alignment.BottomCenter))
+                    }
+                }
+            } else {
+                Box(Modifier.fillMaxSize().padding(paddingValues)) {
+                    NavigationContent(modifier = Modifier.fillMaxSize())
+                    RingingCallBanner(modifier = Modifier.align(Alignment.BottomCenter))
+                }
             }
         }
     }
 }
 
 @Composable
-private fun AppLayout(
-    isExpanded: Boolean,
+private fun AppNavigationBar(
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
-    content: @Composable (Modifier) -> Unit,
 ) {
-    if (isExpanded) {
-        ExpandedLayout(selectedTab, onTabSelected, content)
-    } else {
-        CompactLayout(selectedTab, onTabSelected, content)
+    NavigationBar {
+        NavigationBarItem(
+            selected = selectedTab == NavigationTab.USER,
+            onClick = { onTabSelected(NavigationTab.USER) },
+            icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+            label = { Text(stringResource(Res.string.user)) },
+        )
+        NavigationBarItem(
+            selected = selectedTab == NavigationTab.CALL_LOGS,
+            onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+            icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+            label = { Text(stringResource(Res.string.call_logs)) },
+        )
+        NavigationBarItem(
+            selected = selectedTab == NavigationTab.CONTACTS,
+            onClick = { onTabSelected(NavigationTab.CONTACTS) },
+            icon = { Icon(Icons.Default.Person, contentDescription = null) },
+            label = { Text(stringResource(Res.string.contacts)) },
+        )
+        NavigationBarItem(
+            selected = selectedTab == NavigationTab.SETTINGS,
+            onClick = { onTabSelected(NavigationTab.SETTINGS) },
+            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+            label = { Text(stringResource(Res.string.settings)) },
+        )
     }
 }
 
 @Composable
-private fun ExpandedLayout(
+private fun AppNavigationRail(
     selectedTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
-    content: @Composable (Modifier) -> Unit,
 ) {
-    Row(Modifier.fillMaxSize().safeContentPadding()) {
-        NavigationRail(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-            NavigationRailItem(
-                selected = selectedTab == NavigationTab.USER,
-                onClick = { onTabSelected(NavigationTab.USER) },
-                icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
-                label = { Text(stringResource(Res.string.user)) },
-            )
-            NavigationRailItem(
-                selected = selectedTab == NavigationTab.CALL_LOGS,
-                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                label = { Text(stringResource(Res.string.call_logs)) },
-            )
-            NavigationRailItem(
-                selected = selectedTab == NavigationTab.CONTACTS,
-                onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                label = { Text(stringResource(Res.string.contacts)) },
-            )
-            Spacer(Modifier.weight(1f))
-            NavigationRailItem(
-                selected = selectedTab == NavigationTab.SETTINGS,
-                onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                label = { Text(stringResource(Res.string.settings)) },
-            )
-        }
-
-        content(Modifier.fillMaxSize())
-    }
-}
-
-@Composable
-private fun CompactLayout(
-    selectedTab: NavigationTab,
-    onTabSelected: (NavigationTab) -> Unit,
-    content: @Composable (Modifier) -> Unit,
-) {
-    Column(Modifier.fillMaxSize()) {
-        content(Modifier.weight(1f))
-
-        NavigationBar {
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.USER,
-                onClick = { onTabSelected(NavigationTab.USER) },
-                icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
-                label = { Text(stringResource(Res.string.user)) },
-            )
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.CALL_LOGS,
-                onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
-                icon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                label = { Text(stringResource(Res.string.call_logs)) },
-            )
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.CONTACTS,
-                onClick = { onTabSelected(NavigationTab.CONTACTS) },
-                icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                label = { Text(stringResource(Res.string.contacts)) },
-            )
-            NavigationBarItem(
-                selected = selectedTab == NavigationTab.SETTINGS,
-                onClick = { onTabSelected(NavigationTab.SETTINGS) },
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                label = { Text(stringResource(Res.string.settings)) },
-            )
-        }
+    NavigationRail(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        NavigationRailItem(
+            selected = selectedTab == NavigationTab.USER,
+            onClick = { onTabSelected(NavigationTab.USER) },
+            icon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+            label = { Text(stringResource(Res.string.user)) },
+        )
+        NavigationRailItem(
+            selected = selectedTab == NavigationTab.CALL_LOGS,
+            onClick = { onTabSelected(NavigationTab.CALL_LOGS) },
+            icon = { Icon(Icons.Default.Phone, contentDescription = null) },
+            label = { Text(stringResource(Res.string.call_logs)) },
+        )
+        NavigationRailItem(
+            selected = selectedTab == NavigationTab.CONTACTS,
+            onClick = { onTabSelected(NavigationTab.CONTACTS) },
+            icon = { Icon(Icons.Default.Person, contentDescription = null) },
+            label = { Text(stringResource(Res.string.contacts)) },
+        )
+        Spacer(Modifier.weight(1f))
+        NavigationRailItem(
+            selected = selectedTab == NavigationTab.SETTINGS,
+            onClick = { onTabSelected(NavigationTab.SETTINGS) },
+            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+            label = { Text(stringResource(Res.string.settings)) },
+        )
     }
 }
 

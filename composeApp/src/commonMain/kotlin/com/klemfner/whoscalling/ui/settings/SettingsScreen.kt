@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -98,20 +97,16 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     }
 
     Box(modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                TopAppBar(title = { Text(stringResource(Res.string.settings)) })
-            },
-            snackbarHost = { SnackbarHost(snackbarHostState) },
+        Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .widthIn(max = COMPACT_MAX_WIDTH)
                 .align(Alignment.Center),
-        ) { paddingValues ->
+        ) {
+            TopAppBar(title = { Text(stringResource(Res.string.settings)) })
             Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
+                modifier = Modifier
+                    .weight(1f)
                     .verticalScroll(rememberScrollState()),
             ) {
                 RouterSection(
@@ -170,5 +165,9 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 ResetSection(onResetToDefault = viewModel::resetToDefault)
             }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }

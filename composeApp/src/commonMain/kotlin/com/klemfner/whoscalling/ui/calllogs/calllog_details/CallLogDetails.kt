@@ -1,4 +1,4 @@
-package com.klemfner.whoscalling.ui.calllogs.components
+package com.klemfner.whoscalling.ui.calllogs.calllog_details
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -24,36 +24,39 @@ import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.domain.model.CallLog
 import com.klemfner.whoscalling.domain.model.CallType
 import com.klemfner.whoscalling.domain.model.Contact
-import com.klemfner.whoscalling.domain.model.Spam
 import com.klemfner.whoscalling.ui.common.components.CallLogIcon
+import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.ui.common.components.FormattedPhoneText
 import com.klemfner.whoscalling.ui.common.components.SpamStatusBanner
+import com.klemfner.whoscalling.ui.calllogs.CallLogsViewModel
+import com.klemfner.whoscalling.ui.calllogs.calllogs_list.CallLogsListViewModel
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
 import com.klemfner.whoscalling.ui.common.utils.TimePeriod
 import com.klemfner.whoscalling.ui.common.utils.formatDuration
 import com.klemfner.whoscalling.ui.common.utils.formatShortDate
 import com.klemfner.whoscalling.ui.common.utils.formatShortTime
 import com.klemfner.whoscalling.ui.common.utils.getTimePeriod
-import com.klemfner.whoscalling.ui.common.components.ContactCallLogItem
 import com.klemfner.whoscalling.util.FormattedPhone
 import com.klemfner.whoscalling.util.formatPhoneForDisplay
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
 import whoscalling.composeapp.generated.resources.add_contact
 import whoscalling.composeapp.generated.resources.back
@@ -80,69 +83,61 @@ import whoscalling.composeapp.generated.resources.yesterday
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CallLogDetails(
-    callLog: CallLog,
-    contact: Contact?,
-    numberCallLogs: List<CallLog>,
-    onBackClick: () -> Unit,
+    screenVM: CallLogsViewModel,
+    listVM: CallLogsListViewModel,
     onAddContactClick: (String) -> Unit,
     onShowContactClick: (String) -> Unit,
-    onCallLogClick: (CallLog) -> Unit,
     modifier: Modifier = Modifier,
-    defaultCountryIso: String = "",
-    isRinging: Boolean = false,
-    spam: Spam? = null,
-    onReportSpam: () -> Unit = {},
-    onReportSafe: () -> Unit = {},
+    viewModel: CallLogDetailsViewModel = koinViewModel(),
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val screenState by screenVM.uiState.collectAsStateWithLifecycle()
+    val listState by listVM.uiState.collectAsStateWithLifecycle()
+    val callLog = screenState.selectedCallLog ?: return
+    val contact = listState.contacts[callLog.phoneNumber]
+    val defaultCountryIso = listState.defaultCountryIso
+    val isRinging = callLog.id == listState.ringingCallId
     val isTouchMode = LocalIsTouchMode.current
+    val spam = uiState.spams[callLog.phoneNumber]
     val isSpam = spam?.isSpam == true
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.details)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.back),
-                        )
-                    }
-                },
-                actions = {
-                    CallLogDetailsActions(
-                        isTouchMode = isTouchMode,
-                        isSpam = isSpam,
-                        contact = contact,
-                        onReportSpam = onReportSpam,
-                        onReportSafe = onReportSafe,
-                        onAddContactClick = { onAddContactClick(callLog.phoneNumber) },
-                        onShowContactClick = { onShowContactClick(contact!!.id) },
+
+    LaunchedEffect(callLog.phoneNumber) {
+        viewModel.setSelectedPhone(callLog.phoneNumber)
+    }
+
+    Column(modifier = modifier) {
+        TopAppBar(
+            title = { Text(stringResource(Res.string.details)) },
+            navigationIcon = {
+                IconButton(onClick = screenVM::goBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(Res.string.back),
                     )
-                },
-            )
-        },
-        floatingActionButton = {
-            if (isTouchMode) {
-                CallLogDetailsFab(
+                }
+            },
+            actions = {
+                CallLogDetailsActions(
+                    isTouchMode = isTouchMode,
+                    isSpam = isSpam,
                     contact = contact,
+                    onReportSpam = { screenVM.requestReportSpam(callLog.phoneNumber) },
+                    onReportSafe = { screenVM.requestReportSafe(callLog.phoneNumber) },
                     onAddContactClick = { onAddContactClick(callLog.phoneNumber) },
                     onShowContactClick = { onShowContactClick(contact!!.id) },
                 )
-            }
-        },
-        modifier = modifier,
-    ) { paddingValues ->
+            },
+        )
+
         val formattedPhone = remember(callLog.phoneNumber, defaultCountryIso) {
             formatPhoneForDisplay(callLog.phoneNumber, defaultCountryIso)
         }
-        val timePeriodGroups = remember(numberCallLogs) {
-            numberCallLogs.groupBy { getTimePeriod(it.timestamp) }
+        val timePeriodGroups = remember(uiState.selectedNumberCallLogs) {
+            uiState.selectedNumberCallLogs.groupBy { getTimePeriod(it.timestamp) }
                 .toSortedMap(compareBy { it.ordinal })
         }
 
-        LazyColumn(
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
             item {
                 CallLogHeader(
                     callLog = callLog,
@@ -150,19 +145,19 @@ fun CallLogDetails(
                     contact = contact,
                     isRinging = isRinging,
                     spam = spam,
-                    onReportSafe = onReportSafe,
+                    onReportSafe = { screenVM.requestReportSafe(callLog.phoneNumber) },
                 )
             }
 
             item {
                 Text(
-                    stringResource(Res.string.call_logs_by_number_count, numberCallLogs.size),
+                    stringResource(Res.string.call_logs_by_number_count, uiState.selectedNumberCallLogs.size),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(16.dp),
                 )
             }
 
-            if (numberCallLogs.isEmpty()) {
+            if (uiState.selectedNumberCallLogs.isEmpty()) {
                 item {
                     Text(
                         stringResource(Res.string.no_call_logs),
@@ -178,7 +173,7 @@ fun CallLogDetails(
                     TimePeriodHeader(period)
                 }
                 items(logs, key = { it.id }) { log ->
-                    ContactCallLogItem(callLog = log, isSelected = log.id == callLog.id, onClick = { onCallLogClick(log) })
+                    ContactCallLogItem(callLog = log, isSelected = log.id == callLog.id, onClick = { screenVM.selectCallLog(log) })
                 }
             }
         }
@@ -230,35 +225,12 @@ private fun CallLogDetailsActions(
 }
 
 @Composable
-private fun CallLogDetailsFab(
-    contact: Contact?,
-    onAddContactClick: () -> Unit,
-    onShowContactClick: () -> Unit,
-) {
-    if (contact == null) {
-        FloatingActionButton(onClick = onAddContactClick) {
-            Icon(
-                Icons.Default.PersonAdd,
-                contentDescription = stringResource(Res.string.add_contact),
-            )
-        }
-    } else {
-        FloatingActionButton(onClick = onShowContactClick) {
-            Icon(
-                Icons.Default.Person,
-                contentDescription = stringResource(Res.string.show_contact),
-            )
-        }
-    }
-}
-
-@Composable
 private fun CallLogHeader(
     callLog: CallLog,
     formattedPhone: FormattedPhone,
     contact: Contact?,
     isRinging: Boolean = false,
-    spam: Spam? = null,
+    spam: com.klemfner.whoscalling.domain.model.Spam? = null,
     onReportSafe: () -> Unit = {},
 ) {
     Column(

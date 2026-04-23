@@ -1,4 +1,4 @@
-package com.klemfner.whoscalling.ui.contacts.components
+package com.klemfner.whoscalling.ui.contacts.contact_form
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,8 +41,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.klemfner.whoscalling.ui.common.components.CountryCodeDialog
 import com.klemfner.whoscalling.ui.common.components.CountryCodeField
 import com.klemfner.whoscalling.ui.common.utils.LocalIsTouchMode
+import com.klemfner.whoscalling.ui.contacts.ContactFormMode
 import com.klemfner.whoscalling.ui.contacts.ContactsError
-import com.klemfner.whoscalling.ui.contacts.contact_form.ContactFormViewModel
+import com.klemfner.whoscalling.ui.contacts.ContactsViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import whoscalling.composeapp.generated.resources.Res
@@ -60,12 +61,32 @@ import whoscalling.composeapp.generated.resources.save
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactForm(
-    onCancel: () -> Unit,
+    screenVM: ContactsViewModel,
     modifier: Modifier = Modifier,
     viewModel: ContactFormViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val screenState by screenVM.uiState.collectAsStateWithLifecycle()
     val formState = uiState.formState
+
+    LaunchedEffect(Unit) {
+        val state = screenVM.uiState.value
+        when (state.formMode) {
+            ContactFormMode.NEW -> viewModel.initForNew(state.newContactPhone, state.defaultCountryIso)
+            ContactFormMode.EDIT -> state.selectedContact?.let {
+                viewModel.initForEdit(it, state.defaultCountryIso)
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.saveEvent.collect { event ->
+            when (event) {
+                ContactFormSaveEvent.SavedNew -> screenVM.onFormSavedNew()
+                is ContactFormSaveEvent.SavedEdit -> screenVM.onFormSavedEdit(event.contact)
+            }
+        }
+    }
     val isTouchMode = LocalIsTouchMode.current
     val snackbarHostState = remember { SnackbarHostState() }
     var showCountryDialog by remember { mutableStateOf(false) }
@@ -107,7 +128,7 @@ fun ContactForm(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onCancel) {
+                    IconButton(onClick = screenVM::goBack) {
                         Icon(
                             Icons.Default.Close,
                             contentDescription = stringResource(Res.string.close),
@@ -186,7 +207,7 @@ fun ContactForm(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
                     ) {
-                        TextButton(onClick = onCancel) {
+                        TextButton(onClick = screenVM::goBack) {
                             Text(stringResource(Res.string.cancel))
                         }
                         Spacer(Modifier.width(8.dp))
