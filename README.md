@@ -1,4 +1,4 @@
-# Home Phone Call Logs
+# WhosCalling
 
 <p>
   <img src="media/Preview.png" alt="Application Preview" width="900"/>
@@ -19,6 +19,7 @@ The app securely logs into your router's web interface, extracts the call log ta
 - Save and manage contacts
 - Mark phone numbers as spam
 - Validate and format phone numbers
+- Auto refresh call logs.
 - Secure credential storage using platform-native APIs
 - Responsive UI adapted for desktops, tablets, and smartphones
 - Cross-platform with Kotlin Multiplatform
@@ -110,11 +111,8 @@ The shared business logic is covered by unit tests using:
 
 ## Future Ideas
 
+- Support automatic spam detection.
 - Support additional router manufacturers
-- Call history search and filtering
-- Export call logs
-- Cloud synchronization
-- Call statistics and analytics
 
 ---
 
