@@ -1,40 +1,123 @@
-This is a Kotlin Multiplatform project targeting Android, Desktop (JVM).
+# Home Phone Call Logs
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+<p>
+  <img src="media/Preview.png" alt="Application Preview" width="900"/>
+</p>
 
-### Build and Run Android Application
+A **Kotlin Multiplatform (KMP)** application for viewing your home phone call history directly from your router.
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
+The app securely logs into your router's web interface, extracts the call log table, and presents it in a modern native UI. It also allows managing contacts and marking phone numbers as spam.
 
-### Build and Run Desktop (JVM) Application
-
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:run
-  ```
+> **Current router support:** Partner routers
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## Features
+
+- View incoming, outgoing, and missed home phone calls
+- Fetch call logs directly from the router web interface
+- Save and manage contacts
+- Mark phone numbers as spam
+- Validate and format phone numbers
+- Secure credential storage using platform-native APIs
+- Responsive UI adapted for desktops, tablets, and smartphones
+- Cross-platform with Kotlin Multiplatform
+
+---
+
+## Architecture
+
+The project follows **Clean Architecture** principles with the **MVVM (Model–View–ViewModel)** pattern.
+
+The data layer is organized using the **Repository Pattern**, where repositories coordinate between **Remote Data Sources** (router communication) and **Local Data Sources** (persistent storage), providing a single source of truth for the application.
+
+### Architecture Components
+
+- Clean Architecture
+- MVVM (Model–View–ViewModel)
+- Repository Pattern
+- Local & Remote Data Sources
+- Dependency Injection with Koin
+- Kotlin Multiplatform shared business logic
+- Jetpack Compose Multiplatform UI
+
+---
+
+## Technologies Used
+
+| Technology | Purpose |
+|------------|---------|
+| Kotlin Multiplatform | Shared business logic |
+| Jetpack Compose Multiplatform | Declarative UI |
+| Material 3 | Modern UI components |
+| Koin | Dependency Injection |
+| KSoup | HTML parsing and web scraping |
+| libphonenumber | Phone number validation and formatting |
+| SRP-6a | Secure authentication with Partner routers |
+| JUnit | Unit testing |
+| Turbine | Testing Kotlin Flows |
+
+---
+
+## Authentication & Security
+
+The application authenticates with supported Partner routers using the **SRP-6a (Secure Remote Password)** protocol.
+
+Credentials are securely stored using each platform's native secure storage solution:
+
+| Platform | Secure Storage |
+|----------|----------------|
+| Android | Encrypted SharedPreferences |
+| Windows | DPAPI |
+| Linux | `secret-tool` (Secret Service API) |
+
+---
+
+## Testing
+
+The shared business logic is covered by unit tests using:
+
+- **JUnit** for unit testing
+- **Turbine** for testing Kotlin Flows
+
+---
+
+## How It Works
+
+1. The user enters their router credentials.
+2. The app authenticates using the SRP-6a protocol.
+3. It retrieves the router's call log page.
+4. The HTML is parsed using KSoup.
+5. Call entries are mapped into application models.
+6. The UI displays the calls together with saved contacts and spam indicators.
+
+---
+
+## Supported Platforms
+
+- Android
+- Windows
+- Linux
+
+---
+
+## Current Limitations
+
+- Currently supports only Partner routers.
+- Changes to the router's web interface may require updates to the scraper.
+
+---
+
+## Future Ideas
+
+- Support additional router manufacturers
+- Call history search and filtering
+- Export call logs
+- Cloud synchronization
+- Call statistics and analytics
+
+---
+
+## License
+
+This project is licensed under the MIT License (or your preferred license).
